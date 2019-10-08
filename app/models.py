@@ -31,4 +31,3 @@ class User(AbstractUser):
 
 class DHO(User):
     district = models.CharField(max_length=50)
-    

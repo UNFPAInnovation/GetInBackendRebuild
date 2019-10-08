@@ -1,4 +1,4 @@
-django-filter==1.0.4
+django-filter==2.0.0
 django-password-reset==1.0
 django-rest-framework-temporary-tokens==0.1.5
 django-rest-passwordreset==0.9.1
