@@ -3,6 +3,7 @@ from django.db.models import Q
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import EmailField, CharField
+from rest_framework.settings import api_settings
 from rest_framework_jwt.utils import jwt_payload_handler
 
 from GetInBackendRebuild.settings import SECRET_KEY
@@ -61,3 +62,19 @@ class UserPostSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
+
+
+class UserGetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'id', 'first_name', 'last_name', 'username', 'email', 'phone',
+            'image', 'password', 'gender', 'dob')
+
+
+class GirlSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Girl
+        fields = ('id', 'first_name', 'last_name', 'village', 'phone_number', 'trimester',
+                  'next_of_kin_name', 'next_of_kin_phone_number', 'education_level', 'marital_status',
+                  'last_menstruation_date', 'dob')

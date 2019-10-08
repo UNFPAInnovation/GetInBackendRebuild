@@ -1,7 +1,7 @@
 import uuid
 
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, MaxValueValidator, MinValueValidator
 from django.db import models
 
 from app.utils.constants import *
@@ -76,15 +76,13 @@ class Girl(models.Model):
     first_name = models.CharField(max_length=250)
     last_name = models.CharField(max_length=250)
     village = models.ForeignKey(Village, on_delete=models.CASCADE)
-    address = models.CharField(max_length=250)
     phone_number = models.CharField(max_length=12, validators=[
         RegexValidator(
             regex='^(07)[0-9]{8}$',
             message='Wrong phone number format',
         )
     ])
-    # todo add constraint to 4 trimesters
-    trimester = models.IntegerField()
+    trimester = models.IntegerField(default=1, validators=[MaxValueValidator(4), MinValueValidator(1)])
     next_of_kin_name = models.CharField(max_length=250)
     next_of_kin_phone_number = models.CharField(max_length=12, validators=[
         RegexValidator(
@@ -95,8 +93,8 @@ class Girl(models.Model):
     education_level = models.CharField(choices=EDUCATION_CHOICES, default=PRIMARY_LEVEL, max_length=250)
     marital_status = models.CharField(choices=MARITAL_STATUS_CHOICES, default=SINGLE, max_length=250)
     # todo add constraint
-    last_menstruation_date = models.DateTimeField()
+    last_menstruation_date = models.DateField()
     # calculate expected_delivery from last menstruation date
     # expected_delivery_date = models.DateTimeField()
-    dob = models.DateTimeField()
+    dob = models.DateField()
     createdAt = models.DateTimeField(auto_now_add=True)
