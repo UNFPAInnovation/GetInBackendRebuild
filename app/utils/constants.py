@@ -1,0 +1,4 @@
+# user's gender
+GENDER_MALE = 0
+GENDER_FEMALE = 1
+GENDER_NOT_SPECIFIED = 2
