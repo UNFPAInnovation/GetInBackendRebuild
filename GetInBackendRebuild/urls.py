@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from app.views import GirlView, GirlDetailsView, UserView
+from app.views import GirlView, GirlDetailsView, UserView, DHOView, MidwifeView, ChewView, AmbulanceView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,5 +25,9 @@ urlpatterns = [
     path(r'api/v1/girls', GirlView.as_view(), name='girls'),
     path(r'api/v1/girls/(?P<pk>[-\w]+)', GirlDetailsView.as_view(),name='girls-details'),
     path(r'api/v1/users', UserView.as_view(), name='users'),
+    path(r'api/v1/dhos', DHOView.as_view(), name='dho'),
+    path(r'api/v1/midwives', MidwifeView.as_view(), name='midwife'),
+    path(r'api/v1/chew', ChewView.as_view(), name='chew'),
+    path(r'api/v1/ambulance', AmbulanceView.as_view(), name='ambulance'),
 
 ]

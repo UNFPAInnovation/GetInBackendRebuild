@@ -66,3 +66,27 @@ class UserView(APIView):
             'midwives': midwives_serializer.data,
             'ambulances': ambulance_serializer.data,
         })
+
+
+class DHOView(ListCreateAPIView):
+    queryset = DHO.objects.all()
+    serializer_class = DHOGetSerializer
+    # permission_classes = (IsAdminUser, IsAuthenticated)
+
+
+class MidwifeView(ListCreateAPIView):
+    queryset = Midwife.objects.all()
+    serializer_class = MidwifeGetSerializer
+    # permission_classes = (IsAdminUser, IsAuthenticated)
+
+
+class ChewView(ListCreateAPIView):
+    queryset = CHEW.objects.all()
+    serializer_class = CHEWGetSerializer
+    # permission_classes = (IsAdminUser, IsAuthenticated)
+
+
+class AmbulanceView(ListCreateAPIView):
+    queryset = Ambulance.objects.all()
+    serializer_class = AmbulanceGetSerializer
+    # permission_classes = (IsAdminUser, IsAuthenticated)
