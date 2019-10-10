@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 from app.views import GirlView, GirlDetailsView, UserView, DHOView, MidwifeView, ChewView, AmbulanceView, DistrictView, \
-    CountyView, SubCountyView, ParishView, VillageView
+    CountyView, SubCountyView, ParishView, VillageView, HealthFacilityView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -35,5 +35,6 @@ urlpatterns = [
     path(r'api/v1/subcountys', SubCountyView.as_view(), name='subcountys'),
     path(r'api/v1/parishes', ParishView.as_view(), name='parishes'),
     path(r'api/v1/villages', VillageView.as_view(), name='villages'),
+    path(r'api/v1/healthfacilitys', HealthFacilityView.as_view(), name='health_facilitys'),
 
 ]

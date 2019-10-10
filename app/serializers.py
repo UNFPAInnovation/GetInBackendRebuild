@@ -140,3 +140,10 @@ class VillageGetSerializer(serializers.ModelSerializer):
         model = Village
         fields = (
             'id', 'parish', 'name')
+
+
+class HealthFacilityGetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HealthFacility
+        fields = (
+            'id', 'parish', 'name')

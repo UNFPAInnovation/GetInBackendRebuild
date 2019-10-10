@@ -8,10 +8,10 @@ from rest_framework.permissions import *
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from app.models import Girl, DHO, Midwife, CHEW, Ambulance, District, County, SubCounty, Parish, Village
+from app.models import Girl, DHO, Midwife, CHEW, Ambulance, District, County, SubCounty, Parish, Village, HealthFacility
 from app.serializers import UserSerializer, User, UserGetSerializer, GirlSerializer, DHOGetSerializer, \
     CHEWGetSerializer, MidwifeGetSerializer, AmbulanceGetSerializer, DistrictGetSerializer, CountyGetSerializer, \
-    SubCountyGetSerializer, ParishGetSerializer, VillageGetSerializer
+    SubCountyGetSerializer, ParishGetSerializer, VillageGetSerializer, HealthFacilityGetSerializer
 
 
 class UserCreateView(CreateAPIView):
@@ -120,4 +120,10 @@ class ParishView(ListCreateAPIView):
 class VillageView(ListCreateAPIView):
     queryset = Village.objects.all()
     serializer_class = VillageGetSerializer
+    # permission_classes = (IsAdminUser, IsAuthenticated)
+
+
+class HealthFacilityView(ListCreateAPIView):
+    queryset = HealthFacility.objects.all()
+    serializer_class = HealthFacilityGetSerializer
     # permission_classes = (IsAdminUser, IsAuthenticated)
