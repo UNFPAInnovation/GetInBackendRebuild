@@ -105,3 +105,38 @@ class GirlSerializer(serializers.ModelSerializer):
         fields = ('id', 'first_name', 'last_name', 'village', 'phone_number', 'trimester',
                   'next_of_kin_name', 'next_of_kin_phone_number', 'education_level', 'marital_status',
                   'last_menstruation_date', 'dob')
+
+
+class DistrictGetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = District
+        fields = (
+            'id', 'name')
+
+
+class CountyGetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = County
+        fields = (
+            'id', 'district', 'name')
+
+
+class SubCountyGetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubCounty
+        fields = (
+            'id', 'county', 'name')
+
+
+class ParishGetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Parish
+        fields = (
+            'id', 'sub_county', 'name')
+
+
+class VillageGetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Village
+        fields = (
+            'id', 'parish', 'name')

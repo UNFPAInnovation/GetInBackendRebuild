@@ -8,9 +8,10 @@ from rest_framework.permissions import *
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from app.models import Girl, DHO, Midwife, CHEW, Ambulance
+from app.models import Girl, DHO, Midwife, CHEW, Ambulance, District, County, SubCounty, Parish, Village
 from app.serializers import UserSerializer, User, UserGetSerializer, GirlSerializer, DHOGetSerializer, \
-    CHEWGetSerializer, MidwifeGetSerializer, AmbulanceGetSerializer
+    CHEWGetSerializer, MidwifeGetSerializer, AmbulanceGetSerializer, DistrictGetSerializer, CountyGetSerializer, \
+    SubCountyGetSerializer, ParishGetSerializer, VillageGetSerializer
 
 
 class UserCreateView(CreateAPIView):
@@ -89,4 +90,34 @@ class ChewView(ListCreateAPIView):
 class AmbulanceView(ListCreateAPIView):
     queryset = Ambulance.objects.all()
     serializer_class = AmbulanceGetSerializer
+    # permission_classes = (IsAdminUser, IsAuthenticated)
+
+
+class DistrictView(ListCreateAPIView):
+    queryset = District.objects.all()
+    serializer_class = DistrictGetSerializer
+    # permission_classes = (IsAdminUser, IsAuthenticated)
+
+
+class CountyView(ListCreateAPIView):
+    queryset = County.objects.all()
+    serializer_class = CountyGetSerializer
+    # permission_classes = (IsAdminUser, IsAuthenticated)
+
+
+class SubCountyView(ListCreateAPIView):
+    queryset = SubCounty.objects.all()
+    serializer_class = SubCountyGetSerializer
+    # permission_classes = (IsAdminUser, IsAuthenticated)
+
+
+class ParishView(ListCreateAPIView):
+    queryset = Parish.objects.all()
+    serializer_class = ParishGetSerializer
+    # permission_classes = (IsAdminUser, IsAuthenticated)
+
+
+class VillageView(ListCreateAPIView):
+    queryset = Village.objects.all()
+    serializer_class = VillageGetSerializer
     # permission_classes = (IsAdminUser, IsAuthenticated)
