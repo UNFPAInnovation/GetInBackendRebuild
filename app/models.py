@@ -102,14 +102,35 @@ class HealthFacility(models.Model):
 
 
 class DHO(User):
+    user_type = models.CharField(default='dho', max_length=50)
     district = models.ForeignKey(District, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.username + self.user_type
 
 
 class Midwife(User):
+    user_type = models.CharField(default='midwife', max_length=50)
     health_facility = models.ForeignKey(HealthFacility, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.username + self.user_type
 
 
 class CHEW(User):
+    user_type = models.CharField(default='chew', max_length=50)
     sub_county = models.ForeignKey(SubCounty, on_delete=models.CASCADE)
     midwife_relation = models.ForeignKey(Midwife, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return self.username + self.user_type
+
+
+class Ambulance(User):
+    user_type = models.CharField(default='ambulance', max_length=50)
+    parish = models.ForeignKey(Parish, on_delete=models.CASCADE)
+    midwife_relation = models.ForeignKey(Midwife, on_delete=models.CASCADE)
+    number_place = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.username + self.user_type

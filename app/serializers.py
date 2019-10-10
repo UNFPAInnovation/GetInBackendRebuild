@@ -68,8 +68,35 @@ class UserGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'id', 'first_name', 'last_name', 'username', 'email', 'phone',
-            'image', 'password', 'gender', 'dob')
+            'id', 'first_name', 'last_name', 'email', 'gender')
+
+
+class DHOGetSerializer(UserGetSerializer):
+    class Meta:
+        model = DHO
+        fields = (
+            'id', 'first_name', 'last_name', 'username', 'email', 'gender', 'district', 'user_type')
+
+
+class CHEWGetSerializer(UserGetSerializer):
+    class Meta:
+        model = CHEW
+        fields = (
+            'id', 'first_name', 'last_name', 'username', 'email', 'gender', 'sub_county')
+
+
+class MidwifeGetSerializer(UserGetSerializer):
+    class Meta:
+        model = Midwife
+        fields = (
+            'id', 'first_name', 'last_name', 'username', 'email', 'gender', 'health_facility')
+
+
+class AmbulanceGetSerializer(UserGetSerializer):
+    class Meta:
+        model = Ambulance
+        fields = (
+            'id', 'first_name', 'last_name', 'username', 'email', 'gender', 'parish', 'number_place')
 
 
 class GirlSerializer(serializers.ModelSerializer):

@@ -16,13 +16,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from app.views import GirlView, GirlDetailsView
+from app.views import GirlView, GirlDetailsView, UserView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path(r'auth/', include('djoser.urls.base')),
     path(r'auth/', include('djoser.urls.authtoken')),
     path(r'api/v1/girls', GirlView.as_view(), name='girls'),
-    path(r'api/v1/girls/(?P<pk>[-\w]+)', GirlDetailsView.as_view(),
-        name='girls-details'),
+    path(r'api/v1/girls/(?P<pk>[-\w]+)', GirlDetailsView.as_view(),name='girls-details'),
+    path(r'api/v1/users', UserView.as_view(), name='users'),
+
 ]
