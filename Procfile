@@ -1,0 +1,1 @@
+web: gunicorn GetInBackendRebuild.wsgi --log-file -
