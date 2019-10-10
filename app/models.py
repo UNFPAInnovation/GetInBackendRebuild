@@ -43,10 +43,6 @@ class User(AbstractUser):
         return self.username
 
 
-class DHO(User):
-    district = models.CharField(max_length=50)
-
-
 class District(models.Model):
     name = models.CharField(max_length=250)
 
@@ -98,3 +94,22 @@ class Girl(models.Model):
     # expected_delivery_date = models.DateTimeField()
     dob = models.DateField()
     createdAt = models.DateTimeField(auto_now_add=True)
+
+
+class HealthFacility(models.Model):
+    parish = models.ForeignKey(Parish, on_delete=models.CASCADE)
+    name = models.CharField(max_length=50)
+
+
+class DHO(User):
+    district = models.ForeignKey(District, on_delete=models.CASCADE)
+
+
+class Midwife(User):
+    health_facility = models.ForeignKey(HealthFacility, on_delete=models.CASCADE)
+
+
+class CHEW(User):
+    sub_county = models.ForeignKey(SubCounty, on_delete=models.CASCADE)
+    midwife_relation = models.ForeignKey(Midwife, on_delete=models.CASCADE)
+
