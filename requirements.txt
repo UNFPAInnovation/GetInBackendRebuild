@@ -6,7 +6,6 @@ django-rest-passwordreset==0.9.1
 djangorestframework==3.10.3
 djangorestframework-jwt==1.11.0
 djoser==0.5.2
-pkg-resources==0.0.0
 PyJWT==1.7.1
 pytz==2019.2
 sqlparse==0.3.0
