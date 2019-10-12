@@ -35,13 +35,13 @@ class GirlCreateView(CreateAPIView):
 class GirlView(ListCreateAPIView):
     queryset = Girl.objects.all()
     serializer_class = GirlSerializer
-    # permission_classes = (IsAdminUser, IsAuthenticated)
+    permission_classes = (IsAdminUser, IsAuthenticated)
 
 
 class GirlDetailsView(RetrieveUpdateDestroyAPIView):
     queryset = Girl.objects.all()
     serializer_class = GirlSerializer
-    # permission_classes = (IsAdminUser,)
+    permission_classes = (IsAdminUser, IsAuthenticated)
 
 
 class UserView(APIView):
@@ -72,58 +72,58 @@ class UserView(APIView):
 class DHOView(ListCreateAPIView):
     queryset = DHO.objects.all()
     serializer_class = DHOGetSerializer
-    # permission_classes = (IsAdminUser, IsAuthenticated)
+    permission_classes = (IsAdminUser, IsAuthenticated)
 
 
 class MidwifeView(ListCreateAPIView):
     queryset = Midwife.objects.all()
     serializer_class = MidwifeGetSerializer
-    # permission_classes = (IsAdminUser, IsAuthenticated)
+    permission_classes = (IsAdminUser, IsAuthenticated)
 
 
 class ChewView(ListCreateAPIView):
     queryset = CHEW.objects.all()
     serializer_class = CHEWGetSerializer
-    # permission_classes = (IsAdminUser, IsAuthenticated)
+    permission_classes = (IsAdminUser, IsAuthenticated)
 
 
 class AmbulanceView(ListCreateAPIView):
     queryset = Ambulance.objects.all()
     serializer_class = AmbulanceGetSerializer
-    # permission_classes = (IsAdminUser, IsAuthenticated)
+    permission_classes = (IsAdminUser, IsAuthenticated)
 
 
 class DistrictView(ListCreateAPIView):
     queryset = District.objects.all()
     serializer_class = DistrictGetSerializer
-    # permission_classes = (IsAdminUser, IsAuthenticated)
+    permission_classes = (IsAdminUser, IsAuthenticated)
 
 
 class CountyView(ListCreateAPIView):
     queryset = County.objects.all()
     serializer_class = CountyGetSerializer
-    # permission_classes = (IsAdminUser, IsAuthenticated)
+    permission_classes = (IsAdminUser, IsAuthenticated)
 
 
 class SubCountyView(ListCreateAPIView):
     queryset = SubCounty.objects.all()
     serializer_class = SubCountyGetSerializer
-    # permission_classes = (IsAdminUser, IsAuthenticated)
+    permission_classes = (IsAdminUser, IsAuthenticated)
 
 
 class ParishView(ListCreateAPIView):
     queryset = Parish.objects.all()
     serializer_class = ParishGetSerializer
-    # permission_classes = (IsAdminUser, IsAuthenticated)
+    permission_classes = (IsAdminUser, IsAuthenticated)
 
 
 class VillageView(ListCreateAPIView):
     queryset = Village.objects.all()
     serializer_class = VillageGetSerializer
-    # permission_classes = (IsAdminUser, IsAuthenticated)
+    permission_classes = (IsAdminUser, IsAuthenticated)
 
 
 class HealthFacilityView(ListCreateAPIView):
     queryset = HealthFacility.objects.all()
     serializer_class = HealthFacilityGetSerializer
-    # permission_classes = (IsAdminUser, IsAuthenticated)
+    permission_classes = (IsAdminUser, IsAuthenticated)

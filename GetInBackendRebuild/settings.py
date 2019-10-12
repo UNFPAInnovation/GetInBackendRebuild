@@ -62,7 +62,6 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'GetInBackendRebuild.urls'
-CORS_ORIGIN_ALLOW_ALL = True
 
 TEMPLATES = [
     {
