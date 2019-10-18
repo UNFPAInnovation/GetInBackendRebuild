@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import requests
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, \
     RetrieveDestroyAPIView, \
     CreateAPIView, UpdateAPIView
@@ -77,6 +78,7 @@ class DHOView(ListCreateAPIView):
             return DHOPostSerializer
         else:
             return DHOGetSerializer
+
     permission_classes = (IsAdminUser, IsAuthenticated)
 
 
@@ -132,3 +134,17 @@ class HealthFacilityView(ListCreateAPIView):
     queryset = HealthFacility.objects.all()
     serializer_class = HealthFacilityGetSerializer
     permission_classes = (IsAdminUser, IsAuthenticated)
+
+
+class MappingEncounterWebhook(APIView):
+    """
+    Receives the mapping encounter data and then creates the Girl model and MappingEncounter model
+
+    """
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        print(data)
+        return Response({
+            'result': 'success'
+        })
