@@ -169,3 +169,19 @@ class HealthFacilityGetSerializer(serializers.ModelSerializer):
         model = HealthFacility
         fields = (
             'id', 'parish', 'name')
+
+
+class FollowUpGetSerializer(serializers.ModelSerializer):
+    girl = GirlSerializer()
+    chew = CHEWGetSerializer()
+    midwife = MidwifeGetSerializer()
+
+    class Meta:
+        model = FollowUp
+        fields = '__all__'
+
+
+class FollowUpPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FollowUp
+        fields = '__all__'

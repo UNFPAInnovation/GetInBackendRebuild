@@ -8,10 +8,12 @@ from rest_framework.permissions import *
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from app.models import Girl, DHO, Midwife, CHEW, Ambulance, District, County, SubCounty, Parish, Village, HealthFacility
+from app.models import Girl, DHO, Midwife, CHEW, Ambulance, District, County, SubCounty, Parish, Village, \
+    HealthFacility, FollowUp
 from app.serializers import UserSerializer, User, UserGetSerializer, GirlSerializer, DHOGetSerializer, \
     CHEWGetSerializer, MidwifeGetSerializer, AmbulanceGetSerializer, DistrictGetSerializer, CountyGetSerializer, \
-    SubCountyGetSerializer, ParishGetSerializer, VillageGetSerializer, HealthFacilityGetSerializer, DHOPostSerializer
+    SubCountyGetSerializer, ParishGetSerializer, VillageGetSerializer, HealthFacilityGetSerializer, DHOPostSerializer, \
+    FollowUpGetSerializer, FollowUpPostSerializer
 
 
 class UserCreateView(CreateAPIView):
@@ -71,14 +73,13 @@ class UserView(APIView):
 
 class DHOView(ListCreateAPIView):
     queryset = DHO.objects.all()
+    permission_classes = (IsAdminUser, IsAuthenticated)
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
             return DHOPostSerializer
         else:
             return DHOGetSerializer
-
-    permission_classes = (IsAdminUser, IsAuthenticated)
 
 
 class MidwifeView(ListCreateAPIView):
@@ -133,6 +134,17 @@ class HealthFacilityView(ListCreateAPIView):
     queryset = HealthFacility.objects.all()
     serializer_class = HealthFacilityGetSerializer
     permission_classes = (IsAdminUser, IsAuthenticated)
+
+
+class FollowUpView(ListCreateAPIView):
+    queryset = FollowUp.objects.all()
+    permission_classes = (IsAdminUser, IsAuthenticated)
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return FollowUpPostSerializer
+        else:
+            return FollowUpGetSerializer
 
 
 class MappingEncounterWebhook(APIView):

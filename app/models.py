@@ -134,3 +134,18 @@ class Ambulance(User):
 
     def __str__(self):
         return self.username + self.user_type
+
+
+class FollowUp(models.Model):
+    girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
+    midwife = models.ForeignKey(Midwife, on_delete=models.CASCADE)
+    chew = models.ForeignKey(CHEW, on_delete=models.CASCADE)
+    followup_reason = models.TextField()
+    actionTaken = models.CharField(max_length=50)
+    blurred_vision = models.BooleanField(default=False)
+    bleeding_heavily = models.BooleanField(default=False)
+    fever = models.BooleanField(default=False)
+    swollen_feet = models.BooleanField(default=False)
+    next_appointment = models.DateTimeField(auto_now_add=True)
+    follow_date = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
