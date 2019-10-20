@@ -1,6 +1,5 @@
 from datetime import datetime
 
-import requests
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, \
     RetrieveDestroyAPIView, \
     CreateAPIView, UpdateAPIView
