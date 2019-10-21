@@ -94,11 +94,13 @@ class Girl(models.Model):
 
     @staticmethod
     def has_write_permission(request):
-        return request.user.type in [USER_TYPE_CHEW, USER_TYPE_MIDWIFE]
+        return request.user.type in [USER_TYPE_CHEW,
+                                     USER_TYPE_MIDWIFE] or request.user.is_staff or request.user.is_superuser
 
     @staticmethod
     def has_read_permission(request):
-        return request.user.type in [USER_TYPE_CHEW, USER_TYPE_MIDWIFE]
+        return request.user.type in [USER_TYPE_CHEW,
+                                     USER_TYPE_MIDWIFE] or request.user.is_staff
 
     @staticmethod
     def has_object_write_permission(self, request):
@@ -148,6 +150,20 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+
+    @staticmethod
+    def has_write_permission(request):
+        # return request.user.type in [USER_TYPE_CHEW,
+        #                              USER_TYPE_MIDWIFE] or request.user.is_staff or request.user.is_superuser
+        return True
+
+    @staticmethod
+    def has_read_permission(request):
+        return True
+
+    @staticmethod
+    def has_object_write_permission(self, request):
+        return True
 
 
 class FollowUp(models.Model):
