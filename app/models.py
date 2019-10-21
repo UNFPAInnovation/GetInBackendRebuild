@@ -31,21 +31,13 @@ DELIVERY_LOCATION = (
     (HEALTH_FACILITY, 'Health Facility'),
 )
 
-
-class User(AbstractUser):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    phone = models.CharField(max_length=12, validators=[
-        RegexValidator(
-            regex='^(07)[0-9]{8}$',
-            message='Wrong phone number format',
-        )
-    ])
-    gender = models.IntegerField(choices=GENDER_CHOICES, default=GENDER_NOT_SPECIFIED,
-                                 help_text='0 - Male, 1 - Female, 2 - Not Specified')
-    createdAt = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.username
+USER_TYPE_CHOICES = (
+    (USER_TYPE_DEVELOPER, 'Developer'),
+    (USER_TYPE_DHO, 'DHO'),
+    (USER_TYPE_CHEW, 'CHEW'),
+    (USER_TYPE_MIDWIFE, 'Midwife'),
+    (USER_TYPE_AMBULANCE, 'Ambulance'),
+)
 
 
 class District(models.Model):
@@ -98,55 +90,71 @@ class Girl(models.Model):
     # calculate expected_delivery from last menstruation date
     # expected_delivery_date = models.DateTimeField()
     dob = models.DateField()
-    createdAt = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @staticmethod
+    def has_write_permission(request):
+        return request.user.type in [USER_TYPE_CHEW, USER_TYPE_MIDWIFE]
+
+    @staticmethod
+    def has_read_permission(request):
+        return request.user.type in [USER_TYPE_CHEW, USER_TYPE_MIDWIFE]
+
+    @staticmethod
+    def has_object_write_permission(self, request):
+        return True
 
 
 class HealthFacility(models.Model):
     parish = models.ForeignKey(Parish, on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
 
+    @staticmethod
+    def has_write_permission(request):
+        return True
 
-class DHO(User):
-    user_type = models.CharField(default='dho', max_length=50)
-    district = models.ForeignKey(District, on_delete=models.CASCADE)
+    @staticmethod
+    def has_read_permission(request):
+        return True
 
-    def __str__(self):
-        return self.username + self.user_type
-
-
-class Midwife(User):
-    user_type = models.CharField(default='midwife', max_length=50)
-    health_facility = models.ForeignKey(HealthFacility, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.username + self.user_type
+    @staticmethod
+    def has_object_write_permission(self, request):
+        return True
 
 
-class CHEW(User):
-    user_type = models.CharField(default='chew', max_length=50)
-    sub_county = models.ForeignKey(SubCounty, on_delete=models.CASCADE)
-    midwife_relation = models.ForeignKey(Midwife, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.username + self.user_type
-
-
-class Ambulance(User):
-    user_type = models.CharField(default='ambulance', max_length=50)
-    parish = models.ForeignKey(Parish, on_delete=models.CASCADE)
-    midwife_relation = models.ForeignKey(Midwife, on_delete=models.CASCADE)
+class User(AbstractUser):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    type = models.IntegerField(choices=USER_TYPE_CHOICES, default=USER_TYPE_DEVELOPER)
+    phone = models.CharField(max_length=12, validators=[
+        RegexValidator(
+            regex='^(07)[0-9]{8}$',
+            message='Wrong phone number format',
+        )
+    ])
+    gender = models.IntegerField(choices=GENDER_CHOICES, default=GENDER_NOT_SPECIFIED,
+                                 help_text='0 - Male, 1 - Female, 2 - Not Specified')
+    created_at = models.DateTimeField(auto_now_add=True)
     number_place = models.CharField(max_length=50)
+    village = models.ForeignKey(Village, on_delete=models.CASCADE, blank=True, null=True)
+    district = models.ForeignKey(District, on_delete=models.CASCADE, blank=True, null=True)
+    number_plate = models.CharField(max_length=50, blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if self.type in [USER_TYPE_DEVELOPER, USER_TYPE_DHO]:
+            self.is_staff = True
+        if self.type in [USER_TYPE_DEVELOPER, USER_TYPE_MANAGER]:
+            self.is_superuser = True
+        super(User, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.username + self.user_type
+        return self.username
 
 
 class FollowUp(models.Model):
     girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
-    midwife = models.ForeignKey(Midwife, on_delete=models.CASCADE)
-    chew = models.ForeignKey(CHEW, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     followup_reason = models.TextField()
-    actionTaken = models.CharField(max_length=200)
+    action_taken = models.CharField(max_length=200)
     blurred_vision = models.BooleanField(default=False)
     bleeding_heavily = models.BooleanField(default=False)
     fever = models.BooleanField(default=False)
@@ -155,13 +163,28 @@ class FollowUp(models.Model):
     follow_date = models.DateTimeField(auto_now_add=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    @staticmethod
+    def has_write_permission(request):
+        return request.user.type in [USER_TYPE_CHEW, USER_TYPE_MIDWIFE] or request.user.is_staff or request.user.is_superuser
+
+    @staticmethod
+    def has_read_permission(request):
+        return True
+
+    @staticmethod
+    def has_object_write_permission(self, request):
+        return True
+
+    # @staticmethod
+    # def has_read_permissions(request):
+    #     return request.type in [USER_TYPE_CHEW, USER_TYPE_MIDWIFE]
+
 
 class Delivery(models.Model):
     girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
-    midwife = models.ForeignKey(Midwife, on_delete=models.CASCADE)
-    chew = models.ForeignKey(CHEW, on_delete=models.CASCADE)
-    followup_reason = models.TextField()
-    actionTaken = models.CharField(max_length=200)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    followup_reason = models.CharField(max_length=200)
+    action_taken = models.CharField(max_length=200)
     received_postnatal_care = models.BooleanField(default=True)
     is_mother_alive = models.BooleanField(default=True)
     is_baby_alive = models.BooleanField(default=True)
@@ -171,6 +194,19 @@ class Delivery(models.Model):
     using_family_planning = models.BooleanField(default=True)
     no_family_planning_reason = models.CharField(max_length=250)
     family_planning_type = models.CharField(max_length=250)
-    health_facility = models.CharField(max_length=200)
+    health_facility = models.ForeignKey(HealthFacility, on_delete=models.CASCADE, blank=True, null=True)
     delivery_date = models.DateTimeField(auto_now_add=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    @staticmethod
+    def has_write_permission(request):
+        return request.user.type in [USER_TYPE_CHEW,
+                                     USER_TYPE_MIDWIFE] or request.user.is_staff or request.user.is_superuser
+
+    @staticmethod
+    def has_read_permission(request):
+        return True
+
+    @staticmethod
+    def has_object_write_permission(self, request):
+        return True

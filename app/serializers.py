@@ -71,56 +71,6 @@ class UserGetSerializer(serializers.ModelSerializer):
             'id', 'first_name', 'last_name', 'email', 'gender')
 
 
-class DHOPostSerializer(UserGetSerializer):
-    class Meta:
-        model = DHO
-        fields = (
-            'id', 'first_name', 'last_name', 'username', 'email', 'gender', 'district', 'user_type', 'phone', 'password')
-
-    def create(self, validated_data):
-        user = DHO(
-            first_name=validated_data['first_name'],
-            last_name=validated_data['last_name'],
-            username=validated_data['username'],
-            email=validated_data['email'],
-            phone=validated_data['phone'],
-            district=validated_data['district'],
-            user_type=validated_data['user_type'],
-            is_staff=True
-        )
-        user.set_password(validated_data['password'])
-        user.save()
-        return user
-
-
-class DHOGetSerializer(UserGetSerializer):
-    class Meta:
-        model = DHO
-        fields = (
-            'id', 'first_name', 'last_name', 'username', 'email', 'gender', 'district', 'user_type', 'phone')
-
-
-class CHEWGetSerializer(UserGetSerializer):
-    class Meta:
-        model = CHEW
-        fields = (
-            'id', 'first_name', 'last_name', 'username', 'email', 'gender', 'sub_county')
-
-
-class MidwifeGetSerializer(UserGetSerializer):
-    class Meta:
-        model = Midwife
-        fields = (
-            'id', 'first_name', 'last_name', 'username', 'email', 'gender', 'health_facility')
-
-
-class AmbulanceGetSerializer(UserGetSerializer):
-    class Meta:
-        model = Ambulance
-        fields = (
-            'id', 'first_name', 'last_name', 'username', 'email', 'gender', 'parish', 'number_place')
-
-
 class GirlSerializer(serializers.ModelSerializer):
     class Meta:
         model = Girl
@@ -173,8 +123,7 @@ class HealthFacilityGetSerializer(serializers.ModelSerializer):
 
 class FollowUpGetSerializer(serializers.ModelSerializer):
     girl = GirlSerializer()
-    chew = CHEWGetSerializer()
-    midwife = MidwifeGetSerializer()
+    user = UserGetSerializer()
 
     class Meta:
         model = FollowUp
@@ -189,8 +138,7 @@ class FollowUpPostSerializer(serializers.ModelSerializer):
 
 class DeliveryGetSerializer(serializers.ModelSerializer):
     girl = GirlSerializer()
-    chew = CHEWGetSerializer()
-    midwife = MidwifeGetSerializer()
+    user = UserGetSerializer()
 
     class Meta:
         model = Delivery

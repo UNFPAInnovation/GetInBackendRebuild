@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from app.views import GirlView, GirlDetailsView, UserView, DHOView, MidwifeView, ChewView, AmbulanceView, DistrictView, \
+from app.views import GirlView, GirlDetailsView, UserCreateView, DistrictView, \
     CountyView, SubCountyView, ParishView, VillageView, HealthFacilityView, MappingEncounterWebhook, FollowUpView, \
     DeliveriesView
 
@@ -26,11 +26,7 @@ urlpatterns = [
     path(r'auth/', include('djoser.urls.authtoken')),
     path(r'api/v1/girls', GirlView.as_view(), name='girls'),
     path(r'api/v1/girls/(?P<pk>[-\w]+)', GirlDetailsView.as_view(),name='girls-details'),
-    path(r'api/v1/users', UserView.as_view(), name='users'),
-    path(r'api/v1/dhos', DHOView.as_view(), name='dho'),
-    path(r'api/v1/midwives', MidwifeView.as_view(), name='midwife'),
-    path(r'api/v1/chews', ChewView.as_view(), name='chew'),
-    path(r'api/v1/ambulances', AmbulanceView.as_view(), name='ambulances'),
+    path(r'api/v1/users', UserCreateView.as_view(), name='users'),
     path(r'api/v1/districts', DistrictView.as_view(), name='districts'),
     path(r'api/v1/countries', CountyView.as_view(), name='counties'),
     path(r'api/v1/subcounties', SubCountyView.as_view(), name='subcounties'),

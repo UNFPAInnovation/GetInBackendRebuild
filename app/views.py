@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from dry_rest_permissions.generics import DRYPermissions
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, \
     RetrieveDestroyAPIView, \
     CreateAPIView, UpdateAPIView
@@ -8,15 +9,14 @@ from rest_framework.permissions import *
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from app.models import Girl, DHO, Midwife, CHEW, Ambulance, District, County, SubCounty, Parish, Village, \
+from app.models import Girl, District, County, SubCounty, Parish, Village, \
     HealthFacility, FollowUp, Delivery
-from app.serializers import UserSerializer, User, UserGetSerializer, GirlSerializer, DHOGetSerializer, \
-    CHEWGetSerializer, MidwifeGetSerializer, AmbulanceGetSerializer, DistrictGetSerializer, CountyGetSerializer, \
-    SubCountyGetSerializer, ParishGetSerializer, VillageGetSerializer, HealthFacilityGetSerializer, DHOPostSerializer, \
+from app.serializers import UserSerializer, User, UserGetSerializer, GirlSerializer, DistrictGetSerializer, CountyGetSerializer, \
+    SubCountyGetSerializer, ParishGetSerializer, VillageGetSerializer, HealthFacilityGetSerializer, \
     FollowUpGetSerializer, FollowUpPostSerializer, DeliveryPostSerializer, DeliveryGetSerializer
 
 
-class UserCreateView(CreateAPIView):
+class UserCreateView(ListCreateAPIView):
     """
     Allows creation of user.
     """
@@ -29,7 +29,7 @@ class GirlCreateView(CreateAPIView):
     """
     Allows creation of user.
     """
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated, DRYPermissions]
     serializer_class = GirlSerializer
     queryset = Girl
 
@@ -37,67 +37,38 @@ class GirlCreateView(CreateAPIView):
 class GirlView(ListCreateAPIView):
     queryset = Girl.objects.all()
     serializer_class = GirlSerializer
-    permission_classes = (IsAdminUser, IsAuthenticated)
+    permission_classes = (DRYPermissions, IsAuthenticated)
 
 
 class GirlDetailsView(RetrieveUpdateDestroyAPIView):
     queryset = Girl.objects.all()
     serializer_class = GirlSerializer
-    permission_classes = (IsAdminUser, IsAuthenticated)
+    permission_classes = (DRYPermissions, IsAuthenticated)
 
 
-class UserView(APIView):
-    """
-    Returns the system users
-    """
-
-    def get(self, request, format=None, **kwargs):
-        print("get request")
-        dhos = DHO.objects.all()
-        chews = CHEW.objects.all()
-        midwives = Midwife.objects.all()
-        ambulances = Ambulance.objects.all()
-
-        dho_serializer = DHOGetSerializer(dhos, many=True)
-        chew_serializer = CHEWGetSerializer(chews, many=True)
-        midwives_serializer = MidwifeGetSerializer(midwives, many=True)
-        ambulance_serializer = AmbulanceGetSerializer(ambulances, many=True)
-
-        return Response({
-            'dhos': dho_serializer.data,
-            'chews': chew_serializer.data,
-            'midwives': midwives_serializer.data,
-            'ambulances': ambulance_serializer.data,
-        })
-
-
-class DHOView(ListCreateAPIView):
-    queryset = DHO.objects.all()
-    permission_classes = (IsAdminUser, IsAuthenticated)
-
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return DHOPostSerializer
-        else:
-            return DHOGetSerializer
-
-
-class MidwifeView(ListCreateAPIView):
-    queryset = Midwife.objects.all()
-    serializer_class = MidwifeGetSerializer
-    permission_classes = (IsAdminUser, IsAuthenticated)
-
-
-class ChewView(ListCreateAPIView):
-    queryset = CHEW.objects.all()
-    serializer_class = CHEWGetSerializer
-    permission_classes = (IsAdminUser, IsAuthenticated)
-
-
-class AmbulanceView(ListCreateAPIView):
-    queryset = Ambulance.objects.all()
-    serializer_class = AmbulanceGetSerializer
-    permission_classes = (IsAdminUser, IsAuthenticated)
+# class UserView(APIView):
+#     """
+#     Returns the system users
+#     """
+#
+#     def get(self, request, format=None, **kwargs):
+#         print("get request")
+#         dhos = DHO.objects.all()
+#         chews = CHEW.objects.all()
+#         midwives = Midwife.objects.all()
+#         ambulances = Ambulance.objects.all()
+#
+#         dho_serializer = DHOGetSerializer(dhos, many=True)
+#         chew_serializer = CHEWGetSerializer(chews, many=True)
+#         midwives_serializer = MidwifeGetSerializer(midwives, many=True)
+#         ambulance_serializer = AmbulanceGetSerializer(ambulances, many=True)
+#
+#         return Response({
+#             'dhos': dho_serializer.data,
+#             'chews': chew_serializer.data,
+#             'midwives': midwives_serializer.data,
+#             'ambulances': ambulance_serializer.data,
+#         })
 
 
 class DistrictView(ListCreateAPIView):
@@ -138,7 +109,7 @@ class HealthFacilityView(ListCreateAPIView):
 
 class FollowUpView(ListCreateAPIView):
     queryset = FollowUp.objects.all()
-    permission_classes = (IsAdminUser, IsAuthenticated)
+    permission_classes = (IsAuthenticated, DRYPermissions)
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -149,7 +120,7 @@ class FollowUpView(ListCreateAPIView):
 
 class DeliveriesView(ListCreateAPIView):
     queryset = Delivery.objects.all()
-    permission_classes = (IsAdminUser, IsAuthenticated)
+    permission_classes = (IsAuthenticated, DRYPermissions)
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
