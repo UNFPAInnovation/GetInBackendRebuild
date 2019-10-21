@@ -165,7 +165,6 @@ class Delivery(models.Model):
     received_postnatal_care = models.BooleanField(default=True)
     is_mother_alive = models.BooleanField(default=True)
     is_baby_alive = models.BooleanField(default=True)
-    is_baby_alive = models.BooleanField(default=True)
     baby_death_date = models.DateTimeField(blank=True, null=True)
     baby_birth_date = models.DateTimeField(blank=True, null=True)
     mother_death_date = models.DateTimeField(blank=True, null=True)
