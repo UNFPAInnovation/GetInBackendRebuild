@@ -185,3 +185,19 @@ class FollowUpPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = FollowUp
         fields = '__all__'
+
+
+class DeliveryGetSerializer(serializers.ModelSerializer):
+    girl = GirlSerializer()
+    chew = CHEWGetSerializer()
+    midwife = MidwifeGetSerializer()
+
+    class Meta:
+        model = Delivery
+        fields = '__all__'
+
+
+class DeliveryPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Delivery
+        fields = '__all__'

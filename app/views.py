@@ -9,11 +9,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from app.models import Girl, DHO, Midwife, CHEW, Ambulance, District, County, SubCounty, Parish, Village, \
-    HealthFacility, FollowUp
+    HealthFacility, FollowUp, Delivery
 from app.serializers import UserSerializer, User, UserGetSerializer, GirlSerializer, DHOGetSerializer, \
     CHEWGetSerializer, MidwifeGetSerializer, AmbulanceGetSerializer, DistrictGetSerializer, CountyGetSerializer, \
     SubCountyGetSerializer, ParishGetSerializer, VillageGetSerializer, HealthFacilityGetSerializer, DHOPostSerializer, \
-    FollowUpGetSerializer, FollowUpPostSerializer
+    FollowUpGetSerializer, FollowUpPostSerializer, DeliveryPostSerializer, DeliveryGetSerializer
 
 
 class UserCreateView(CreateAPIView):
@@ -145,6 +145,17 @@ class FollowUpView(ListCreateAPIView):
             return FollowUpPostSerializer
         else:
             return FollowUpGetSerializer
+
+
+class DeliveriesView(ListCreateAPIView):
+    queryset = Delivery.objects.all()
+    permission_classes = (IsAdminUser, IsAuthenticated)
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return DeliveryPostSerializer
+        else:
+            return DeliveryGetSerializer
 
 
 class MappingEncounterWebhook(APIView):

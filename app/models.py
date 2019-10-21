@@ -26,6 +26,11 @@ MARITAL_STATUS_CHOICES = (
     (DIVORCED, 'Divorced'),
 )
 
+DELIVERY_LOCATION = (
+    (HOME, 'Home'),
+    (HEALTH_FACILITY, 'Health Facility'),
+)
+
 
 class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -141,11 +146,32 @@ class FollowUp(models.Model):
     midwife = models.ForeignKey(Midwife, on_delete=models.CASCADE)
     chew = models.ForeignKey(CHEW, on_delete=models.CASCADE)
     followup_reason = models.TextField()
-    actionTaken = models.CharField(max_length=50)
+    actionTaken = models.CharField(max_length=200)
     blurred_vision = models.BooleanField(default=False)
     bleeding_heavily = models.BooleanField(default=False)
     fever = models.BooleanField(default=False)
     swollen_feet = models.BooleanField(default=False)
     next_appointment = models.DateTimeField(auto_now_add=True)
     follow_date = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class Delivery(models.Model):
+    girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
+    midwife = models.ForeignKey(Midwife, on_delete=models.CASCADE)
+    chew = models.ForeignKey(CHEW, on_delete=models.CASCADE)
+    followup_reason = models.TextField()
+    actionTaken = models.CharField(max_length=200)
+    received_postnatal_care = models.BooleanField(default=True)
+    is_mother_alive = models.BooleanField(default=True)
+    is_baby_alive = models.BooleanField(default=True)
+    is_baby_alive = models.BooleanField(default=True)
+    baby_death_date = models.DateTimeField(blank=True, null=True)
+    baby_birth_date = models.DateTimeField(blank=True, null=True)
+    mother_death_date = models.DateTimeField(blank=True, null=True)
+    using_family_planning = models.BooleanField(default=True)
+    no_family_planning_reason = models.CharField(max_length=250)
+    family_planning_type = models.CharField(max_length=250)
+    health_facility = models.CharField(max_length=200)
+    delivery_date = models.DateTimeField(auto_now_add=True)
     created_at = models.DateTimeField(auto_now_add=True)

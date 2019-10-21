@@ -12,3 +12,7 @@ TERTIARY_LEVEL = "tertiary"
 SINGLE = "single"
 MARRIED = "married"
 DIVORCED = "divorced"
+
+
+HOME = "home"
+HEALTH_FACILITY = "health_facility"

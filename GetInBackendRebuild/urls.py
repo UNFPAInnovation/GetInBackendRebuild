@@ -17,7 +17,8 @@ from django.contrib import admin
 from django.urls import path, include
 
 from app.views import GirlView, GirlDetailsView, UserView, DHOView, MidwifeView, ChewView, AmbulanceView, DistrictView, \
-    CountyView, SubCountyView, ParishView, VillageView, HealthFacilityView, MappingEncounterWebhook
+    CountyView, SubCountyView, ParishView, VillageView, HealthFacilityView, MappingEncounterWebhook, FollowUpView, \
+    DeliveriesView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -37,5 +38,7 @@ urlpatterns = [
     path(r'api/v1/villages', VillageView.as_view(), name='villages'),
     path(r'api/v1/healthfacilitys', HealthFacilityView.as_view(), name='health_facilitys'),
     path(r'api/v1/mapping_encounter_webhook', MappingEncounterWebhook.as_view(), name='mapping_encounter_webhook'),
+    path(r'api/v1/followups', FollowUpView.as_view(), name='followups'),
+    path(r'api/v1/deliveries', DeliveriesView.as_view(), name='deliveries'),
 
 ]
