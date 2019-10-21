@@ -56,12 +56,12 @@ class SubCounty(models.Model):
 
 class Parish(models.Model):
     name = models.CharField(max_length=250)
-    sub_county = models.ForeignKey(SubCounty, on_delete=models.CASCADE)
+    sub_county = models.ForeignKey(SubCounty, on_delete=models.CASCADE, blank=True, null=True)
 
 
 class Village(models.Model):
     name = models.CharField(max_length=250)
-    parish = models.ForeignKey(Parish, on_delete=models.CASCADE)
+    parish = models.ForeignKey(Parish, on_delete=models.CASCADE, blank=True, null=True)
 
 
 class Girl(models.Model):
@@ -94,8 +94,7 @@ class Girl(models.Model):
 
     @staticmethod
     def has_write_permission(request):
-        return request.user.type in [USER_TYPE_CHEW,
-                                     USER_TYPE_MIDWIFE] or request.user.is_staff or request.user.is_superuser
+        return True
 
     @staticmethod
     def has_read_permission(request):

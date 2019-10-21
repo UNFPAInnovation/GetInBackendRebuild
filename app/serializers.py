@@ -71,14 +71,6 @@ class UserGetSerializer(serializers.ModelSerializer):
             'id', 'first_name', 'last_name', 'email', 'gender')
 
 
-class GirlSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Girl
-        fields = ('id', 'first_name', 'last_name', 'village', 'phone_number', 'trimester',
-                  'next_of_kin_name', 'next_of_kin_phone_number', 'education_level', 'marital_status',
-                  'last_menstruation_date', 'dob')
-
-
 class DistrictGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = District
@@ -108,10 +100,12 @@ class ParishGetSerializer(serializers.ModelSerializer):
 
 
 class VillageGetSerializer(serializers.ModelSerializer):
+    parish = ParishGetSerializer(many=False, read_only=True)
+    parish_id = serializers.IntegerField(write_only=True)
+
     class Meta:
         model = Village
-        fields = (
-            'id', 'parish', 'name')
+        fields = '__all__'
 
 
 class HealthFacilityGetSerializer(serializers.ModelSerializer):
@@ -119,6 +113,15 @@ class HealthFacilityGetSerializer(serializers.ModelSerializer):
         model = HealthFacility
         fields = (
             'id', 'parish', 'name')
+
+
+class GirlSerializer(serializers.ModelSerializer):
+    village = VillageGetSerializer(many=False, read_only=True)
+    village_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = Girl
+        fields = '__all__'
 
 
 class FollowUpGetSerializer(serializers.ModelSerializer):
