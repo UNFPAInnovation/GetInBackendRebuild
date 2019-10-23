@@ -4,7 +4,9 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator, MaxValueValidator, MinValueValidator
 from django.db import models
 
-from app.utils.constants import *
+from app.utils.constants import GENDER_FEMALE, GENDER_MALE, GENDER_NOT_SPECIFIED, PRIMARY_LEVEL, O_LEVEL, A_LEVEL, \
+    TERTIARY_LEVEL, SINGLE, MARRIED, DIVORCED, HOME, HEALTH_FACILITY, USER_TYPE_DEVELOPER, USER_TYPE_DHO, \
+    USER_TYPE_CHEW, USER_TYPE_MIDWIFE, USER_TYPE_AMBULANCE
 
 GENDER_CHOICES = (
     (GENDER_MALE, 'male'),
@@ -20,11 +22,11 @@ EDUCATION_CHOICES = (
 )
 
 
-MARITAL_STATUS_CHOICES = (
+MARITAL_STATUS_CHOICES = {
     (SINGLE, 'Single'),
     (MARRIED, 'Married'),
     (DIVORCED, 'Divorced'),
-)
+}
 
 DELIVERY_LOCATION = (
     (HOME, 'Home'),
@@ -190,10 +192,6 @@ class FollowUp(models.Model):
     def has_object_write_permission(self, request):
         return True
 
-    # @staticmethod
-    # def has_read_permissions(request):
-    #     return request.type in [USER_TYPE_CHEW, USER_TYPE_MIDWIFE]
-
 
 class Delivery(models.Model):
     girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
@@ -211,13 +209,14 @@ class Delivery(models.Model):
     family_planning_type = models.CharField(max_length=250)
     health_facility = models.ForeignKey(HealthFacility, on_delete=models.CASCADE, blank=True, null=True)
     delivery_date = models.DateTimeField(auto_now_add=True)
+    delivery_location = models.CharField(choices=DELIVERY_LOCATION, default=HOME, max_length=250)
     created_at = models.DateTimeField(auto_now_add=True)
 
     @staticmethod
     def has_write_permission(request):
-        return request.user.type in [USER_TYPE_CHEW,
-                                     USER_TYPE_MIDWIFE] or request.user.is_staff or request.user.is_superuser
-
+        # return request.user.type in [USER_TYPE_CHEW,
+        #                              USER_TYPE_MIDWIFE] or request.user.is_staff or request.user.is_superuser
+        return True
     @staticmethod
     def has_read_permission(request):
         return True

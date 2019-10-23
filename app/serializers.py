@@ -7,7 +7,7 @@ from rest_framework.settings import api_settings
 from rest_framework_jwt.utils import jwt_payload_handler
 
 from GetInBackendRebuild.settings import SECRET_KEY
-from app.models import *
+from app.models import User, District, County, SubCounty, Parish, Village, Girl, HealthFacility, FollowUp, Delivery
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -142,6 +142,7 @@ class FollowUpPostSerializer(serializers.ModelSerializer):
 class DeliveryGetSerializer(serializers.ModelSerializer):
     girl = GirlSerializer()
     user = UserGetSerializer()
+    health_facility = HealthFacilityGetSerializer()
 
     class Meta:
         model = Delivery
