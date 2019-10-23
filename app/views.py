@@ -137,6 +137,13 @@ class MappingEncounterWebhook(APIView):
 
     def post(self, request, *args, **kwargs):
         data = request.data
+
+        import logging
+        logger = logging.getLogger('testlogger')
+        logger.info('mapping encounter webhook')
+        logger.info(data)
+
+
         print(data)
         return Response({
             'result': 'success'
