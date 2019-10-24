@@ -13,14 +13,19 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf.urls import url
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework_swagger.views import get_swagger_view
 
 from app.views import GirlView, GirlDetailsView, UserCreateView, DistrictView, \
     CountyView, SubCountyView, ParishView, VillageView, HealthFacilityView, MappingEncounterWebhook, FollowUpView, \
     DeliveriesView
 
+schema_view = get_swagger_view(title='GetIN Django API')
+
 urlpatterns = [
+    url(r'^$', schema_view),
     path('admin/', admin.site.urls),
     path(r'auth/', include('djoser.urls.base')),
     path(r'auth/', include('djoser.urls.authtoken')),

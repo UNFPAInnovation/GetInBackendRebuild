@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'django_filters',
     'djoser',
     'corsheaders',
-    'dry_rest_permissions'
+    'dry_rest_permissions',
+    'rest_framework_swagger',
 ]
 
 MIDDLEWARE = [
@@ -200,4 +201,8 @@ LOGGING = {
             'level': os.getenv('DJANGO_LOG_LEVEL', 'ERROR'),
         },
     },
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
 }
