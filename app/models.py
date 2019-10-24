@@ -100,8 +100,9 @@ class Girl(models.Model):
 
     @staticmethod
     def has_read_permission(request):
-        return request.user.type in [USER_TYPE_CHEW,
-                                     USER_TYPE_MIDWIFE] or request.user.is_staff
+        # return request.user.type in [USER_TYPE_CHEW,
+        #                              USER_TYPE_MIDWIFE] or request.user.is_staff
+        return True
 
     @staticmethod
     def has_object_write_permission(self, request):
