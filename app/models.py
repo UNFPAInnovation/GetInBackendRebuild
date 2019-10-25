@@ -1,8 +1,11 @@
+import datetime
 import uuid
 
+import pytz
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator, MaxValueValidator, MinValueValidator
 from django.db import models
+from django.utils import timezone
 
 from app.utils.constants import GENDER_FEMALE, GENDER_MALE, GENDER_NOT_SPECIFIED, PRIMARY_LEVEL, O_LEVEL, A_LEVEL, \
     TERTIARY_LEVEL, SINGLE, MARRIED, DIVORCED, HOME, HEALTH_FACILITY, USER_TYPE_DEVELOPER, USER_TYPE_DHO, \
@@ -45,25 +48,40 @@ USER_TYPE_CHOICES = (
 class District(models.Model):
     name = models.CharField(max_length=250)
 
+    def __str__(self):
+        return self.name
+
 
 class County(models.Model):
     name = models.CharField(max_length=250)
     district = models.ForeignKey(District, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
 
 
 class SubCounty(models.Model):
     name = models.CharField(max_length=250)
     county = models.ForeignKey(County, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return self.name
+
 
 class Parish(models.Model):
     name = models.CharField(max_length=250)
     sub_county = models.ForeignKey(SubCounty, on_delete=models.CASCADE, blank=True, null=True)
 
+    def __str__(self):
+        return self.name
+
 
 class Village(models.Model):
     name = models.CharField(max_length=250)
     parish = models.ForeignKey(Parish, on_delete=models.CASCADE, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Girl(models.Model):
@@ -77,8 +95,9 @@ class Girl(models.Model):
             message='Wrong phone number format',
         )
     ])
-    trimester = models.IntegerField(default=1, validators=[MaxValueValidator(4), MinValueValidator(1)])
-    next_of_kin_name = models.CharField(max_length=250)
+    trimester = models.IntegerField(default=1, validators=[MaxValueValidator(3), MinValueValidator(1)])
+    next_of_kin_last_name = models.CharField(max_length=250)
+    next_of_kin_first_name = models.CharField(max_length=250)
     next_of_kin_phone_number = models.CharField(max_length=12, validators=[
         RegexValidator(
             regex='^(07)[0-9]{8}$',
@@ -94,6 +113,9 @@ class Girl(models.Model):
     dob = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.last_name + " " + self.first_name
+
     @staticmethod
     def has_write_permission(request):
         return True
@@ -108,10 +130,29 @@ class Girl(models.Model):
     def has_object_write_permission(self, request):
         return True
 
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+
+        # calculate trimester of the girl based on the last menstruation date
+        # trimester 1 = 1-12 weeks, trimester 2 = 13-26 weeks, trimester 3 = 27-40
+
+        days_diff = (timezone.now().date() - self.last_menstruation_date).days
+        if days_diff >= 189:
+            self.trimester = 3
+        elif days_diff >= 91:
+            self.trimester = 2
+        else:
+            self.trimester = 1
+
+        super(Girl, self).save(force_insert, force_update, using, update_fields)
+
 
 class HealthFacility(models.Model):
     parish = models.ForeignKey(Parish, on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
 
     @staticmethod
     def has_write_permission(request):
@@ -181,6 +222,9 @@ class FollowUp(models.Model):
     follow_date = models.DateTimeField(auto_now_add=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.name
+
     @staticmethod
     def has_write_permission(request):
         return request.user.type in [USER_TYPE_CHEW, USER_TYPE_MIDWIFE] or request.user.is_staff or request.user.is_superuser
@@ -212,6 +256,9 @@ class Delivery(models.Model):
     delivery_date = models.DateTimeField(auto_now_add=True)
     delivery_location = models.CharField(choices=DELIVERY_LOCATION, default=HOME, max_length=250)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
 
     @staticmethod
     def has_write_permission(request):
