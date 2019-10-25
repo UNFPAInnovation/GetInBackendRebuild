@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.utils import timezone
 from dry_rest_permissions.generics import DRYPermissions
 from rest_framework.generics import ListCreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, \
     RetrieveDestroyAPIView, \
@@ -10,12 +11,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from app.models import Girl, District, County, SubCounty, Parish, Village, \
-    HealthFacility, FollowUp, Delivery
-from app.serializers import UserSerializer, User, UserGetSerializer, GirlSerializer, DistrictGetSerializer, CountyGetSerializer, \
+    HealthFacility, FollowUp, Delivery, MappingEncounter
+from app.serializers import UserSerializer, User, UserGetSerializer, GirlSerializer, DistrictGetSerializer, \
+    CountyGetSerializer, \
     SubCountyGetSerializer, ParishGetSerializer, VillageGetSerializer, HealthFacilityGetSerializer, \
     FollowUpGetSerializer, FollowUpPostSerializer, DeliveryPostSerializer, DeliveryGetSerializer
 
 import logging
+
 logger = logging.getLogger('testlogger')
 
 
@@ -147,12 +150,9 @@ class MappingEncounterWebhook(APIView):
             try:
                 print(data)
                 mapped_girl_object = data["GetInTest18"]
-                print(mapped_girl_object)
                 demographic1 = mapped_girl_object["GIRLSDEMOGRAPHIC"][0]
                 first_name = demographic1["FirstName"][0]
-                print(first_name)
                 last_name = demographic1["LastName"][0]
-                print(last_name)
 
                 year, month, day = [int(x) for x in demographic1["DOB"][0].split("-")]
                 dob = datetime(year, month, day)
@@ -176,31 +176,43 @@ class MappingEncounterWebhook(APIView):
                 education_level = observations3["education_level"][0]
 
                 year, month, day = [int(x) for x in observations3["MenstruationDate"][0].split("-")]
-                last_menstruation_date = datetime(year, month, day)
+                last_menstruation_date = timezone.datetime(year, month, day)
 
                 observations1 = mapped_girl_object["observations1"][0]
-                attended_anc_visit = observations1["AttendedANCVisit"][0]
-                bleeding = observations1["bleeding"][0]
-                fever = observations1["fever"][0]
+                # attended_anc_visit = observations1["AttendedANCVisit"][0] == "yes"
+                bleeding = observations1["bleeding"][0] == "yes"
+                fever = observations1["fever"][0] == "yes"
 
                 observations2 = mapped_girl_object["observations2"][0]
-                swollenfeet = observations2["swollenfeet"][0]
-                bleeding = observations2["blurred_vision"][0]
+                swollenfeet = observations2["swollenfeet"][0] == "yes"
+                blurred_vision = observations2["blurred_vision"][0] == "yes"
 
-                used_contraceptives = mapped_girl_object["UsedContraceptives"][0]
+                used_contraceptives = mapped_girl_object["UsedContraceptives"][0] == "yes"
                 contraceptive_method = mapped_girl_object["ContraceptiveMethod"][0]
                 voucher_card = mapped_girl_object["VoucherCard"][0]
 
-                Girl(first_name=first_name, last_name=last_name, village=village, phone_number=girls_phone_number,
-                     next_of_kin_first_name=next_of_kin_first_name, next_of_kin_last_name=next_of_kin_last_name,
-                     next_of_kin_phone_number=next_of_kin_number, education_level=education_level, dob=dob,
-                     marital_status=marital_status, last_menstruation_date=last_menstruation_date).save()
+                girl = Girl(first_name=first_name, last_name=last_name, village=village,
+                            phone_number=girls_phone_number,
+                            next_of_kin_first_name=next_of_kin_first_name, next_of_kin_last_name=next_of_kin_last_name,
+                            next_of_kin_phone_number=next_of_kin_number, education_level=education_level, dob=dob,
+                            marital_status=marital_status, last_menstruation_date=last_menstruation_date)
+                girl.save()
 
-                MappingEncounter()
+                # todo get vht or midwife user object
+                user = User.objects.first()
+
+                # todo get next_appointment
+                next_appointment = timezone.now() + timezone.timedelta(days=30)
+
+                mapping_encounter = MappingEncounter(girl=girl, user=user, next_appointment=next_appointment,
+                                                     no_family_planning_reason="",
+                                                     using_family_planning=used_contraceptives, bleeding_heavily=bleeding,
+                                                     swollen_feet=swollenfeet, family_planning_type=contraceptive_method,
+                                                     fever=fever, blurred_vision=blurred_vision)
+                mapping_encounter.save()
 
                 return Response({'result': 'success'}, 200)
             except Exception as e:
                 print(e)
                 return Response({'result': 'failure'}, 200)
         return Response({'result': 'failure'}, 400)
-

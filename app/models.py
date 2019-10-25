@@ -136,7 +136,7 @@ class Girl(models.Model):
         # calculate trimester of the girl based on the last menstruation date
         # trimester 1 = 1-12 weeks, trimester 2 = 13-26 weeks, trimester 3 = 27-40
 
-        days_diff = (timezone.now().date() - self.last_menstruation_date).days
+        days_diff = (timezone.now().replace(tzinfo=pytz.utc) - self.last_menstruation_date.replace(tzinfo=pytz.utc)).days
         if days_diff >= 189:
             self.trimester = 3
         elif days_diff >= 91:
@@ -241,14 +241,19 @@ class FollowUp(models.Model):
 class MappingEncounter(models.Model):
     girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    next_appointment = models.DateTimeField(auto_now_add=True)
+    next_appointment = models.DateTimeField()
     using_family_planning = models.BooleanField(default=True)
-    no_family_planning_reason = models.CharField(max_length=250)
-    family_planning_type = models.CharField(max_length=250)
+    no_family_planning_reason = models.CharField(max_length=250, blank=True, null=True)
+    family_planning_type = models.CharField(max_length=250, blank=True, null=True)
+    blurred_vision = models.BooleanField(default=False)
+    bleeding_heavily = models.BooleanField(default=False)
+    fever = models.BooleanField(default=False)
+    swollen_feet = models.BooleanField(default=False)
+    voucher_card = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.name
+        return self.girl.last_name + " " + self.girl.first_name
 
     @staticmethod
     def has_write_permission(request):
@@ -275,8 +280,8 @@ class Delivery(models.Model):
     baby_birth_date = models.DateTimeField(blank=True, null=True)
     mother_death_date = models.DateTimeField(blank=True, null=True)
     using_family_planning = models.BooleanField(default=True)
-    no_family_planning_reason = models.CharField(max_length=250)
-    family_planning_type = models.CharField(max_length=250)
+    no_family_planning_reason = models.CharField(max_length=250, blank=True, null=True)
+    family_planning_type = models.CharField(max_length=250, blank=True, null=True)
     health_facility = models.ForeignKey(HealthFacility, on_delete=models.CASCADE, blank=True, null=True)
     delivery_date = models.DateTimeField(auto_now_add=True)
     delivery_location = models.CharField(choices=DELIVERY_LOCATION, default=HOME, max_length=250)
