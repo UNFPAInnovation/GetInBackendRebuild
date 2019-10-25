@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 
 from django.utils import timezone
@@ -142,14 +143,21 @@ class MappingEncounterWebhook(APIView):
     """
 
     def post(self, request, *args, **kwargs):
-        data = request.data
-        logger.info('mapping encounter webhook')
-        logger.info(data)
+        print("post request called")
+        try:
+            json_result = request.data
+            print(json_result)
+            mapped_girl_object = json_result["GetInTest18"]
 
-        if data["GetInTest18"]:
+        except Exception as e:
+            print(e)
+            json_result = json.loads(request.data)
+            print(json_result)
+            mapped_girl_object = json_result["GetInTest18"]
+
+        if mapped_girl_object:
             try:
-                print(data)
-                mapped_girl_object = data["GetInTest18"]
+                print(mapped_girl_object)
                 demographic1 = mapped_girl_object["GIRLSDEMOGRAPHIC"][0]
                 first_name = demographic1["FirstName"][0]
                 last_name = demographic1["LastName"][0]
