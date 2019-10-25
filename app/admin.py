@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from app.models import User, District, County, SubCounty, Parish, Village, Girl, HealthFacility, FollowUp, Delivery
+from app.models import User, District, County, SubCounty, Parish, Village, Girl, HealthFacility, FollowUp, Delivery, \
+    MappingEncounter
 
 admin.site.register(User)
 admin.site.register(District)
@@ -12,3 +13,4 @@ admin.site.register(Girl)
 admin.site.register(HealthFacility)
 admin.site.register(FollowUp)
 admin.site.register(Delivery)
+admin.site.register(MappingEncounter)

@@ -196,6 +196,8 @@ class MappingEncounterWebhook(APIView):
                      next_of_kin_phone_number=next_of_kin_number, education_level=education_level, dob=dob,
                      marital_status=marital_status, last_menstruation_date=last_menstruation_date).save()
 
+                MappingEncounter()
+
                 return Response({'result': 'success'}, 200)
             except Exception as e:
                 print(e)
