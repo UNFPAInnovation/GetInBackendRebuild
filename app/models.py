@@ -223,7 +223,7 @@ class FollowUp(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.name
+        return self.girl.first_name + " " + self.girl.last_name
 
     @staticmethod
     def has_write_permission(request):
@@ -295,6 +295,7 @@ class Delivery(models.Model):
         # return request.user.type in [USER_TYPE_CHEW,
         #                              USER_TYPE_MIDWIFE] or request.user.is_staff or request.user.is_superuser
         return True
+
     @staticmethod
     def has_read_permission(request):
         return True

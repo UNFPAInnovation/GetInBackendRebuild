@@ -1,9 +1,6 @@
 import jwt
-from django.db.models import Q
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import EmailField, CharField
-from rest_framework.settings import api_settings
 from rest_framework_jwt.utils import jwt_payload_handler
 
 from GetInBackendRebuild.settings import SECRET_KEY

@@ -53,31 +53,6 @@ class GirlDetailsView(RetrieveUpdateDestroyAPIView):
     permission_classes = (DRYPermissions, IsAuthenticated)
 
 
-# class UserView(APIView):
-#     """
-#     Returns the system users
-#     """
-#
-#     def get(self, request, format=None, **kwargs):
-#         print("get request")
-#         dhos = DHO.objects.all()
-#         chews = CHEW.objects.all()
-#         midwives = Midwife.objects.all()
-#         ambulances = Ambulance.objects.all()
-#
-#         dho_serializer = DHOGetSerializer(dhos, many=True)
-#         chew_serializer = CHEWGetSerializer(chews, many=True)
-#         midwives_serializer = MidwifeGetSerializer(midwives, many=True)
-#         ambulance_serializer = AmbulanceGetSerializer(ambulances, many=True)
-#
-#         return Response({
-#             'dhos': dho_serializer.data,
-#             'chews': chew_serializer.data,
-#             'midwives': midwives_serializer.data,
-#             'ambulances': ambulance_serializer.data,
-#         })
-
-
 class DistrictView(ListCreateAPIView):
     queryset = District.objects.all()
     serializer_class = DistrictGetSerializer
@@ -139,7 +114,6 @@ class DeliveriesView(ListCreateAPIView):
 class MappingEncounterWebhook(APIView):
     """
     Receives the mapping encounter data and then creates the Girl model and MappingEncounter model
-
     """
 
     def post(self, request, *args, **kwargs):
@@ -218,9 +192,7 @@ class MappingEncounterWebhook(APIView):
                                                      swollen_feet=swollenfeet, family_planning_type=contraceptive_method,
                                                      fever=fever, blurred_vision=blurred_vision)
                 mapping_encounter.save()
-
                 return Response({'result': 'success'}, 200)
             except Exception as e:
                 print(e)
-                return Response({'result': 'failure'}, 200)
         return Response({'result': 'failure'}, 400)
