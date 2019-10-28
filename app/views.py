@@ -170,7 +170,10 @@ class MappingEncounterWebhook(APIView):
                 blurred_vision = observations2["blurred_vision"][0] == "yes"
 
                 used_contraceptives = mapped_girl_object["UsedContraceptives"][0] == "yes"
-                contraceptive_method = mapped_girl_object["ContraceptiveMethod"][0]
+                try:
+                    contraceptive_method = mapped_girl_object["ContraceptiveMethod"][0]
+                except Exception as e:
+                    print(e)
                 voucher_card = mapped_girl_object["VoucherCard"][0]
 
                 girl = Girl(first_name=first_name, last_name=last_name, village=village,
