@@ -312,6 +312,7 @@ class Delivery(models.Model):
 
 
 class Appointment(models.Model):
+    # Also known as ANC visit
     girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     next_appointment = models.DateTimeField(blank=True, null=True)

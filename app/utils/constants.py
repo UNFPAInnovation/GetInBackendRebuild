@@ -19,6 +19,7 @@ HEALTH_FACILITY = "health_facility"
 
 USER_TYPE_DEVELOPER = 1
 USER_TYPE_DHO = 2
+# Also known as VHT
 USER_TYPE_CHEW = 3
 USER_TYPE_MIDWIFE = 4
 USER_TYPE_AMBULANCE = 5
@@ -28,3 +29,7 @@ MISSED = "Missed"
 ATTENDED = "Attended"
 EXPECTED = "Expected"
 COMPLETED = "Completed"
+
+APPOINTMENT_FORM_NAME = "GetINTestAppointment2"
+MAP_GIRL_FORM_NAME = "GetInTest18"
+FOLLOW_UP_FORM_NAME = "GetINTestFollowup31"
