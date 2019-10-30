@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from app.utils.constants import GENDER_FEMALE, GENDER_MALE, GENDER_NOT_SPECIFIED, PRIMARY_LEVEL, O_LEVEL, A_LEVEL, \
     TERTIARY_LEVEL, SINGLE, MARRIED, DIVORCED, HOME, HEALTH_FACILITY, USER_TYPE_DEVELOPER, USER_TYPE_DHO, \
-    USER_TYPE_CHEW, USER_TYPE_MIDWIFE, USER_TYPE_AMBULANCE, USER_TYPE_MANAGER
+    USER_TYPE_CHEW, USER_TYPE_MIDWIFE, USER_TYPE_AMBULANCE, USER_TYPE_MANAGER, MISSED, ATTENDED, EXPECTED
 
 GENDER_CHOICES = (
     (GENDER_MALE, 'male'),
@@ -42,6 +42,13 @@ USER_TYPE_CHOICES = (
     (USER_TYPE_CHEW, 'CHEW'),
     (USER_TYPE_MIDWIFE, 'Midwife'),
     (USER_TYPE_AMBULANCE, 'Ambulance'),
+)
+
+APPOINTMENT = (
+    (MISSED, 'Missed'),
+    (ATTENDED, 'Missed'),
+    (EXPECTED, 'Expected'),
+    (MISSED, 'Missed'),
 )
 
 
@@ -309,6 +316,9 @@ class Appointment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     next_appointment = models.DateTimeField(blank=True, null=True)
     health_facility = models.ForeignKey(HealthFacility, on_delete=models.CASCADE, blank=True, null=True)
+    status = models.CharField(choices=APPOINTMENT, default=EXPECTED, max_length=250)
+    completed_visits = models.IntegerField(default=0, validators=[MaxValueValidator(3), MinValueValidator(0)])
+    pending_visits = models.IntegerField(default=3, validators=[MaxValueValidator(3), MinValueValidator(0)])
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
