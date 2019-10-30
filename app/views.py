@@ -205,12 +205,12 @@ class MappingEncounterWebhook(APIView):
                 follow_up_object = json_result["GetINTestFollowup31"]
                 print(follow_up_object)
                 observations1 = follow_up_object["observations1"][0]
-                bleeding = observations1["bleeding"][0]
-                fever = observations1["fever"][0]
+                bleeding = observations1["bleeding"][0] == "yes"
+                fever = observations1["fever"][0] == "yes"
 
                 observations2 = follow_up_object["observations2"][0]
-                swollenfeet = observations2["swollenfeet"][0]
-                blurred_vision = observations2["blurred_vision"][0]
+                swollenfeet = observations2["swollenfeet"][0] == "yes"
+                blurred_vision = observations2["blurred_vision"][0] == "yes"
 
                 follow_up_action_taken = follow_up_object["action_taken_by_health_person"][0]
 
@@ -240,7 +240,7 @@ class MappingEncounterWebhook(APIView):
                         mother_death_date = delivery_follow_up_group["mother_death_date"][0]
 
                     birth_place = delivery_follow_up_group["birth_place"][0]
-                    postnatal_care = delivery_follow_up_group["postnatal_received"][0]
+                    postnatal_care = delivery_follow_up_group["postnatal_received"][0] == "yes"
                     family_planning = delivery_follow_up_group["family_planning"][0] == "yes"
                     contraceptive_method = delivery_follow_up_group["ContraceptiveMethod"][0]
                     action_taken = delivery_follow_up_group["action_taken"][0]
@@ -248,9 +248,8 @@ class MappingEncounterWebhook(APIView):
                     delivery = Delivery(girl=girl, user=user, followup_reason=follow_up_reason,
                                         action_taken=action_taken, using_family_planning=family_planning,
                                         postnatal_care=postnatal_care, mother_alive=mother_alive, baby_alive=baby_alive,
-                                        blurred_vision=blurred_vision, fever=fever, swollen_feet=swollenfeet,
-                                        delivery_location=birth_place,
-                                        bleeding_heavily=bleeding)
+                                        delivery_location=birth_place)
+
                     if next_appointment:
                         delivery.action_taken = next_appointment
 
@@ -266,6 +265,10 @@ class MappingEncounterWebhook(APIView):
                         delivery.family_planning_type = contraceptive_method
 
                     delivery.save()
+
+                    follow_up = FollowUp(girl=girl, user=user, blurred_vision=blurred_vision, fever=fever,
+                                         swollen_feet=swollenfeet, followup_reason=follow_up_reason)
+                    follow_up.save()
                 return Response({'result': 'success'}, 200)
             except Exception as e:
                 print(e)

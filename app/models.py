@@ -212,14 +212,13 @@ class User(AbstractUser):
 class FollowUp(models.Model):
     girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    followup_reason = models.TextField()
-    action_taken = models.CharField(max_length=200)
+    followup_reason = models.TextField(blank=True, null=True)
+    action_taken = models.CharField(max_length=200, blank=True, null=True)
     blurred_vision = models.BooleanField(default=False)
     bleeding_heavily = models.BooleanField(default=False)
     fever = models.BooleanField(default=False)
     swollen_feet = models.BooleanField(default=False)
     next_appointment = models.DateTimeField(blank=True, null=True)
-    follow_date = models.DateTimeField(auto_now_add=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
