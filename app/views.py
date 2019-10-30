@@ -228,8 +228,8 @@ class MappingEncounterWebhook(APIView):
                     pass
                 elif follow_up_action_taken == "delivery":
                     delivery_follow_up_group = follow_up_object["delivery_followup_group"][0]
-                    mother_alive = delivery_follow_up_group["mother_delivery_outcomes"][0] == "yes"
-                    baby_alive = delivery_follow_up_group["baby_delivery_outcomes"][0] == "yes"
+                    mother_alive = delivery_follow_up_group["mother_delivery_outcomes"][0] == "mother_alive"
+                    baby_alive = delivery_follow_up_group["baby_delivery_outcomes"][0] == "baby_alive"
 
                     if baby_alive:
                         baby_birth_date = delivery_follow_up_group["baby_birth_date"][0]
