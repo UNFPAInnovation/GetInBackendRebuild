@@ -1,4 +1,3 @@
-import datetime
 import uuid
 
 import pytz
@@ -6,10 +5,11 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator, MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
+from rest_framework.exceptions import ValidationError
 
 from app.utils.constants import GENDER_FEMALE, GENDER_MALE, GENDER_NOT_SPECIFIED, PRIMARY_LEVEL, O_LEVEL, A_LEVEL, \
     TERTIARY_LEVEL, SINGLE, MARRIED, DIVORCED, HOME, HEALTH_FACILITY, USER_TYPE_DEVELOPER, USER_TYPE_DHO, \
-    USER_TYPE_CHEW, USER_TYPE_MIDWIFE, USER_TYPE_AMBULANCE, USER_TYPE_MANAGER, MISSED, ATTENDED, EXPECTED
+    USER_TYPE_CHEW, USER_TYPE_MIDWIFE, USER_TYPE_AMBULANCE, USER_TYPE_MANAGER, MISSED, ATTENDED, EXPECTED, COMPLETED
 
 GENDER_CHOICES = (
     (GENDER_MALE, 'male'),
@@ -46,9 +46,9 @@ USER_TYPE_CHOICES = (
 
 APPOINTMENT = (
     (MISSED, 'Missed'),
-    (ATTENDED, 'Missed'),
+    (ATTENDED, 'Attended'),
     (EXPECTED, 'Expected'),
-    (MISSED, 'Missed'),
+    (COMPLETED, 'Completed'),
 )
 
 
@@ -323,6 +323,21 @@ class Appointment(models.Model):
 
     def __str__(self):
         return self.girl.first_name + " " + self.girl.last_name
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        try:
+            last_appointment = Appointment.objects.filter(girl=self.girl).last()
+            print(last_appointment)
+            if last_appointment.pending_visits > 0:
+                # reduce the pending and completed visits once the girl has attend a health facility
+                self.pending_visits = last_appointment.pending_visits - 1
+                self.completed_visits = last_appointment.completed_visits + 1
+            else:
+                raise ValidationError("Girl cannot have any more appointments")
+        except Exception as e:
+            print(e)
+        super(Appointment, self).save(force_insert, force_update, using, update_fields)
 
     @staticmethod
     def has_write_permission(request):
