@@ -207,7 +207,7 @@ class MappingEncounterWebhook(APIView):
                 appointment = Appointment(girl=girl, user=user, next_appointment=next_appointment)
                 appointment.save()
 
-                appointment_encounter = AppointmentEncounter(risks_identified=risks_identified,
+                appointment_encounter = AppointmentEncounter(girl=girl, user=user, risks_identified=risks_identified,
                                                              needed_ambulance=needed_ambulance,
                                                              missed_anc_reason=missed_anc_reason,
                                                              action_taken=action_taken,

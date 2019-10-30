@@ -24,7 +24,6 @@ EDUCATION_CHOICES = (
     (TERTIARY_LEVEL, 'Tertiary Level'),
 )
 
-
 MARITAL_STATUS_CHOICES = {
     (SINGLE, 'Single'),
     (MARRIED, 'Married'),
@@ -143,7 +142,8 @@ class Girl(models.Model):
         # calculate trimester of the girl based on the last menstruation date
         # trimester 1 = 1-12 weeks, trimester 2 = 13-26 weeks, trimester 3 = 27-40
 
-        days_diff = (timezone.now().replace(tzinfo=pytz.utc) - self.last_menstruation_date.replace(tzinfo=pytz.utc)).days
+        days_diff = (timezone.now().replace(tzinfo=pytz.utc) - self.last_menstruation_date
+                     .replace(tzinfo=pytz.utc)).days
         if days_diff >= 189:
             self.trimester = 3
         elif days_diff >= 91:
@@ -233,7 +233,8 @@ class FollowUp(models.Model):
 
     @staticmethod
     def has_write_permission(request):
-        return request.user.type in [USER_TYPE_CHEW, USER_TYPE_MIDWIFE] or request.user.is_staff or request.user.is_superuser
+        return request.user.type in [USER_TYPE_CHEW, USER_TYPE_MIDWIFE] or request.user.is_staff \
+               or request.user.is_superuser
 
     @staticmethod
     def has_read_permission(request):
@@ -263,7 +264,8 @@ class MappingEncounter(models.Model):
 
     @staticmethod
     def has_write_permission(request):
-        return request.user.type in [USER_TYPE_CHEW, USER_TYPE_MIDWIFE] or request.user.is_staff or request.user.is_superuser
+        return request.user.type in [USER_TYPE_CHEW, USER_TYPE_MIDWIFE] or request.user.is_staff \
+               or request.user.is_superuser
 
     @staticmethod
     def has_read_permission(request):
@@ -289,7 +291,8 @@ class AppointmentEncounter(models.Model):
 
     @staticmethod
     def has_write_permission(request):
-        return request.user.type in [USER_TYPE_CHEW, USER_TYPE_MIDWIFE] or request.user.is_staff or request.user.is_superuser
+        return request.user.type in [USER_TYPE_CHEW, USER_TYPE_MIDWIFE] or request.user.is_staff \
+               or request.user.is_superuser
 
     @staticmethod
     def has_read_permission(request):
@@ -353,18 +356,26 @@ class Appointment(models.Model):
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
+        self.update_pending_and_completed_visits(force_insert, force_update, update_fields, using)
+
+    def update_pending_and_completed_visits(self, force_insert, force_update, update_fields, using):
+        """
+        Mapped girls must attend only three pending visits
+        When midwife creates an appointment(ANC visit) date,
+        the previous appointment is marked off as attended since the girl will have visited the health facility
+        """
         try:
             last_appointment = Appointment.objects.filter(girl=self.girl).last()
             print(last_appointment)
             if last_appointment.pending_visits > 0:
-                # reduce the pending and completed visits once the girl has attend a health facility
+                # reduce the pending and increment completed visits once the girl has attend a health facility
                 self.pending_visits = last_appointment.pending_visits - 1
                 self.completed_visits = last_appointment.completed_visits + 1
+                super(Appointment, self).save(force_insert, force_update, using, update_fields)
             else:
                 raise ValidationError("Girl cannot have any more appointments")
         except Exception as e:
             print(e)
-        super(Appointment, self).save(force_insert, force_update, using, update_fields)
 
     @staticmethod
     def has_write_permission(request):
