@@ -201,7 +201,7 @@ class MappingEncounterWebhook(APIView):
             except Exception as e:
                 print(e)
         elif "GetINTestFollowup31" in json_result:
-            try:
+            # try:
                 follow_up_object = json_result["GetINTestFollowup31"]
                 print(follow_up_object)
                 observations1 = follow_up_object["observations1"][0]
@@ -226,7 +226,7 @@ class MappingEncounterWebhook(APIView):
 
                 if follow_up_action_taken == "appointment":
                     follow_up_reason = "Set appointment"
-                    next_appointment = follow_up_object["schedule_appointment_group"][0]["schedule_appointment"]
+                    next_appointment = follow_up_object["schedule_appointment_group"][0]["schedule_appointment"][0]
                     appointment = Appointment(girl=girl, user=user, next_appointment=next_appointment)
                     appointment.save()
                 elif follow_up_action_taken == "delivery":
@@ -274,6 +274,6 @@ class MappingEncounterWebhook(APIView):
                                      swollen_feet=swollenfeet, followup_reason=follow_up_reason, bleeding_heavily=bleeding)
                 follow_up.save()
                 return Response({'result': 'success'}, 200)
-            except Exception as e:
-                print(e)
+            # except Exception as e:
+            #     print(e)
         return Response({'result': 'failure'}, 400)
