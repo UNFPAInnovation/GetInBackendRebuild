@@ -274,6 +274,32 @@ class MappingEncounter(models.Model):
         return True
 
 
+class AppointmentEncounter(models.Model):
+    girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    needed_ambulance = models.BooleanField(default=False)
+    missed_anc_before = models.BooleanField(default=False)
+    risks_identified = models.CharField(max_length=250, blank=True, null=True)
+    missed_anc_reason = models.CharField(max_length=250, blank=True, null=True)
+    action_taken = models.CharField(max_length=250, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.girl.last_name + " " + self.girl.first_name
+
+    @staticmethod
+    def has_write_permission(request):
+        return request.user.type in [USER_TYPE_CHEW, USER_TYPE_MIDWIFE] or request.user.is_staff or request.user.is_superuser
+
+    @staticmethod
+    def has_read_permission(request):
+        return True
+
+    @staticmethod
+    def has_object_write_permission(self, request):
+        return True
+
+
 class Delivery(models.Model):
     girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
