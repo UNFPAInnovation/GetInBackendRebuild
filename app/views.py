@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from app.models import Girl, District, County, SubCounty, Parish, Village, \
-    HealthFacility, FollowUp, Delivery, MappingEncounter
+    HealthFacility, FollowUp, Delivery, MappingEncounter, Appointment
 from app.serializers import UserSerializer, User, UserGetSerializer, GirlSerializer, DistrictGetSerializer, \
     CountyGetSerializer, \
     SubCountyGetSerializer, ParishGetSerializer, VillageGetSerializer, HealthFacilityGetSerializer, \
@@ -118,19 +118,19 @@ class MappingEncounterWebhook(APIView):
 
     def post(self, request, *args, **kwargs):
         print("post request called")
+        # todo replace with proper form ids
         try:
             json_result = request.data
             print(json_result)
-            mapped_girl_object = json_result["GetInTest18"]
 
+            if type(json_result) == str:
+                json_result = json.loads(request.data)
         except Exception as e:
             print(e)
-            json_result = json.loads(request.data)
-            print(json_result)
-            mapped_girl_object = json_result["GetInTest18"]
 
-        if mapped_girl_object:
+        if "GetInTest18" in json_result:
             try:
+                mapped_girl_object = json_result["GetInTest18"]
                 print(mapped_girl_object)
                 demographic1 = mapped_girl_object["GIRLSDEMOGRAPHIC"][0]
                 first_name = demographic1["FirstName"][0]
@@ -191,10 +191,81 @@ class MappingEncounterWebhook(APIView):
 
                 mapping_encounter = MappingEncounter(girl=girl, user=user, next_appointment=next_appointment,
                                                      no_family_planning_reason="",
-                                                     using_family_planning=used_contraceptives, bleeding_heavily=bleeding,
-                                                     swollen_feet=swollenfeet, family_planning_type=contraceptive_method,
+                                                     using_family_planning=used_contraceptives,
+                                                     bleeding_heavily=bleeding,
+                                                     swollen_feet=swollenfeet,
+                                                     family_planning_type=contraceptive_method,
                                                      fever=fever, blurred_vision=blurred_vision)
                 mapping_encounter.save()
+                return Response({'result': 'success'}, 200)
+            except Exception as e:
+                print(e)
+        elif "GetINTestFollowup31" in json_result:
+            try:
+                follow_up_object = json_result["GetINTestFollowup31"]
+                print(follow_up_object)
+                observations1 = follow_up_object["observations1"][0]
+                bleeding = observations1["bleeding"][0]
+                fever = observations1["fever"][0]
+
+                observations2 = follow_up_object["observations2"][0]
+                swollenfeet = observations2["swollenfeet"][0]
+                blurred_vision = observations2["blurred_vision"][0]
+
+                follow_up_action_taken = follow_up_object["action_taken_by_health_person"][0]
+
+                next_appointment = ""
+                baby_birth_date = ""
+                baby_death_date = ""
+                mother_death_date = ""
+
+                # todo get the following fields from the form
+                girl = Girl.objects.first()
+                user = User.objects.first()
+                follow_up_reason = "Reminder"
+
+                if follow_up_action_taken == "appointment":
+                    pass
+                elif follow_up_action_taken == "delivery":
+                    delivery_follow_up_group = follow_up_object["delivery_follow_up_group"][0]
+                    mother_alive = delivery_follow_up_group["mother_delivery_outcomes"][0] == "yes"
+                    baby_alive = delivery_follow_up_group["baby_delivery_outcomes"][0] == "yes"
+
+                    if baby_alive:
+                        baby_birth_date = delivery_follow_up_group["baby_birth_date"][0]
+                    else:
+                        baby_death_date = delivery_follow_up_group["baby_death_date"][0]
+
+                    if not mother_alive:
+                        mother_death_date = delivery_follow_up_group["mother_death_date"][0]
+
+                    birth_place = delivery_follow_up_group["birth_place"][0]
+                    postnatal_care = delivery_follow_up_group["postnatal_received"][0]
+                    family_planning = delivery_follow_up_group["family_planning"][0] == "yes"
+                    contraceptive_method = delivery_follow_up_group["ContraceptiveMethod"][0]
+                    action_taken = delivery_follow_up_group["action_taken"][0]
+
+                    delivery = Delivery(girl=girl, user=user, followup_reason=follow_up_reason,
+                                        action_taken=action_taken, using_family_planning=family_planning,
+                                        postnatal_care=postnatal_care, mother_alive=mother_alive, baby_alive=baby_alive,
+                                        blurred_vision=blurred_vision, fever=fever, swollen_feet=swollenfeet,
+                                        delivery_location=birth_place,
+                                        bleeding_heavily=bleeding)
+                    if next_appointment:
+                        delivery.action_taken = next_appointment
+
+                    if baby_birth_date:
+                        delivery.baby_birth_date = baby_birth_date
+                    else:
+                        delivery.baby_death_date = baby_death_date
+
+                    if mother_death_date:
+                        delivery.mother_death_date = mother_death_date
+
+                    if contraceptive_method:
+                        delivery.family_planning_type = contraceptive_method
+
+                    delivery.save()
                 return Response({'result': 'success'}, 200)
             except Exception as e:
                 print(e)

@@ -218,7 +218,7 @@ class FollowUp(models.Model):
     bleeding_heavily = models.BooleanField(default=False)
     fever = models.BooleanField(default=False)
     swollen_feet = models.BooleanField(default=False)
-    next_appointment = models.DateTimeField(auto_now_add=True)
+    next_appointment = models.DateTimeField(blank=True, null=True)
     follow_date = models.DateTimeField(auto_now_add=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -273,9 +273,9 @@ class Delivery(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     followup_reason = models.CharField(max_length=200)
     action_taken = models.CharField(max_length=200)
-    received_postnatal_care = models.BooleanField(default=True)
-    is_mother_alive = models.BooleanField(default=True)
-    is_baby_alive = models.BooleanField(default=True)
+    postnatal_care = models.BooleanField(default=True)
+    mother_alive = models.BooleanField(default=True)
+    baby_alive = models.BooleanField(default=True)
     baby_death_date = models.DateTimeField(blank=True, null=True)
     baby_birth_date = models.DateTimeField(blank=True, null=True)
     mother_death_date = models.DateTimeField(blank=True, null=True)
@@ -288,7 +288,32 @@ class Delivery(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.name
+        return self.girl.first_name + " " + self.girl.last_name
+
+    @staticmethod
+    def has_write_permission(request):
+        # return request.user.type in [USER_TYPE_CHEW,
+        #                              USER_TYPE_MIDWIFE] or request.user.is_staff or request.user.is_superuser
+        return True
+
+    @staticmethod
+    def has_read_permission(request):
+        return True
+
+    @staticmethod
+    def has_object_write_permission(self, request):
+        return True
+
+
+class Appointment(models.Model):
+    girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    next_appointment = models.DateTimeField(blank=True, null=True)
+    health_facility = models.ForeignKey(HealthFacility, on_delete=models.CASCADE, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.girl.first_name + " " + self.girl.last_name
 
     @staticmethod
     def has_write_permission(request):
