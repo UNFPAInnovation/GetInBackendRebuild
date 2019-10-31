@@ -383,6 +383,7 @@ class Appointment(models.Model):
                 raise ValidationError("Girl cannot have any more appointments")
         except Exception as e:
             print(e)
+        super(Appointment, self).save(force_insert, force_update, using, update_fields)
 
     @staticmethod
     def has_write_permission(request):
