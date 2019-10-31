@@ -38,9 +38,7 @@ class MappingEncounterWebhook(APIView):
                 demographic1 = mapped_girl_object["GIRLSDEMOGRAPHIC"][0]
                 first_name = demographic1["FirstName"][0]
                 last_name = demographic1["LastName"][0]
-
-                year, month, day = [int(x) for x in demographic1["DOB"][0].split("-")]
-                dob = datetime(year, month, day)
+                dob = demographic1["DOB"][0]
 
                 demographic2 = mapped_girl_object["GIRLSDEMOGRAPHIC2"][0]
                 girls_phone_number = demographic2["GirlsPhoneNumber"][0]
@@ -59,9 +57,7 @@ class MappingEncounterWebhook(APIView):
                 observations3 = mapped_girl_object["observations3"][0]
                 marital_status = observations3["marital_status"][0]
                 education_level = observations3["education_level"][0]
-
-                year, month, day = [int(x) for x in observations3["MenstruationDate"][0].split("-")]
-                last_menstruation_date = timezone.datetime(year, month, day)
+                last_menstruation_date = observations3["MenstruationDate"][0]
 
                 observations1 = mapped_girl_object["observations1"][0]
                 # attended_anc_visit = observations1["AttendedANCVisit"][0] == "yes"
@@ -213,6 +209,7 @@ class MappingEncounterWebhook(APIView):
                                                              action_taken=action_taken,
                                                              missed_anc_before=missed_anc_before)
                 appointment_encounter.save()
+                return Response({'result': 'success'}, 200)
             except Exception:
                 print(traceback.print_exc())
         return Response({'result': 'failure'}, 400)

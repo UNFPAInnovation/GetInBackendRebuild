@@ -141,9 +141,16 @@ class Girl(models.Model):
 
         # calculate trimester of the girl based on the last menstruation date
         # trimester 1 = 1-12 weeks, trimester 2 = 13-26 weeks, trimester 3 = 27-40
+        year, month, day = [int(x) for x in self.last_menstruation_date.split("-")]
+        self.last_menstruation_date = timezone.datetime(year, month, day)
 
-        days_diff = (timezone.now().replace(tzinfo=pytz.utc) - self.last_menstruation_date
-                     .replace(tzinfo=pytz.utc)).days
+        try:
+            days_diff = (timezone.now().replace(tzinfo=pytz.utc) - self.last_menstruation_date
+                         .replace(tzinfo=pytz.utc)).days
+        except TypeError as e:
+            print(e)
+            days_diff = (timezone.now() - self.last_menstruation_date).days
+
         if days_diff >= 189:
             self.trimester = 3
         elif days_diff >= 91:
