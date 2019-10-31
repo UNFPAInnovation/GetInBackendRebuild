@@ -3,6 +3,7 @@ import traceback
 from datetime import datetime
 
 from django.utils import timezone
+from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -22,6 +23,8 @@ class MappingEncounterWebhook(APIView):
     Receives the mapping encounter data and then creates the Girl model and MappingEncounter model
     """
 
+    parser_classes = [JSONParser]
+
     def post(self, request, *args, **kwargs):
         print("post request called")
         # todo replace with proper form ids
@@ -29,7 +32,9 @@ class MappingEncounterWebhook(APIView):
         print(json_result)
 
         if type(json_result) != dict:
-            json_result = json.loads(request.data)
+            print('not dict')
+            json_result = str(json_result).replace('\'', "\"")
+            json_result = json.loads(json_result)
 
         if MAP_GIRL_FORM_NAME in json_result:
             try:
