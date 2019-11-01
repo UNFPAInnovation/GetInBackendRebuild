@@ -360,7 +360,7 @@ class Appointment(models.Model):
     health_facility = models.ForeignKey(HealthFacility, on_delete=models.CASCADE, blank=True, null=True)
     status = models.CharField(choices=APPOINTMENT, default=EXPECTED, max_length=250)
     completed_visits = models.IntegerField(default=0, validators=[MaxValueValidator(3), MinValueValidator(0)])
-    pending_visits = models.IntegerField(default=3, validators=[MaxValueValidator(3), MinValueValidator(0)])
+    pending_visits = models.IntegerField(default=2, validators=[MaxValueValidator(3), MinValueValidator(0)])
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
