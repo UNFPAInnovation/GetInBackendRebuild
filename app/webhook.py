@@ -143,8 +143,8 @@ class MappingEncounterWebhook(APIView):
                 mother_death_date = ""
 
                 # todo get the following fields from the form
-                girl = Girl.objects.first()
-                user = User.objects.first()
+                girl = Girl.objects.get(id=girl_id)
+                user = User.objects.get(id=user_id)
                 follow_up_reason = "Reminder"
 
                 if follow_up_action_taken == "appointment":
