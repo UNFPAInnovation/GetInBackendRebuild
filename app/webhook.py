@@ -36,6 +36,19 @@ class MappingEncounterWebhook(APIView):
             json_result = str(json_result).replace('\'', "\"")
             json_result = json.loads(json_result)
 
+        form_meta_data = json_result["form_meta_data"]
+        print(form_meta_data)
+        form_meta_data = json.loads(form_meta_data)
+        try:
+            girl_id = form_meta_data["GIRL_ID"]
+        except Exception as e:
+            print(e)
+
+        try:
+            user_id = form_meta_data["USER_ID"]
+        except Exception as e:
+            print(e)
+
         if MAP_GIRL_FORM_NAME in json_result:
             try:
                 mapped_girl_object = json_result[MAP_GIRL_FORM_NAME]
@@ -74,9 +87,10 @@ class MappingEncounterWebhook(APIView):
                 blurred_vision = observations2["blurred_vision"][0] == "yes"
 
                 used_contraceptives = mapped_girl_object["UsedContraceptives"][0] == "yes"
+                contraceptive_method = ""
                 try:
                     contraceptive_method = mapped_girl_object["ContraceptiveMethod"][0]
-                except Exception as e:
+                except TypeError or IndexError as e:
                     print(e)
                 voucher_card = mapped_girl_object["VoucherCard"][0]
 
@@ -88,7 +102,8 @@ class MappingEncounterWebhook(APIView):
                 girl.save()
 
                 # todo get vht or midwife user object
-                user = User.objects.first()
+                user = User.objects.get(id=user_id)
+                print(user)
 
                 # todo get next_appointment
                 next_appointment = timezone.now() + timezone.timedelta(days=30)
@@ -184,6 +199,7 @@ class MappingEncounterWebhook(APIView):
         elif APPOINTMENT_FORM_NAME in json_result:
             try:
                 appointment_object = json_result[APPOINTMENT_FORM_NAME]
+                form_meta_data = json_result["form_meta_data"]
                 risk_assessment_group = appointment_object["risk_assessment_group"][0]
                 risks_identified = risk_assessment_group["risks_identified"][0]
                 needed_ambulance = risk_assessment_group["needed_ambulance"][0] == "yes"
