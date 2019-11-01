@@ -94,21 +94,22 @@ class MappingEncounterWebhook(APIView):
                     print(e)
                 voucher_card = mapped_girl_object["VoucherCard"][0]
 
+                user = User.objects.get(id=user_id)
+                print(user)
+
                 girl = Girl(first_name=first_name, last_name=last_name, village=village,
-                            phone_number=girls_phone_number,
+                            phone_number=girls_phone_number, user=user,
                             next_of_kin_first_name=next_of_kin_first_name, next_of_kin_last_name=next_of_kin_last_name,
                             next_of_kin_phone_number=next_of_kin_number, education_level=education_level, dob=dob,
                             marital_status=marital_status, last_menstruation_date=last_menstruation_date)
                 girl.save()
 
-                # todo get vht or midwife user object
-                user = User.objects.get(id=user_id)
-                print(user)
+
 
                 # todo get next_appointment
                 next_appointment = timezone.now() + timezone.timedelta(days=30)
 
-                mapping_encounter = MappingEncounter(girl=girl, user=user, next_appointment=next_appointment,
+                mapping_encounter = MappingEncounter(girl=girl, user=user,
                                                      no_family_planning_reason="",
                                                      using_family_planning=used_contraceptives,
                                                      bleeding_heavily=bleeding,
@@ -116,6 +117,9 @@ class MappingEncounterWebhook(APIView):
                                                      family_planning_type=contraceptive_method,
                                                      fever=fever, blurred_vision=blurred_vision)
                 mapping_encounter.save()
+
+                appointment = Appointment(girl=girl, user=user, next_appointment=next_appointment)
+                appointment.save()
                 return Response({'result': 'success'}, 200)
             except Exception:
                 print(traceback.print_exc())

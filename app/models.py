@@ -261,7 +261,6 @@ class FollowUp(models.Model):
 class MappingEncounter(models.Model):
     girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    next_appointment = models.DateTimeField()
     using_family_planning = models.BooleanField(default=True)
     no_family_planning_reason = models.CharField(max_length=250, blank=True, null=True)
     family_planning_type = models.CharField(max_length=250, blank=True, null=True)
