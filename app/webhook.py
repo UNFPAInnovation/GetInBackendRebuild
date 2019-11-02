@@ -47,10 +47,12 @@ class MappingEncounterWebhook(APIView):
 
         try:
             user_id = form_meta_data["USER_ID"]
+            print('user id')
+            print(user_id)
         except Exception as e:
             print(e)
 
-        if MAP_GIRL_FORM_NAME in json_result:
+        if MAP_GIRL_FORM_NAME in json_result or MAP_GIRL_BUNDIBUGYO_FORM_NAME in json_result:
             return self.process_mapping_encounter(json_result, user_id)
         elif FOLLOW_UP_FORM_NAME in json_result:
             return self.process_follow_up_and_delivery_encounter(girl_id, json_result, user_id)
@@ -63,14 +65,20 @@ class MappingEncounterWebhook(APIView):
         try:
             try:
                 mapped_girl_object = json_result.get(MAP_GIRL_FORM_NAME)
+                print(mapped_girl_object)
+                print(type(mapped_girl_object))
+
                 if mapped_girl_object is None:
                     mapped_girl_object = json_result.get(MAP_GIRL_BUNDIBUGYO_FORM_NAME)
                 print(mapped_girl_object)
             except KeyError as e:
+                print("cant get form value")
                 print(traceback.print_exc())
 
             contraceptive_method = ""
             voucher_number = 0
+            used_contraceptives = False
+            no_family_planning_reason = ""
 
             demographic1 = mapped_girl_object["GirlDemographic"][0]
             first_name = demographic1["FirstName"][0]
@@ -107,7 +115,11 @@ class MappingEncounterWebhook(APIView):
             try:
                 contraceptive_group = mapped_girl_object["ContraceptiveGroup"][0]
                 used_contraceptives = contraceptive_group["UsedContraceptives"][0] == "yes"
-                contraceptive_method = contraceptive_group["ContraceptiveMethod"][0]
+                if used_contraceptives:
+                    contraceptive_group = mapped_girl_object["ContraceptiveGroup"][0]
+                    contraceptive_method = contraceptive_group["ContraceptiveMethod"][0]
+                else:
+                    no_family_planning_reason = mapped_girl_object["ReasonNoContraceptives"][0]
             except TypeError or IndexError as e:
                 print(e)
 
@@ -119,6 +131,11 @@ class MappingEncounterWebhook(APIView):
             except TypeError or IndexError as e:
                 print(e)
 
+            anc_group = mapped_girl_object["ANCAppointmentGroup"][0]
+            next_appointment = anc_group["ANCDate"][0]
+
+            print("save form data")
+
             user = User.objects.get(id=user_id)
             print(user)
 
@@ -129,11 +146,8 @@ class MappingEncounterWebhook(APIView):
                         marital_status=marital_status, last_menstruation_date=last_menstruation_date)
             girl.save()
 
-            # todo get next_appointment
-            next_appointment = timezone.now() + timezone.timedelta(days=30)
-
             mapping_encounter = MappingEncounter(girl=girl, user=user,
-                                                 no_family_planning_reason="",
+                                                 no_family_planning_reason=no_family_planning_reason,
                                                  using_family_planning=used_contraceptives,
                                                  bleeding_heavily=bleeding,
                                                  swollen_feet=swollenfeet,
