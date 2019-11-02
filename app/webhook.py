@@ -13,7 +13,8 @@ from app.serializers import User
 
 import logging
 
-from app.utils.constants import MAP_GIRL_FORM_NAME, FOLLOW_UP_FORM_NAME, APPOINTMENT_FORM_NAME
+from app.utils.constants import MAP_GIRL_FORM_NAME, FOLLOW_UP_FORM_NAME, APPOINTMENT_FORM_NAME, \
+    MAP_GIRL_BUNDIBUGYO_FORM_NAME
 
 logger = logging.getLogger('testlogger')
 
@@ -58,49 +59,65 @@ class MappingEncounterWebhook(APIView):
         return Response({'result': 'failure'}, 400)
 
     def process_mapping_encounter(self, json_result, user_id):
+        print("process mapping encounter")
         try:
-            mapped_girl_object = json_result[MAP_GIRL_FORM_NAME]
-            print(mapped_girl_object)
-            demographic1 = mapped_girl_object["GIRLSDEMOGRAPHIC"][0]
+            try:
+                mapped_girl_object = json_result.get(MAP_GIRL_FORM_NAME)
+                if mapped_girl_object is None:
+                    mapped_girl_object = json_result.get(MAP_GIRL_BUNDIBUGYO_FORM_NAME)
+                print(mapped_girl_object)
+            except KeyError as e:
+                print(traceback.print_exc())
+
+            contraceptive_method = ""
+            voucher_number = 0
+
+            demographic1 = mapped_girl_object["GirlDemographic"][0]
             first_name = demographic1["FirstName"][0]
             last_name = demographic1["LastName"][0]
+            girls_phone_number = demographic1["GirlsPhoneNumber"][0]
             dob = demographic1["DOB"][0]
 
-            demographic2 = mapped_girl_object["GIRLSDEMOGRAPHIC2"][0]
-            girls_phone_number = demographic2["GirlsPhoneNumber"][0]
+            demographic2 = mapped_girl_object["GirlDemographic2"][0]
             next_of_kin_number = demographic2["NextOfKinNumber"][0]
             next_of_kin_first_name = demographic2["NextOfKinFirstName"][0]
             next_of_kin_last_name = demographic2["NextOfKinLastName"][0]
 
-            girl_location = mapped_girl_object["GIRLLOCATION"][0]
-            district = District.objects.filter(name__icontains=girl_location["district"][0])
+            girl_location = mapped_girl_object["GirlLocation"][0]
             county = County.objects.filter(name__icontains=girl_location["county"][0])
             subcounty = SubCounty.objects.filter(name__icontains=girl_location["subcounty"][0])
             parish = Parish.objects.filter(name__icontains=girl_location["parish"][0])
 
             village = Village.objects.get(name__icontains=girl_location["village"][0])
 
-            observations3 = mapped_girl_object["observations3"][0]
+            observations3 = mapped_girl_object["Observations3"][0]
             marital_status = observations3["marital_status"][0]
             education_level = observations3["education_level"][0]
             last_menstruation_date = observations3["MenstruationDate"][0]
 
-            observations1 = mapped_girl_object["observations1"][0]
-            # attended_anc_visit = observations1["AttendedANCVisit"][0] == "yes"
+            observations1 = mapped_girl_object["Observations1"][0]
+            attended_anc_visit = observations1["AttendedANCVisit"][0] == "yes"
             bleeding = observations1["bleeding"][0] == "yes"
             fever = observations1["fever"][0] == "yes"
 
-            observations2 = mapped_girl_object["observations2"][0]
+            observations2 = mapped_girl_object["Observations2"][0]
             swollenfeet = observations2["swollenfeet"][0] == "yes"
             blurred_vision = observations2["blurred_vision"][0] == "yes"
 
-            used_contraceptives = mapped_girl_object["UsedContraceptives"][0] == "yes"
-            contraceptive_method = ""
             try:
-                contraceptive_method = mapped_girl_object["ContraceptiveMethod"][0]
+                contraceptive_group = mapped_girl_object["ContraceptiveGroup"][0]
+                used_contraceptives = contraceptive_group["UsedContraceptives"][0] == "yes"
+                contraceptive_method = contraceptive_group["ContraceptiveMethod"][0]
             except TypeError or IndexError as e:
                 print(e)
-            voucher_card = mapped_girl_object["VoucherCard"][0]
+
+            try:
+                voucher_card_group = mapped_girl_object["VouncherCardGroup"][0]
+                has_voucher_card = voucher_card_group["VoucherCard"][0] == "yes"
+                if has_voucher_card:
+                    voucher_number = int(voucher_card_group["VoucherNumber"][0])
+            except TypeError or IndexError as e:
+                print(e)
 
             user = User.objects.get(id=user_id)
             print(user)
@@ -121,6 +138,8 @@ class MappingEncounterWebhook(APIView):
                                                  bleeding_heavily=bleeding,
                                                  swollen_feet=swollenfeet,
                                                  family_planning_type=contraceptive_method,
+                                                 attended_anc_visit=attended_anc_visit,
+                                                 voucher_number=voucher_number,
                                                  fever=fever, blurred_vision=blurred_vision)
             mapping_encounter.save()
 

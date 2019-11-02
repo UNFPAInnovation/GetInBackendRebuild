@@ -269,6 +269,8 @@ class MappingEncounter(models.Model):
     fever = models.BooleanField(default=False)
     swollen_feet = models.BooleanField(default=False)
     voucher_card = models.CharField(max_length=250, blank=True, null=True)
+    attended_anc_visit = models.BooleanField(default=False)
+    voucher_number = models.IntegerField(default=0, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

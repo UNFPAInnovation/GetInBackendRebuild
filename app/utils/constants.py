@@ -32,4 +32,6 @@ COMPLETED = "Completed"
 
 APPOINTMENT_FORM_NAME = "GetINTestAppointment2"
 MAP_GIRL_FORM_NAME = "GetInTest18"
+# each district has its own form.
+MAP_GIRL_BUNDIBUGYO_FORM_NAME = "GetInMapGirlBundibugyo"
 FOLLOW_UP_FORM_NAME = "GetINTestFollowup31"
