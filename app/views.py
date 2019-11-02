@@ -4,6 +4,7 @@ from rest_framework.permissions import *
 
 from app.models import Girl, District, County, SubCounty, Parish, Village, \
     HealthFacility, FollowUp, Delivery
+from app.permissions import IsPostOrIsAuthenticated
 from app.serializers import UserSerializer, User, GirlSerializer, DistrictGetSerializer, \
     CountyGetSerializer, SubCountyGetSerializer, ParishGetSerializer, VillageGetSerializer, HealthFacilityGetSerializer, \
     FollowUpGetSerializer, FollowUpPostSerializer, DeliveryPostSerializer, DeliveryGetSerializer
@@ -17,9 +18,9 @@ class UserCreateView(ListCreateAPIView):
     """
     Allows creation of user.
     """
-    permission_classes = [AllowAny]
+    permission_classes = (IsPostOrIsAuthenticated,)
     serializer_class = UserSerializer
-    queryset = User
+    queryset = User.objects.all()
 
 
 class GirlCreateView(CreateAPIView):
@@ -28,7 +29,7 @@ class GirlCreateView(CreateAPIView):
     """
     permission_classes = [IsAuthenticated, DRYPermissions]
     serializer_class = GirlSerializer
-    queryset = Girl
+    queryset = Girl.objects.all()
 
 
 class GirlView(ListCreateAPIView):

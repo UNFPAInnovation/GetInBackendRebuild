@@ -2,7 +2,7 @@ import datetime
 import uuid
 
 import pytz
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Permission
 from django.core.validators import RegexValidator, MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
@@ -113,25 +113,24 @@ class HealthFacility(models.Model):
 
 class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    type = models.IntegerField(choices=USER_TYPE_CHOICES, default=USER_TYPE_DEVELOPER)
+    role = models.IntegerField(choices=USER_TYPE_CHOICES, default=USER_TYPE_DEVELOPER,
+                               help_text='1 - Developer, 2 - DHO, 3 - CHEW, 4 - Midwife, 5 - Ambulance, 6 - Manager')
     phone = models.CharField(max_length=12, validators=[
         RegexValidator(
             regex='^(07)[0-9]{8}$',
             message='Wrong phone number format',
         )
-    ])
+    ], unique=True)
     gender = models.IntegerField(choices=GENDER_CHOICES, default=GENDER_NOT_SPECIFIED,
                                  help_text='0 - Male, 1 - Female, 2 - Not Specified')
-    created_at = models.DateTimeField(auto_now_add=True)
-    number_place = models.CharField(max_length=50)
-    village = models.ForeignKey(Village, on_delete=models.CASCADE, blank=True, null=True)
-    district = models.ForeignKey(District, on_delete=models.CASCADE, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     number_plate = models.CharField(max_length=50, blank=True, null=True)
+    village = models.ForeignKey(Village, on_delete=models.CASCADE, blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        if self.type in [USER_TYPE_DEVELOPER, USER_TYPE_DHO]:
+        if self.role in [USER_TYPE_DEVELOPER, USER_TYPE_DHO]:
             self.is_staff = True
-        if self.type in [USER_TYPE_DEVELOPER, USER_TYPE_MANAGER]:
+        if self.role in [USER_TYPE_DEVELOPER, USER_TYPE_MANAGER]:
             self.is_superuser = True
         super(User, self).save(*args, **kwargs)
 
@@ -140,7 +139,7 @@ class User(AbstractUser):
 
     @staticmethod
     def has_write_permission(request):
-        # return request.user.type in [USER_TYPE_CHEW,
+        # return request.user.role in [USER_TYPE_CHEW,
         #                              USER_TYPE_MIDWIFE] or request.user.is_staff or request.user.is_superuser
         return True
 
@@ -192,7 +191,7 @@ class Girl(models.Model):
 
     @staticmethod
     def has_read_permission(request):
-        # return request.user.type in [USER_TYPE_CHEW,
+        # return request.user.role in [USER_TYPE_CHEW,
         #                              USER_TYPE_MIDWIFE] or request.user.is_staff
         return True
 
@@ -246,7 +245,7 @@ class FollowUp(models.Model):
 
     @staticmethod
     def has_write_permission(request):
-        return request.user.type in [USER_TYPE_CHEW, USER_TYPE_MIDWIFE] or request.user.is_staff \
+        return request.user.role in [USER_TYPE_CHEW, USER_TYPE_MIDWIFE] or request.user.is_staff \
                or request.user.is_superuser
 
     @staticmethod
@@ -278,7 +277,7 @@ class MappingEncounter(models.Model):
 
     @staticmethod
     def has_write_permission(request):
-        return request.user.type in [USER_TYPE_CHEW, USER_TYPE_MIDWIFE] or request.user.is_staff \
+        return request.user.role in [USER_TYPE_CHEW, USER_TYPE_MIDWIFE] or request.user.is_staff \
                or request.user.is_superuser
 
     @staticmethod
@@ -305,7 +304,7 @@ class AppointmentEncounter(models.Model):
 
     @staticmethod
     def has_write_permission(request):
-        return request.user.type in [USER_TYPE_CHEW, USER_TYPE_MIDWIFE] or request.user.is_staff \
+        return request.user.role in [USER_TYPE_CHEW, USER_TYPE_MIDWIFE] or request.user.is_staff \
                or request.user.is_superuser
 
     @staticmethod
@@ -341,7 +340,7 @@ class Delivery(models.Model):
 
     @staticmethod
     def has_write_permission(request):
-        # return request.user.type in [USER_TYPE_CHEW,
+        # return request.user.role in [USER_TYPE_CHEW,
         #                              USER_TYPE_MIDWIFE] or request.user.is_staff or request.user.is_superuser
         return True
 
@@ -394,7 +393,7 @@ class Appointment(models.Model):
 
     @staticmethod
     def has_write_permission(request):
-        # return request.user.type in [USER_TYPE_CHEW,
+        # return request.user.role in [USER_TYPE_CHEW,
         #                              USER_TYPE_MIDWIFE] or request.user.is_staff or request.user.is_superuser
         return True
 

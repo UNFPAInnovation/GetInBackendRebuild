@@ -1,4 +1,5 @@
 import jwt
+from django.contrib.auth.models import Permission
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework_jwt.utils import jwt_payload_handler
@@ -11,7 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'id', 'first_name', 'last_name', 'phone', 'created_at',)
+            'first_name', 'last_name', 'username', 'email', 'phone', 'password', 'gender', 'village', 'number_plate', 'role', 'created_at', 'user_permissions')
         # extra_kwargs = {"password": {"write_only": True}}
 
     def validate_phone(self, value):
@@ -48,7 +49,7 @@ class UserPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'first_name', 'last_name', 'username', 'email', 'phone', 'password', 'gender')
+            'first_name', 'last_name', 'username', 'email', 'phone', 'password', 'gender', 'village', 'number_plate', 'role')
 
     def create(self, validated_data):
         """
@@ -65,7 +66,7 @@ class UserGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'id', 'first_name', 'last_name', 'email', 'gender')
+            'id', 'first_name', 'last_name', 'email', 'gender', 'village', 'number_plate', 'role', 'phone')
 
 
 class DistrictGetSerializer(serializers.ModelSerializer):

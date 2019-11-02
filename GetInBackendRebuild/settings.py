@@ -130,6 +130,7 @@ REST_FRAMEWORK = {
         # 'rest_framework.permissions.IsAuthenticated',
         # debugging only. to allow access to the api without tokens
         'rest_framework.permissions.AllowAny',
+        'app.permissions.IsPostOrIsAuthenticated',
         # 'rest_framework.permissions.IsAdminUser',
     ),
     'DEFAULT_PAGINATION_CLASS':
