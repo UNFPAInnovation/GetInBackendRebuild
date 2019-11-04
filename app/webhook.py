@@ -42,15 +42,15 @@ class MappingEncounterWebhook(APIView):
         form_meta_data = json.loads(form_meta_data)
         try:
             girl_id = form_meta_data["GIRL_ID"]
-        except Exception as e:
-            print(e)
+        except KeyError:
+            print(traceback.print_exc())
 
         try:
             user_id = form_meta_data["USER_ID"]
             print('user id')
             print(user_id)
-        except Exception as e:
-            print(e)
+        except KeyError:
+            print(traceback.print_exc())
 
         if MAP_GIRL_FORM_NAME in json_result or MAP_GIRL_BUNDIBUGYO_FORM_NAME in json_result:
             return self.process_mapping_encounter(json_result, user_id)
@@ -71,8 +71,7 @@ class MappingEncounterWebhook(APIView):
                 if mapped_girl_object is None:
                     mapped_girl_object = json_result.get(MAP_GIRL_BUNDIBUGYO_FORM_NAME)
                 print(mapped_girl_object)
-            except KeyError as e:
-                print("cant get form value")
+            except KeyError:
                 print(traceback.print_exc())
 
             contraceptive_method = ""
@@ -120,7 +119,7 @@ class MappingEncounterWebhook(APIView):
                     contraceptive_method = contraceptive_group["ContraceptiveMethod"][0]
                 else:
                     no_family_planning_reason = mapped_girl_object["ReasonNoContraceptives"][0]
-            except TypeError or IndexError as e:
+            except KeyError or IndexError as e:
                 print(e)
 
             try:
@@ -128,8 +127,8 @@ class MappingEncounterWebhook(APIView):
                 has_voucher_card = voucher_card_group["VoucherCard"][0] == "yes"
                 if has_voucher_card:
                     voucher_number = int(voucher_card_group["VoucherNumber"][0])
-            except TypeError or IndexError as e:
-                print(e)
+            except KeyError or IndexError:
+                print(traceback.print_exc())
 
             anc_group = mapped_girl_object["ANCAppointmentGroup"][0]
             next_appointment = anc_group["ANCDate"][0]
@@ -168,6 +167,24 @@ class MappingEncounterWebhook(APIView):
         try:
             follow_up_object = json_result[FOLLOW_UP_FORM_NAME]
             print(follow_up_object)
+
+            missed_anc_reason = ""
+            anc_card = ""
+            follow_up_reason = ""
+
+            anc_group = follow_up_object["anc_group"][0]
+            missed_anc = anc_group["missed_anc"][0] == "yes"
+            try:
+                if missed_anc:
+                    missed_anc_reason = anc_group["missed_anc_reason"][0]
+                    if missed_anc_reason == 'other':
+                        missed_anc_reason = anc_group["missed_anc_reason_other"][0]
+                else:
+                    anc_card = anc_group["anc_card"][0]
+            except TypeError or IndexError:
+                print(traceback.print_exc())
+
+            follow_up_reason = anc_group["follow_up_reason"][0]
             observations1 = follow_up_object["observations1"][0]
             bleeding = observations1["bleeding"][0] == "yes"
             fever = observations1["fever"][0] == "yes"
@@ -176,12 +193,14 @@ class MappingEncounterWebhook(APIView):
             swollenfeet = observations2["swollenfeet"][0] == "yes"
             blurred_vision = observations2["blurred_vision"][0] == "yes"
 
-            follow_up_action_taken = follow_up_object["action_taken_by_health_person"][0]
+            action_taken_group = follow_up_object["action_taken_group"][0]
+            follow_up_action_taken = action_taken_group["action_taken_by_health_person"][0]
 
             next_appointment = ""
             baby_birth_date = ""
             baby_death_date = ""
             mother_death_date = ""
+            no_family_planning_reason = ""
 
             girl = Girl.objects.get(id=girl_id)
             user = User.objects.get(id=user_id)
@@ -208,14 +227,23 @@ class MappingEncounterWebhook(APIView):
 
                 birth_place = delivery_follow_up_group["birth_place"][0]
                 postnatal_care = delivery_follow_up_group["postnatal_received"][0] == "yes"
-                family_planning = delivery_follow_up_group["family_planning"][0] == "yes"
+                used_contraceptives = delivery_follow_up_group["family_planning"][0] == "yes"
                 contraceptive_method = delivery_follow_up_group["ContraceptiveMethod"][0]
+
+                try:
+                    if used_contraceptives:
+                        contraceptive_method = delivery_follow_up_group["ContraceptiveMethod"][0]
+                    else:
+                        no_family_planning_reason = delivery_follow_up_group["ReasonNoContraceptives"][0]
+                except TypeError or IndexError:
+                    print(traceback.print_exc())
+
                 action_taken = delivery_follow_up_group["action_taken"][0]
 
                 delivery = Delivery(girl=girl, user=user, followup_reason=follow_up_reason,
-                                    action_taken=action_taken, using_family_planning=family_planning,
+                                    action_taken=action_taken, using_family_planning=used_contraceptives,
                                     postnatal_care=postnatal_care, mother_alive=mother_alive, baby_alive=baby_alive,
-                                    delivery_location=birth_place)
+                                    delivery_location=birth_place, no_family_planning_reason=no_family_planning_reason)
 
                 if next_appointment:
                     delivery.action_taken = next_appointment
@@ -245,7 +273,6 @@ class MappingEncounterWebhook(APIView):
     def process_appointment_encounter(self, girl_id, json_result, user_id):
         try:
             appointment_object = json_result[APPOINTMENT_FORM_NAME]
-            form_meta_data = json_result["form_meta_data"]
             risk_assessment_group = appointment_object["risk_assessment_group"][0]
             risks_identified = risk_assessment_group["risks_identified"][0]
             needed_ambulance = risk_assessment_group["needed_ambulance"][0] == "yes"
