@@ -204,15 +204,12 @@ class MappingEncounterWebhook(APIView):
 
             girl = Girl.objects.get(id=girl_id)
             user = User.objects.get(id=user_id)
-            follow_up_reason = "Reminder"
 
             if follow_up_action_taken == "appointment":
-                follow_up_reason = "Set appointment"
                 next_appointment = follow_up_object["schedule_appointment_group"][0]["schedule_appointment"][0]
                 appointment = Appointment(girl=girl, user=user, next_appointment=next_appointment)
                 appointment.save()
             elif follow_up_action_taken == "delivery":
-                follow_up_reason = "Delivery"
                 delivery_follow_up_group = follow_up_object["delivery_followup_group"][0]
                 mother_alive = delivery_follow_up_group["mother_delivery_outcomes"][0] == "mother_alive"
                 baby_alive = delivery_follow_up_group["baby_delivery_outcomes"][0] == "baby_alive"
@@ -263,7 +260,8 @@ class MappingEncounterWebhook(APIView):
 
             follow_up = FollowUp(girl=girl, user=user, blurred_vision=blurred_vision, fever=fever,
                                  swollen_feet=swollenfeet, followup_reason=follow_up_reason,
-                                 bleeding_heavily=bleeding)
+                                 bleeding_heavily=bleeding, missed_anc_reason=missed_anc_reason, anc_card=anc_card,
+                                 follow_up_action_taken=follow_up_action_taken)
             follow_up.save()
             return Response({'result': 'success'}, 200)
         except Exception:

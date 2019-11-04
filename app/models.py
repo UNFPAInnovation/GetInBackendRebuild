@@ -238,6 +238,10 @@ class FollowUp(models.Model):
     fever = models.BooleanField(default=False)
     swollen_feet = models.BooleanField(default=False)
     next_appointment = models.DateTimeField(blank=True, null=True)
+    missed_anc_reason = models.CharField(max_length=200, blank=True, null=True)
+    anc_card = models.CharField(max_length=200, blank=True, null=True)
+    follow_up_reason = models.CharField(max_length=400, blank=True, null=True)
+    follow_up_action_taken = models.CharField(max_length=400, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
