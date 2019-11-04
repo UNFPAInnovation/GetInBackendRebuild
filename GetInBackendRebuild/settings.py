@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 import datetime
 import os
+from os import environ
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -86,11 +88,23 @@ WSGI_APPLICATION = 'GetInBackendRebuild.wsgi.application'
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    'main': {
+        'NAME': 'db.db',
+        'ENGINE': 'django.db.backends.sqlite3'
+    },
+    'test': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'getInApp',
+        'USER': 'postgres',
+        'PASSWORD': environ.get('PASSWORD', ''),
+        'HOST': 'getindjangodbtest.chsjmdyi1oys.us-west-2.rds.amazonaws.com',
+        'PORT': '5432'
     }
 }
+
+default_database = environ.get('DJANGO_DATABASE', 'test')
+DATABASES['default'] = DATABASES[default_database]
+
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
