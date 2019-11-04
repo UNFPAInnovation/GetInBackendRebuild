@@ -186,6 +186,10 @@ class Girl(models.Model):
     def __str__(self):
         return self.last_name + " " + self.first_name
 
+    @property
+    def age(self):
+        return int((timezone.now().date() - self.dob).days/365)
+
     @staticmethod
     def has_write_permission(request):
         return True

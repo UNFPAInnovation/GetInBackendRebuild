@@ -13,7 +13,8 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'first_name', 'last_name', 'username', 'email', 'phone', 'password', 'gender', 'village', 'number_plate', 'role', 'created_at', 'user_permissions')
+            'first_name', 'last_name', 'username', 'email', 'phone', 'password', 'gender', 'village', 'number_plate',
+            'role', 'created_at', 'user_permissions')
         # extra_kwargs = {"password": {"write_only": True}}
 
     def validate_phone(self, value):
@@ -50,7 +51,8 @@ class UserPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'first_name', 'last_name', 'username', 'email', 'phone', 'password', 'gender', 'village', 'number_plate', 'role')
+            'first_name', 'last_name', 'username', 'email', 'phone', 'password', 'gender', 'village', 'number_plate',
+            'role')
 
     def create(self, validated_data):
         """
@@ -120,7 +122,10 @@ class GirlSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Girl
-        fields = '__all__'
+        # list all the fields since the age property is not picked up by __all__
+        fields = ('id', 'first_name', 'last_name', 'village', 'village_id','phone_number', 'trimester', 'next_of_kin_last_name',
+                  'next_of_kin_first_name', 'next_of_kin_phone_number', 'education_level', 'marital_status',
+                  'last_menstruation_date', 'dob', 'user', 'odk_instance_id','age', 'created_at')
 
 
 class FollowUpGetSerializer(serializers.ModelSerializer):
