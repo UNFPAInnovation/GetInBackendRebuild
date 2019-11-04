@@ -1,7 +1,9 @@
+from django_filters.rest_framework import DjangoFilterBackend, OrderingFilter
 from dry_rest_permissions.generics import DRYPermissions
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework.permissions import *
 
+from app.filters import GirlFilter, FollowUpFilter
 from app.models import Girl, District, County, SubCounty, Parish, Village, \
     HealthFacility, FollowUp, Delivery
 from app.permissions import IsPostOrIsAuthenticated
@@ -36,6 +38,8 @@ class GirlView(ListCreateAPIView):
     queryset = Girl.objects.all()
     serializer_class = GirlSerializer
     permission_classes = (DRYPermissions, IsAuthenticated)
+    filter_backends = (DjangoFilterBackend,)
+    filter_class = GirlFilter
 
 
 class GirlDetailsView(RetrieveUpdateDestroyAPIView):
@@ -48,6 +52,7 @@ class DistrictView(ListCreateAPIView):
     queryset = District.objects.all()
     serializer_class = DistrictGetSerializer
     permission_classes = (IsAdminUser, IsAuthenticated)
+    filter_backends = (DjangoFilterBackend,)
 
 
 class CountyView(ListCreateAPIView):
@@ -83,6 +88,7 @@ class HealthFacilityView(ListCreateAPIView):
 class FollowUpView(ListCreateAPIView):
     queryset = FollowUp.objects.all()
     permission_classes = (IsAuthenticated, DRYPermissions)
+    filter_class = FollowUpFilter
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
