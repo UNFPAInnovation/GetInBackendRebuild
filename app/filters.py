@@ -49,8 +49,10 @@ class AppointmentFilter(SuperFilter):
 
 
 class DeliveryFilter(SuperFilter):
+    delivery_location = django_filters.CharFilter(field_name='delivery_location', lookup_expr='icontains',
+                                               help_text='Filter girls who delivered from home or health facility')
     class Meta:
         model = Delivery
         fields = {
-            'created_from', 'created_to'
+            'created_from', 'created_to', 'delivery_location'
         }

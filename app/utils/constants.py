@@ -14,8 +14,8 @@ MARRIED = "Married"
 DIVORCED = "Divorced"
 
 
-HOME = "home"
-HEALTH_FACILITY = "health_facility"
+HOME = "Home"
+HEALTH_FACILITY = "Health facility"
 
 USER_TYPE_DEVELOPER = 1
 USER_TYPE_DHO = 2
