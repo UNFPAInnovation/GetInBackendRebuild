@@ -185,6 +185,12 @@ class MappingEncounterWebhook(APIView):
                 print(traceback.print_exc())
 
             follow_up_reason = anc_group["follow_up_reason"][0]
+
+            anc_group2 = follow_up_object["anc_group2"][0]
+            print('anc_group2')
+            print(anc_group2)
+            action_taken_by_vht = anc_group2["action_taken_by_vht"][0]
+
             observations1 = follow_up_object["observations1"][0]
             bleeding = observations1["bleeding"][0] == "yes"
             fever = observations1["fever"][0] == "yes"
@@ -193,23 +199,26 @@ class MappingEncounterWebhook(APIView):
             swollenfeet = observations2["swollenfeet"][0] == "yes"
             blurred_vision = observations2["blurred_vision"][0] == "yes"
 
-            action_taken_group = follow_up_object["action_taken_group"][0]
-            follow_up_action_taken = action_taken_group["action_taken_by_health_person"][0]
+            action_taken_group = follow_up_object["action_taken_by_health_person_group"][0]
+            action_taken_by_health_person = action_taken_group["action_taken_by_health_person"][0]
 
             next_appointment = ""
             baby_birth_date = ""
             baby_death_date = ""
             mother_death_date = ""
             no_family_planning_reason = ""
+            contraceptive_method = ""
 
             girl = Girl.objects.get(id=girl_id)
             user = User.objects.get(id=user_id)
 
-            if follow_up_action_taken == "appointment":
+            if action_taken_by_health_person == "appointment":
+                print("action taken appointment")
                 next_appointment = follow_up_object["schedule_appointment_group"][0]["schedule_appointment"][0]
                 appointment = Appointment(girl=girl, user=user, next_appointment=next_appointment)
                 appointment.save()
-            elif follow_up_action_taken == "delivery":
+            elif action_taken_by_health_person == "delivery":
+                print("action taken delivery")
                 delivery_follow_up_group = follow_up_object["delivery_followup_group"][0]
                 mother_alive = delivery_follow_up_group["mother_delivery_outcomes"][0] == "mother_alive"
                 baby_alive = delivery_follow_up_group["baby_delivery_outcomes"][0] == "baby_alive"
@@ -223,22 +232,26 @@ class MappingEncounterWebhook(APIView):
                     mother_death_date = delivery_follow_up_group["mother_death_date"][0]
 
                 birth_place = delivery_follow_up_group["birth_place"][0]
-                postnatal_care = delivery_follow_up_group["postnatal_received"][0] == "yes"
-                used_contraceptives = delivery_follow_up_group["family_planning"][0] == "yes"
-                contraceptive_method = delivery_follow_up_group["ContraceptiveMethod"][0]
+                delivery_action_taken = delivery_follow_up_group["action_taken"][0]
+
+                family_planning_group = follow_up_object["family_planning_group"][0]
+                postnatal_care = family_planning_group["postnatal_received"][0] == "yes"
+                used_contraceptives = family_planning_group["family_planning"][0] == "yes"
 
                 try:
                     if used_contraceptives:
-                        contraceptive_method = delivery_follow_up_group["ContraceptiveMethod"][0]
+                        contraceptive_method = family_planning_group["ContraceptiveMethod"][0]
+                        if contraceptive_method == "Others":
+                            contraceptive_method = family_planning_group["other_contraceptive_method"][0]
                     else:
-                        no_family_planning_reason = delivery_follow_up_group["ReasonNoContraceptives"][0]
+                        no_family_planning_reason = family_planning_group["ReasonNoContraceptives"][0]
                 except TypeError or IndexError:
                     print(traceback.print_exc())
 
-                action_taken = delivery_follow_up_group["action_taken"][0]
+                print('save delivery')
 
                 delivery = Delivery(girl=girl, user=user, followup_reason=follow_up_reason,
-                                    action_taken=action_taken, using_family_planning=used_contraceptives,
+                                    action_taken=delivery_action_taken, using_family_planning=used_contraceptives,
                                     postnatal_care=postnatal_care, mother_alive=mother_alive, baby_alive=baby_alive,
                                     delivery_location=birth_place, no_family_planning_reason=no_family_planning_reason)
 
@@ -258,10 +271,12 @@ class MappingEncounterWebhook(APIView):
 
                 delivery.save()
 
+            print('save results')
+
             follow_up = FollowUp(girl=girl, user=user, blurred_vision=blurred_vision, fever=fever,
                                  swollen_feet=swollenfeet, followup_reason=follow_up_reason,
                                  bleeding_heavily=bleeding, missed_anc_reason=missed_anc_reason, anc_card=anc_card,
-                                 follow_up_action_taken=follow_up_action_taken)
+                                 follow_up_action_taken=action_taken_by_health_person, action_taken_by_vht=action_taken_by_vht)
             follow_up.save()
             return Response({'result': 'success'}, 200)
         except Exception:

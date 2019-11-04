@@ -233,6 +233,7 @@ class FollowUp(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     followup_reason = models.TextField(blank=True, null=True)
     action_taken = models.CharField(max_length=200, blank=True, null=True)
+    action_taken_by_vht = models.CharField(max_length=200, blank=True, null=True)
     blurred_vision = models.BooleanField(default=False)
     bleeding_heavily = models.BooleanField(default=False)
     fever = models.BooleanField(default=False)

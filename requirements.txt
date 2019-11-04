@@ -1,3 +1,5 @@
+# incase requirements fail. use sudo pip install -r requirements.txt
+
 Django==2.2.6
 django-filter==2.0.0
 django-password-reset==1.0
@@ -10,7 +12,6 @@ PyJWT==1.7.1
 pytz==2019.2
 sqlparse==0.3.0
 gunicorn==19.6.0
-Pillow==3.3.0
 Markdown==2.6.6
 bleach==1.4.3
 whitenoise==3.2
