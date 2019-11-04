@@ -180,6 +180,7 @@ class Girl(models.Model):
     # expected_delivery_date = models.DateTimeField()
     dob = models.DateField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -237,6 +238,7 @@ class FollowUp(models.Model):
     fever = models.BooleanField(default=False)
     swollen_feet = models.BooleanField(default=False)
     follow_up_action_taken = models.CharField(max_length=400, blank=True, null=True)
+    odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -269,6 +271,7 @@ class MappingEncounter(models.Model):
     voucher_card = models.CharField(max_length=250, blank=True, null=True)
     attended_anc_visit = models.BooleanField(default=False)
     voucher_number = models.IntegerField(default=0, blank=True, null=True)
+    odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -296,6 +299,7 @@ class AppointmentEncounter(models.Model):
     risks_identified = models.CharField(max_length=250, blank=True, null=True)
     missed_anc_reason = models.CharField(max_length=250, blank=True, null=True)
     action_taken = models.CharField(max_length=250, blank=True, null=True)
+    odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -332,6 +336,7 @@ class Delivery(models.Model):
     health_facility = models.ForeignKey(HealthFacility, on_delete=models.CASCADE, blank=True, null=True)
     delivery_date = models.DateTimeField(auto_now_add=True)
     delivery_location = models.CharField(choices=DELIVERY_LOCATION, default=HOME, max_length=250)
+    odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -361,6 +366,7 @@ class Appointment(models.Model):
     status = models.CharField(choices=APPOINTMENT, default=EXPECTED, max_length=250)
     completed_visits = models.IntegerField(default=0, validators=[MaxValueValidator(3), MinValueValidator(0)])
     pending_visits = models.IntegerField(default=2, validators=[MaxValueValidator(3), MinValueValidator(0)])
+    odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

@@ -3,7 +3,7 @@ from dry_rest_permissions.generics import DRYPermissions
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework.permissions import *
 
-from app.filters import GirlFilter, FollowUpFilter, MappingEncounterFilter
+from app.filters import GirlFilter, FollowUpFilter, MappingEncounterFilter, DeliveryFilter
 from app.models import Girl, District, County, SubCounty, Parish, Village, \
     HealthFacility, FollowUp, Delivery, MappingEncounter
 from app.permissions import IsPostOrIsAuthenticated
@@ -39,7 +39,6 @@ class GirlView(ListCreateAPIView):
     queryset = Girl.objects.all()
     serializer_class = GirlSerializer
     permission_classes = (DRYPermissions, IsAuthenticated)
-    filter_backends = (DjangoFilterBackend,)
     filter_class = GirlFilter
 
 
@@ -47,7 +46,6 @@ class MappingEncounterView(ListCreateAPIView):
     queryset = MappingEncounter.objects.all()
     serializer_class = MappingEncounterSerializer
     permission_classes = (DRYPermissions, IsAuthenticated)
-    filter_backends = (DjangoFilterBackend,)
     filter_class = MappingEncounterFilter
 
 
@@ -109,6 +107,7 @@ class FollowUpView(ListCreateAPIView):
 class DeliveriesView(ListCreateAPIView):
     queryset = Delivery.objects.all()
     permission_classes = (IsAuthenticated, DRYPermissions)
+    filter_class = DeliveryFilter
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
