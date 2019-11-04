@@ -270,10 +270,9 @@ class MappingEncounterWebhook(APIView):
 
             missed_anc_reason = ""
             if missed_anc_before:
-                missed_anc_group = appointment_object["missed_anc_group"][0]
-                missed_anc_reason = missed_anc_group["missed_anc_reason"][0]
-                if not missed_anc_reason:
-                    missed_anc_reason = missed_anc_group["missed_anc_other_reason"][0]
+                missed_anc_reason = missed_anc_before_group["missed_anc_reason"][0]
+                if missed_anc_reason == "other":
+                    missed_anc_reason = missed_anc_before_group["missed_anc_reason_other"][0]
 
             action_taken_group = appointment_object["action_taken_group"][0]
             action_taken = action_taken_group["action_taken_meeting_girl"][0]

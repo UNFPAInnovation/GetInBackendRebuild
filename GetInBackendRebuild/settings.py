@@ -96,7 +96,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'getInApp',
         'USER': 'postgres',
-        'PASSWORD': environ.get('PASSWORD', ''),
+        # 'PASSWORD': environ.get('PASSWORD', ''),
+        'PASSWORD': 'Doppler25',
         'HOST': 'getindjangodbtest.chsjmdyi1oys.us-west-2.rds.amazonaws.com',
         'PORT': '5432'
     }
