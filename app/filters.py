@@ -1,6 +1,6 @@
 import django_filters
 
-from app.models import Girl, FollowUp, Appointment
+from app.models import Girl, FollowUp, Appointment, MappingEncounter
 
 
 class SuperFilter(django_filters.FilterSet):
@@ -27,6 +27,14 @@ class GirlFilter(SuperFilter):
 class FollowUpFilter(SuperFilter):
     class Meta:
         model = FollowUp
+        fields = {
+            'created_from', 'created_to'
+        }
+
+
+class MappingEncounterFilter(SuperFilter):
+    class Meta:
+        model = MappingEncounter
         fields = {
             'created_from', 'created_to'
         }

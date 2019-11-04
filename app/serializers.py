@@ -5,7 +5,8 @@ from rest_framework.exceptions import ValidationError
 from rest_framework_jwt.utils import jwt_payload_handler
 
 from GetInBackendRebuild.settings import SECRET_KEY
-from app.models import User, District, County, SubCounty, Parish, Village, Girl, HealthFacility, FollowUp, Delivery
+from app.models import User, District, County, SubCounty, Parish, Village, Girl, HealthFacility, FollowUp, Delivery, \
+    MappingEncounter
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -150,4 +151,13 @@ class DeliveryGetSerializer(serializers.ModelSerializer):
 class DeliveryPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Delivery
+        fields = '__all__'
+
+
+class MappingEncounterSerializer(serializers.ModelSerializer):
+    girl = GirlSerializer()
+    user = UserGetSerializer()
+
+    class Meta:
+        model = MappingEncounter
         fields = '__all__'
