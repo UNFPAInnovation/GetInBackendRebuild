@@ -115,10 +115,9 @@ class MappingEncounterWebhook(APIView):
                 contraceptive_group = mapped_girl_object["ContraceptiveGroup"][0]
                 used_contraceptives = contraceptive_group["UsedContraceptives"][0] == "yes"
                 if used_contraceptives:
-                    contraceptive_group = mapped_girl_object["ContraceptiveGroup"][0]
                     contraceptive_method = contraceptive_group["ContraceptiveMethod"][0]
                 else:
-                    no_family_planning_reason = mapped_girl_object["ReasonNoContraceptives"][0]
+                    no_family_planning_reason = contraceptive_group["ReasonNoContraceptives"][0]
             except KeyError or IndexError as e:
                 print(e)
 
@@ -167,29 +166,6 @@ class MappingEncounterWebhook(APIView):
         try:
             follow_up_object = json_result[FOLLOW_UP_FORM_NAME]
             print(follow_up_object)
-
-            missed_anc_reason = ""
-            anc_card = ""
-            follow_up_reason = ""
-
-            anc_group = follow_up_object["anc_group"][0]
-            missed_anc = anc_group["missed_anc"][0] == "yes"
-            try:
-                if missed_anc:
-                    missed_anc_reason = anc_group["missed_anc_reason"][0]
-                    if missed_anc_reason == 'other':
-                        missed_anc_reason = anc_group["missed_anc_reason_other"][0]
-                else:
-                    anc_card = anc_group["anc_card"][0]
-            except TypeError or IndexError:
-                print(traceback.print_exc())
-
-            follow_up_reason = anc_group["follow_up_reason"][0]
-
-            anc_group2 = follow_up_object["anc_group2"][0]
-            print('anc_group2')
-            print(anc_group2)
-            action_taken_by_vht = anc_group2["action_taken_by_vht"][0]
 
             observations1 = follow_up_object["observations1"][0]
             bleeding = observations1["bleeding"][0] == "yes"
@@ -250,8 +226,8 @@ class MappingEncounterWebhook(APIView):
 
                 print('save delivery')
 
-                delivery = Delivery(girl=girl, user=user, followup_reason=follow_up_reason,
-                                    action_taken=delivery_action_taken, using_family_planning=used_contraceptives,
+                delivery = Delivery(girl=girl, user=user, action_taken=delivery_action_taken,
+                                    using_family_planning=used_contraceptives,
                                     postnatal_care=postnatal_care, mother_alive=mother_alive, baby_alive=baby_alive,
                                     delivery_location=birth_place, no_family_planning_reason=no_family_planning_reason)
 
@@ -274,9 +250,8 @@ class MappingEncounterWebhook(APIView):
             print('save results')
 
             follow_up = FollowUp(girl=girl, user=user, blurred_vision=blurred_vision, fever=fever,
-                                 swollen_feet=swollenfeet, followup_reason=follow_up_reason,
-                                 bleeding_heavily=bleeding, missed_anc_reason=missed_anc_reason, anc_card=anc_card,
-                                 follow_up_action_taken=action_taken_by_health_person, action_taken_by_vht=action_taken_by_vht)
+                                 swollen_feet=swollenfeet, bleeding_heavily=bleeding,
+                                 follow_up_action_taken=action_taken_by_health_person)
             follow_up.save()
             return Response({'result': 'success'}, 200)
         except Exception:
