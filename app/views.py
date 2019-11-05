@@ -192,18 +192,88 @@ class MappingEncountersStatsView(APIView):
                             girl.village.parish.sub_county.county.district == district]
         response["mappedGirlsInAgeGroup16_19"] = girls.count()
 
-        girls = Girl.objects.filter(Q(age__gte=19) & Q(age__lte=24) &
+        girls = Girl.objects.filter(Q(age__gte=20) & Q(age__lte=24) &
                                     Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to))
 
         all_subcounties += [girl.village.parish.sub_county for girl in girls if
                             girl.village.parish.sub_county.county.district == district]
-        response["mappedGirlsInAgeGroup17_24"] = girls.count()
+        response["mappedGirlsInAgeGroup20_24"] = girls.count()
 
+        # remove duplicate subcounties
         all_subcounties = list(set(all_subcounties))
+        
         response["subcounties"] = [subcounty.name for subcounty in all_subcounties]
 
+        total_girls_in_all_subcounties = 0
         for subcounty in all_subcounties:
             total_girls_in_subcounty = Girl.objects.filter(village__parish__sub_county=subcounty).count()
             response["totalNumberOfGirlsMappedFrom" + subcounty.name] = total_girls_in_subcounty
+            total_girls_in_all_subcounties += total_girls_in_subcounty
+        response["count"] = total_girls_in_all_subcounties
 
+        return Response({"results": response}, 200)
+
+
+class DeliveriesStatsView(APIView):
+    """
+    Provides statistical data for deliveries statistics
+    Client query params
+    dashboard_stats?from=2019-10-01&to=2019-11-05
+
+    Server response
+    {
+      count: 0,
+      district: "Arua",
+      month: "November",
+      year: "2019",
+      subcounties: ["Subcounty1", "Subcounty2", "etc"],
+      deliveriesFromSubcounty1: 3,
+      deliveriesFromSubcounty2: 4,
+      etc: 10
+    }
+    """
+
+    def get(self, request, format=None, **kwargs):
+        print("get request")
+
+        get_params = dict(zip(request.GET.keys(), request.GET.values()))
+
+        created_at_from_param = get_params['from']
+        created_at_to_param = get_params['to']
+
+        year, month, day = [int(x) for x in created_at_from_param.split("-")]
+        created_at_from = timezone.datetime(year, month, day)
+
+        year, month, day = [int(x) for x in created_at_to_param.split("-")]
+        created_at_to = timezone.datetime(year, month, day)
+        print(created_at_from)
+
+        response = dict()
+        subcounty = request.user.village.parish.sub_county
+        district = subcounty.county.district
+
+        response["district"] = district.name
+        response["year"] = created_at_from.year
+        response["month"] = created_at_from.strftime("%B")
+
+        all_subcounties = []
+
+        deliveries = Delivery.objects.filter(Q(girl__created_at__gte=created_at_from) & Q(girl__created_at__lte=created_at_to))
+
+        all_subcounties += [delivery.girl.village.parish.sub_county for delivery in deliveries
+                            if delivery.girl.village.parish.sub_county.county.district == district]
+
+        # remove duplicate subcounties
+        all_subcounties = list(set(all_subcounties))
+
+        response["subcounties"] = [subcounty.name for subcounty in all_subcounties]
+
+        all_deliveries_total = 0
+
+        for subcounty in all_subcounties:
+            delivery_total = Delivery.objects.filter(girl__village__parish_id__in=[parish.id for parish in subcounty.parish_set.all()]).count()
+            response["deliveriesFromSubcounty" + subcounty.name] = delivery_total
+            all_deliveries_total += delivery_total
+
+        response["count"] = all_deliveries_total
         return Response({"results": response}, 200)
