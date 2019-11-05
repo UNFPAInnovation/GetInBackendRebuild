@@ -6,7 +6,7 @@ from rest_framework_jwt.utils import jwt_payload_handler
 
 from GetInBackendRebuild.settings import SECRET_KEY
 from app.models import User, District, County, SubCounty, Parish, Village, Girl, HealthFacility, FollowUp, Delivery, \
-    MappingEncounter
+    MappingEncounter, AppointmentEncounter, Appointment
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -167,7 +167,17 @@ class MappingEncounterSerializer(serializers.ModelSerializer):
         model = MappingEncounter
         fields = '__all__'
 
-class DeliveryPostSerializer(serializers.ModelSerializer):
+
+class AppointmentEncounterSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Delivery
+        model = AppointmentEncounter
+        fields = '__all__'
+
+
+class AppointmentSerializer(serializers.ModelSerializer):
+    girl = GirlSerializer()
+    user = UserGetSerializer()
+    
+    class Meta:
+        model = Appointment
         fields = '__all__'

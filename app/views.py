@@ -3,14 +3,14 @@ from dry_rest_permissions.generics import DRYPermissions
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
 from rest_framework.permissions import *
 
-from app.filters import GirlFilter, FollowUpFilter, MappingEncounterFilter, DeliveryFilter
+from app.filters import GirlFilter, FollowUpFilter, MappingEncounterFilter, DeliveryFilter, AppointmentFilter
 from app.models import Girl, District, County, SubCounty, Parish, Village, \
-    HealthFacility, FollowUp, Delivery, MappingEncounter
+    HealthFacility, FollowUp, Delivery, MappingEncounter, AppointmentEncounter, Appointment
 from app.permissions import IsPostOrIsAuthenticated
 from app.serializers import UserSerializer, User, GirlSerializer, DistrictGetSerializer, \
     CountyGetSerializer, SubCountyGetSerializer, ParishGetSerializer, VillageGetSerializer, HealthFacilityGetSerializer, \
     FollowUpGetSerializer, FollowUpPostSerializer, DeliveryPostSerializer, DeliveryGetSerializer, \
-    MappingEncounterSerializer
+    MappingEncounterSerializer, AppointmentEncounterSerializer, AppointmentSerializer
 
 import logging
 
@@ -116,13 +116,15 @@ class DeliveriesView(ListCreateAPIView):
             return DeliveryGetSerializer
 
 
-class DeliveriesView(ListCreateAPIView):
-    queryset = Delivery.objects.all()
+class AppointmentEncounterView(ListCreateAPIView):
+    queryset = AppointmentEncounter.objects.all()
     permission_classes = (IsAuthenticated, DRYPermissions)
     filter_class = DeliveryFilter
+    serializer_class = AppointmentEncounterSerializer
 
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return AppointmentEncounterSerializer
-        else:
-            return DeliveryGetSerializer
+
+class AppointmentView(ListCreateAPIView):
+    queryset = Appointment.objects.all()
+    permission_classes = (IsAuthenticated, DRYPermissions)
+    filter_class = AppointmentFilter
+    serializer_class = AppointmentSerializer

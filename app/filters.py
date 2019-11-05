@@ -41,10 +41,14 @@ class MappingEncounterFilter(SuperFilter):
 
 
 class AppointmentFilter(SuperFilter):
+    status = django_filters.CharFilter(field_name='status', lookup_expr='icontains',
+                                               help_text='Filter appointments by status: Missed, Attended, Expected, '
+                                                         'Completed')
+
     class Meta:
         model = Appointment
         fields = {
-            'created_from', 'created_to'
+            'created_from', 'created_to', 'status'
         }
 
 
