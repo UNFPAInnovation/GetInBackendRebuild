@@ -162,16 +162,16 @@ class Girl(models.Model):
             regex='^(07)[0-9]{8}$',
             message='Wrong phone number format',
         )
-    ])
+    ], blank=True, null=True)
     trimester = models.IntegerField(default=1, validators=[MaxValueValidator(3), MinValueValidator(1)])
-    next_of_kin_last_name = models.CharField(max_length=250)
-    next_of_kin_first_name = models.CharField(max_length=250)
+    next_of_kin_last_name = models.CharField(max_length=250, blank=True, null=True)
+    next_of_kin_first_name = models.CharField(max_length=250, blank=True, null=True)
     next_of_kin_phone_number = models.CharField(max_length=12, validators=[
         RegexValidator(
             regex='^(07)[0-9]{8}$',
             message='Wrong phone number format',
         )
-    ])
+    ], blank=True, null=True)
     education_level = models.CharField(choices=EDUCATION_CHOICES, default=PRIMARY_LEVEL, max_length=250)
     marital_status = models.CharField(choices=MARITAL_STATUS_CHOICES, default=SINGLE, max_length=250)
     # todo add constraint
@@ -179,16 +179,13 @@ class Girl(models.Model):
     # calculate expected_delivery from last menstruation date
     # expected_delivery_date = models.DateTimeField()
     dob = models.DateField()
+    age = models.IntegerField(blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.last_name + " " + self.first_name
-
-    @property
-    def age(self):
-        return int((timezone.now().date() - self.dob).days/365)
 
     @staticmethod
     def has_write_permission(request):
@@ -207,6 +204,12 @@ class Girl(models.Model):
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
 
+        self.set_trimester()
+        self.set_age_field()
+
+        super(Girl, self).save(force_insert, force_update, using, update_fields)
+
+    def set_trimester(self):
         # calculate trimester of the girl based on the last menstruation date
         # trimester 1 = 1-12 weeks, trimester 2 = 13-26 weeks, trimester 3 = 27-40
         try:
@@ -215,14 +218,12 @@ class Girl(models.Model):
             self.last_menstruation_date = timezone.datetime(year, month, day)
         except Exception as e:
             print(e)
-
         try:
             days_diff = (timezone.now().replace(tzinfo=pytz.utc) - self.last_menstruation_date
                          .replace(tzinfo=pytz.utc)).days
         except TypeError as e:
             print(e)
             days_diff = (timezone.now().date() - self.last_menstruation_date).days
-
         if days_diff >= 189:
             self.trimester = 3
         elif days_diff >= 91:
@@ -230,7 +231,20 @@ class Girl(models.Model):
         else:
             self.trimester = 1
 
-        super(Girl, self).save(force_insert, force_update, using, update_fields)
+    def set_age_field(self):
+        try:
+            # error is thrown when updating from django admin
+            year, month, day = [int(x) for x in self.dob.split("-")]
+            self.dob = timezone.datetime(year, month, day)
+        except Exception as e:
+            print(e)
+        try:
+            days_diff = (timezone.now().replace(tzinfo=pytz.utc) - self.dob
+                         .replace(tzinfo=pytz.utc)).days
+        except TypeError as e:
+            print(e)
+            days_diff = (timezone.now().date() - self.dob).days
+        self.age = int(days_diff / 365)
 
 
 class FollowUp(models.Model):
