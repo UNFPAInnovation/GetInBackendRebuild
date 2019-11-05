@@ -20,7 +20,7 @@ from rest_framework_swagger.views import get_swagger_view
 
 from app.views import GirlView, GirlDetailsView, UserCreateView, DistrictView, \
     CountyView, SubCountyView, ParishView, VillageView, HealthFacilityView, FollowUpView, \
-    DeliveriesView, MappingEncounterView, AppointmentView
+    DeliveriesView, MappingEncounterView, AppointmentView, DashboardStatsView
 from django.views.decorators.csrf import csrf_exempt
 
 from app.webhook import MappingEncounterWebhook
@@ -46,5 +46,6 @@ urlpatterns = [
     path(r'api/v1/followups', FollowUpView.as_view(), name='followups'),
     path(r'api/v1/deliveries', DeliveriesView.as_view(), name='deliveries'),
     path(r'api/v1/appointments', AppointmentView.as_view(), name='appointments'),
+    path(r'api/v1/dashboard_stats', DashboardStatsView.as_view(), name='dashboard-stats'),
 
 ]

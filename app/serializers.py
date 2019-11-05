@@ -177,7 +177,7 @@ class AppointmentEncounterSerializer(serializers.ModelSerializer):
 class AppointmentSerializer(serializers.ModelSerializer):
     girl = GirlSerializer()
     user = UserGetSerializer()
-    
+
     class Meta:
         model = Appointment
         fields = '__all__'
