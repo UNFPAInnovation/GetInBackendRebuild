@@ -30,7 +30,13 @@ ATTENDED = "Attended"
 EXPECTED = "Expected"
 COMPLETED = "Completed"
 
-APPOINTMENT_FORM_NAME = "GetINTestAppointment2"
+#####################################
+# NOTE: The form ids must be the same in odk central, android app, xslm forms and django backend
+# When you change a form and generate the xml, odk central will require you to upload one with a different id
+# from those that are already there
+#####################################
+APPOINTMENT_FORM_CHEW_NAME = "GetINTestAppointment5_chew"
+APPOINTMENT_FORM_MIDWIFE_NAME = "GetINTestAppointment5_midwife"
 MAP_GIRL_FORM_NAME = "GetInTest18"
 # each district has its own form.
 MAP_GIRL_BUNDIBUGYO_FORM_NAME = "GetInMapGirlBundibugyo4"

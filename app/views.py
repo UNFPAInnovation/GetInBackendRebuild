@@ -114,3 +114,15 @@ class DeliveriesView(ListCreateAPIView):
             return DeliveryPostSerializer
         else:
             return DeliveryGetSerializer
+
+
+class DeliveriesView(ListCreateAPIView):
+    queryset = Delivery.objects.all()
+    permission_classes = (IsAuthenticated, DRYPermissions)
+    filter_class = DeliveryFilter
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return AppointmentEncounterSerializer
+        else:
+            return DeliveryGetSerializer

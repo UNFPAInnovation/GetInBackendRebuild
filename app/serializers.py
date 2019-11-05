@@ -166,3 +166,8 @@ class MappingEncounterSerializer(serializers.ModelSerializer):
     class Meta:
         model = MappingEncounter
         fields = '__all__'
+
+class DeliveryPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Delivery
+        fields = '__all__'
