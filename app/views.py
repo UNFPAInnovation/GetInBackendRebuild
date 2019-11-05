@@ -134,7 +134,7 @@ class AppointmentView(ListCreateAPIView):
     serializer_class = AppointmentSerializer
 
 
-class DashboardStatsView(APIView):
+class MappingEncountersStatsView(APIView):
     """
     Provides statistical data for the GetIn dashboard
     Client query params
@@ -172,7 +172,8 @@ class DashboardStatsView(APIView):
         print(created_at_from)
 
         response = dict()
-        district = request.user.village.parish.sub_county.county.district
+        subcounty = request.user.village.parish.sub_county
+        district = subcounty.county.district
         response["district"] = district.name
         response["year"] = created_at_from.year
         response["month"] = created_at_from.strftime("%B")
@@ -181,18 +182,21 @@ class DashboardStatsView(APIView):
 
         girls = Girl.objects.filter(Q(age__gte=12) & Q(age__lte=15) &
                                     Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to))
-        all_subcounties += [girl.village.parish.sub_county for girl in girls]
+        all_subcounties += [girl.village.parish.sub_county for girl in girls if
+                            girl.village.parish.sub_county.county.district == district]
         response["mappedGirlsInAgeGroup12_15"] = girls.count()
 
         girls = Girl.objects.filter(Q(age__gte=16) & Q(age__lte=19) &
                                     Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to))
-        all_subcounties += [girl.village.parish.sub_county for girl in girls]
+        all_subcounties += [girl.village.parish.sub_county for girl in girls if
+                            girl.village.parish.sub_county.county.district == district]
         response["mappedGirlsInAgeGroup16_19"] = girls.count()
 
         girls = Girl.objects.filter(Q(age__gte=19) & Q(age__lte=24) &
                                     Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to))
 
-        all_subcounties += [girl.village.parish.sub_county for girl in girls]
+        all_subcounties += [girl.village.parish.sub_county for girl in girls if
+                            girl.village.parish.sub_county.county.district == district]
         response["mappedGirlsInAgeGroup17_24"] = girls.count()
 
         all_subcounties = list(set(all_subcounties))
