@@ -175,7 +175,7 @@ class DashboardStatsView(APIView):
         district = request.user.village.parish.sub_county.county.district
         response["district"] = district.name
         response["year"] = created_at_from.year
-        response["month"] = created_at_from.month
+        response["month"] = created_at_from.strftime("%B")
 
         all_subcounties = []
 
