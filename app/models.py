@@ -5,12 +5,13 @@ import pytz
 from django.contrib.auth.models import AbstractUser, Permission
 from django.core.validators import RegexValidator, MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
 from app.utils.constants import GENDER_FEMALE, GENDER_MALE, GENDER_NOT_SPECIFIED, PRIMARY_LEVEL, O_LEVEL, A_LEVEL, \
     TERTIARY_LEVEL, SINGLE, MARRIED, DIVORCED, HOME, HEALTH_FACILITY, USER_TYPE_DEVELOPER, USER_TYPE_DHO, \
-    USER_TYPE_CHEW, USER_TYPE_MIDWIFE, USER_TYPE_AMBULANCE, USER_TYPE_MANAGER, MISSED, ATTENDED, EXPECTED, COMPLETED
+    USER_TYPE_CHEW, USER_TYPE_MIDWIFE, USER_TYPE_AMBULANCE, USER_TYPE_MANAGER, MISSED, ATTENDED, EXPECTED
 
 GENDER_CHOICES = (
     (GENDER_MALE, 'male'),
@@ -48,7 +49,6 @@ APPOINTMENT = (
     (MISSED, 'Missed'),
     (ATTENDED, 'Attended'),
     (EXPECTED, 'Expected'),
-    (COMPLETED, 'Completed'),
 )
 
 
@@ -188,6 +188,12 @@ class Girl(models.Model):
 
     def __str__(self):
         return self.last_name + " " + self.first_name
+
+    @property
+    def completed_all_visits(self):
+        # true if girl has attended all three appointments
+        attended_count = Appointment.objects.filter(Q(girl__id=self.id) & Q(status=ATTENDED)).count()
+        return attended_count == 3
 
     @staticmethod
     def has_write_permission(request):

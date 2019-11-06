@@ -28,7 +28,6 @@ USER_TYPE_MANAGER = 6
 MISSED = "Missed"
 ATTENDED = "Attended"
 EXPECTED = "Expected"
-COMPLETED = "Completed"
 
 #####################################
 # NOTE: The form ids must be the same in odk central, android app, xslm forms and django backend

@@ -1,5 +1,4 @@
 import jwt
-from django.contrib.auth.models import Permission
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework_jwt.utils import jwt_payload_handler
@@ -123,9 +122,12 @@ class GirlSerializer(serializers.ModelSerializer):
     class Meta:
         model = Girl
         # list all the fields since the age property is not picked up by __all__
-        fields = ('id', 'first_name', 'last_name', 'village', 'village_id','phone_number', 'trimester', 'next_of_kin_last_name',
-                  'next_of_kin_first_name', 'next_of_kin_phone_number', 'education_level', 'marital_status',
-                  'last_menstruation_date', 'dob', 'user', 'odk_instance_id','age', 'created_at')
+        fields = (
+            'id', 'first_name', 'last_name', 'village', 'village_id', 'phone_number', 'trimester',
+            'next_of_kin_last_name',
+            'next_of_kin_first_name', 'next_of_kin_phone_number', 'education_level', 'marital_status',
+            'last_menstruation_date', 'dob', 'user', 'odk_instance_id', 'age', 'completed_all_visits',
+            'pending_visits', 'missed_visits', 'created_at')
 
 
 class FollowUpGetSerializer(serializers.ModelSerializer):
