@@ -10,8 +10,8 @@ from app.serializers import User
 
 import logging
 
-from app.utils.constants import MAP_GIRL_FORM_NAME, FOLLOW_UP_FORM_NAME, APPOINTMENT_FORM_CHEW_NAME, \
-    MAP_GIRL_BUNDIBUGYO_FORM_NAME, APPOINTMENT_FORM_MIDWIFE_NAME
+from app.utils.constants import MAP_GIRL_FORM_NAME, FOLLOW_UP_FORM_CHEW_NAME, APPOINTMENT_FORM_CHEW_NAME, \
+    MAP_GIRL_BUNDIBUGYO_FORM_NAME, APPOINTMENT_FORM_MIDWIFE_NAME, FOLLOW_UP_FORM_MIDWIFE_NAME
 
 logger = logging.getLogger('testlogger')
 
@@ -51,7 +51,7 @@ class MappingEncounterWebhook(APIView):
 
         if MAP_GIRL_FORM_NAME in json_result or MAP_GIRL_BUNDIBUGYO_FORM_NAME in json_result:
             return self.process_mapping_encounter(json_result, user_id)
-        elif FOLLOW_UP_FORM_NAME in json_result:
+        elif FOLLOW_UP_FORM_CHEW_NAME in json_result or FOLLOW_UP_FORM_MIDWIFE_NAME in json_result:
             return self.process_follow_up_and_delivery_encounter(girl_id, json_result, user_id)
         elif APPOINTMENT_FORM_CHEW_NAME in json_result or APPOINTMENT_FORM_MIDWIFE_NAME in json_result:
             return self.process_appointment_encounter(girl_id, json_result, user_id)
@@ -159,16 +159,33 @@ class MappingEncounterWebhook(APIView):
 
     def process_follow_up_and_delivery_encounter(self, girl_id, json_result, user_id):
         try:
-            follow_up_object = json_result[FOLLOW_UP_FORM_NAME]
+
+            try:
+                follow_up_object = json_result[FOLLOW_UP_FORM_CHEW_NAME]
+            except Exception:
+                print(traceback.print_exc())
+                follow_up_object = json_result[FOLLOW_UP_FORM_MIDWIFE_NAME]
             print(follow_up_object)
 
-            observations1 = follow_up_object["observations1"][0]
-            bleeding = observations1["bleeding"][0] == "yes"
-            fever = observations1["fever"][0] == "yes"
+            fever = False
+            swollenfeet = False
+            bleeding = False
+            blurred_vision = False
 
-            observations2 = follow_up_object["observations2"][0]
-            swollenfeet = observations2["swollenfeet"][0] == "yes"
-            blurred_vision = observations2["blurred_vision"][0] == "yes"
+            try:
+                # captured in chew follow up
+                observations1 = follow_up_object["observations1"][0]
+                bleeding = observations1["bleeding"][0] == "yes"
+                fever = observations1["fever"][0] == "yes"
+
+                observations2 = follow_up_object["observations2"][0]
+                swollenfeet = observations2["swollenfeet"][0] == "yes"
+                blurred_vision = observations2["blurred_vision"][0] == "yes"
+            except Exception:
+                print(traceback.print_exc())
+
+            action_taken_group = follow_up_object["action_taken_by_health_person_group"][0]
+
 
             action_taken_group = follow_up_object["action_taken_by_health_person_group"][0]
             action_taken_by_health_person = action_taken_group["action_taken_by_health_person"][0]

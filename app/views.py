@@ -201,7 +201,7 @@ class MappingEncountersStatsView(APIView):
 
         # remove duplicate subcounties
         all_subcounties = list(set(all_subcounties))
-        
+
         response["subcounties"] = [subcounty.name for subcounty in all_subcounties]
 
         total_girls_in_all_subcounties = 0

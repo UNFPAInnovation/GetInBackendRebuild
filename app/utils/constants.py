@@ -40,4 +40,5 @@ APPOINTMENT_FORM_MIDWIFE_NAME = "GetINTestAppointment5_midwife"
 MAP_GIRL_FORM_NAME = "GetInTest18"
 # each district has its own form.
 MAP_GIRL_BUNDIBUGYO_FORM_NAME = "GetInMapGirlBundibugyo4"
-FOLLOW_UP_FORM_NAME = "GetInFollowup11"
+FOLLOW_UP_FORM_CHEW_NAME = "GetInFollowup13_chew"
+FOLLOW_UP_FORM_MIDWIFE_NAME = "GetInFollowup13_midwife"
