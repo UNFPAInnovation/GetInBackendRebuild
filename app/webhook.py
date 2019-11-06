@@ -11,7 +11,7 @@ from app.serializers import User
 import logging
 
 from app.utils.constants import MAP_GIRL_FORM_NAME, FOLLOW_UP_FORM_CHEW_NAME, APPOINTMENT_FORM_CHEW_NAME, \
-    MAP_GIRL_BUNDIBUGYO_FORM_NAME, APPOINTMENT_FORM_MIDWIFE_NAME, FOLLOW_UP_FORM_MIDWIFE_NAME
+    MAP_GIRL_BUNDIBUGYO_FORM_NAME, APPOINTMENT_FORM_MIDWIFE_NAME, FOLLOW_UP_FORM_MIDWIFE_NAME, USER_TYPE_CHEW
 
 logger = logging.getLogger('testlogger')
 
@@ -201,10 +201,11 @@ class MappingEncounterWebhook(APIView):
 
             print('save results')
 
-            follow_up = FollowUp(girl=girl, user=user, blurred_vision=blurred_vision, fever=fever,
-                                 swollen_feet=swollenfeet, bleeding_heavily=bleeding,
-                                 follow_up_action_taken=action_taken_by_health_person)
-            follow_up.save()
+            if user.role == USER_TYPE_CHEW:
+                follow_up = FollowUp(girl=girl, user=user, blurred_vision=blurred_vision, fever=fever,
+                                     swollen_feet=swollenfeet, bleeding_heavily=bleeding,
+                                     follow_up_action_taken=action_taken_by_health_person)
+                follow_up.save()
             return Response({'result': 'success'}, 200)
         except Exception:
             print(traceback.print_exc())

@@ -424,10 +424,10 @@ class Appointment(models.Model):
             else:
                 girl = self.girl
                 if girl.pending_visits > 0:
+                    super(Appointment, self).save(force_insert, force_update, using, update_fields)
                     # reduce the pending visits once the girl has attend a health facility
                     girl.pending_visits = girl.pending_visits - 1
                     girl.save(update_fields=['pending_visits'])
-                    super(Appointment, self).save(force_insert, force_update, using, update_fields)
                 else:
                     raise ValidationError("Girl cannot have any more appointments")
         except Exception as e:
