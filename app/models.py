@@ -181,7 +181,7 @@ class Girl(models.Model):
     dob = models.DateField()
     age = models.IntegerField(blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    pending_visits = models.IntegerField(default=2, validators=[MaxValueValidator(3), MinValueValidator(0)])
+    pending_visits = models.IntegerField(default=3, validators=[MaxValueValidator(3), MinValueValidator(0)])
     missed_visits = models.IntegerField(default=0, validators=[MaxValueValidator(3), MinValueValidator(0)])
     odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)

@@ -11,7 +11,8 @@ from app.serializers import User
 import logging
 
 from app.utils.constants import MAP_GIRL_FORM_NAME, FOLLOW_UP_FORM_CHEW_NAME, APPOINTMENT_FORM_CHEW_NAME, \
-    MAP_GIRL_BUNDIBUGYO_FORM_NAME, APPOINTMENT_FORM_MIDWIFE_NAME, FOLLOW_UP_FORM_MIDWIFE_NAME, USER_TYPE_CHEW
+    MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME, APPOINTMENT_FORM_MIDWIFE_NAME, FOLLOW_UP_FORM_MIDWIFE_NAME, USER_TYPE_CHEW, \
+    MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME
 
 logger = logging.getLogger('testlogger')
 
@@ -49,7 +50,7 @@ class MappingEncounterWebhook(APIView):
         except KeyError:
             print(traceback.print_exc())
 
-        if MAP_GIRL_FORM_NAME in json_result or MAP_GIRL_BUNDIBUGYO_FORM_NAME in json_result:
+        if MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME in json_result or MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME in json_result:
             return self.process_mapping_encounter(json_result, user_id)
         elif FOLLOW_UP_FORM_CHEW_NAME in json_result or FOLLOW_UP_FORM_MIDWIFE_NAME in json_result:
             return self.process_follow_up_and_delivery_encounter(girl_id, json_result, user_id)
@@ -61,15 +62,10 @@ class MappingEncounterWebhook(APIView):
         print("process mapping encounter")
         try:
             try:
-                mapped_girl_object = json_result.get(MAP_GIRL_FORM_NAME)
-                print(mapped_girl_object)
-                print(type(mapped_girl_object))
-
-                if mapped_girl_object is None:
-                    mapped_girl_object = json_result.get(MAP_GIRL_BUNDIBUGYO_FORM_NAME)
-                print(mapped_girl_object)
-            except KeyError:
+                mapped_girl_object = json_result.get(MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME)
+            except Exception:
                 print(traceback.print_exc())
+                mapped_girl_object = json_result.get(MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME)
 
             contraceptive_method = ""
             voucher_number = 0
@@ -140,6 +136,16 @@ class MappingEncounterWebhook(APIView):
                         next_of_kin_phone_number=next_of_kin_number, education_level=education_level, dob=dob,
                         marital_status=marital_status, last_menstruation_date=last_menstruation_date)
             girl.save()
+
+            try:
+                # incase girl who has already had ANC visit is mapped by midwife
+                # save that date and create an anc visit
+                anc_group = mapped_girl_object["ANCAppointmentPreviousGroup"][0]
+                previous_appointment_date = anc_group["ANCDatePrevious"][0]
+                appointment = Appointment(girl=girl, user=user, date=previous_appointment_date)
+                appointment.save()
+            except Exception:
+                print(traceback.print_exc())
 
             mapping_encounter = MappingEncounter(girl=girl, user=user,
                                                  no_family_planning_reason=no_family_planning_reason,
