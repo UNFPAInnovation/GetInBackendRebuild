@@ -127,7 +127,7 @@ class MappingEncounterWebhook(APIView):
                 print(traceback.print_exc())
 
             anc_group = mapped_girl_object["ANCAppointmentGroup"][0]
-            next_appointment = anc_group["ANCDate"][0]
+            next_appointment_date = anc_group["ANCDate"][0]
 
             print("save form data")
 
@@ -150,7 +150,7 @@ class MappingEncounterWebhook(APIView):
                                                  fever=fever, blurred_vision=blurred_vision)
             mapping_encounter.save()
 
-            appointment = Appointment(girl=girl, user=user, next_appointment=next_appointment)
+            appointment = Appointment(girl=girl, user=user, date=next_appointment_date)
             appointment.save()
             return Response({'result': 'success'}, 200)
         except Exception:
@@ -185,9 +185,6 @@ class MappingEncounterWebhook(APIView):
                 print(traceback.print_exc())
 
             action_taken_group = follow_up_object["action_taken_by_health_person_group"][0]
-
-
-            action_taken_group = follow_up_object["action_taken_by_health_person_group"][0]
             action_taken_by_health_person = action_taken_group["action_taken_by_health_person"][0]
 
             girl = Girl.objects.get(id=girl_id)
@@ -196,9 +193,10 @@ class MappingEncounterWebhook(APIView):
             if action_taken_by_health_person == "appointment":
                 print("action taken appointment")
                 next_appointment = follow_up_object["schedule_appointment_group"][0]["schedule_appointment"][0]
-                appointment = Appointment(girl=girl, user=user, next_appointment=next_appointment)
+                appointment = Appointment(girl=girl, user=user, date=next_appointment)
                 appointment.save()
             elif action_taken_by_health_person == "delivery":
+                print("action taken delivery")
                 self.save_delivery(follow_up_object, girl, user)
 
             print('save results')
@@ -315,12 +313,12 @@ class MappingEncounterWebhook(APIView):
             action_taken = action_taken_group["action_taken_meeting_girl"][0]
 
             schedule_appointment_group = appointment_object["schedule_appointment_group"][0]
-            next_appointment = schedule_appointment_group["schedule_appointment"][0]
+            next_appointment_date = schedule_appointment_group["schedule_appointment"][0]
 
             girl = Girl.objects.get(id=girl_id)
             user = User.objects.get(id=user_id)
 
-            appointment = Appointment(girl=girl, user=user, next_appointment=next_appointment)
+            appointment = Appointment(girl=girl, user=user, date=next_appointment_date)
             appointment.save()
 
             appointment_encounter = AppointmentEncounter(girl=girl, user=user, used_ambulance=used_ambulance,

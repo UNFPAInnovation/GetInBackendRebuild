@@ -181,6 +181,8 @@ class Girl(models.Model):
     dob = models.DateField()
     age = models.IntegerField(blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    pending_visits = models.IntegerField(default=2, validators=[MaxValueValidator(3), MinValueValidator(0)])
+    missed_visits = models.IntegerField(default=0, validators=[MaxValueValidator(3), MinValueValidator(0)])
     odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -384,11 +386,9 @@ class Appointment(models.Model):
     # Also known as ANC visit
     girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    next_appointment = models.DateTimeField(blank=True, null=True)
+    date = models.DateTimeField(blank=True, null=True)
     health_facility = models.ForeignKey(HealthFacility, on_delete=models.CASCADE, blank=True, null=True)
     status = models.CharField(choices=APPOINTMENT, default=EXPECTED, max_length=250)
-    completed_visits = models.IntegerField(default=0, validators=[MaxValueValidator(3), MinValueValidator(0)])
-    pending_visits = models.IntegerField(default=2, validators=[MaxValueValidator(3), MinValueValidator(0)])
     odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -404,20 +404,28 @@ class Appointment(models.Model):
         Mapped girls must attend only three pending visits
         When midwife creates an appointment(ANC visit) date,
         the previous appointment is marked off as attended since the girl will have visited the health facility
+        This is done in signals.py - update_last_appointment_status.
+        signals.py is called after an appointment is saved
         """
         try:
+            print("save appointment")
             last_appointment = Appointment.objects.filter(girl=self.girl).last()
             print(last_appointment)
-            if last_appointment.pending_visits > 0:
-                # reduce the pending and increment completed visits once the girl has attend a health facility
-                self.pending_visits = last_appointment.pending_visits - 1
-                self.completed_visits = last_appointment.completed_visits + 1
+
+            # save first time appointment
+            if not last_appointment:
                 super(Appointment, self).save(force_insert, force_update, using, update_fields)
             else:
-                raise ValidationError("Girl cannot have any more appointments")
+                girl = self.girl
+                if girl.pending_visits > 0:
+                    # reduce the pending visits once the girl has attend a health facility
+                    girl.pending_visits = girl.pending_visits - 1
+                    girl.save(update_fields=['pending_visits'])
+                    super(Appointment, self).save(force_insert, force_update, using, update_fields)
+                else:
+                    raise ValidationError("Girl cannot have any more appointments")
         except Exception as e:
             print(e)
-        super(Appointment, self).save(force_insert, force_update, using, update_fields)
 
     @staticmethod
     def has_write_permission(request):
