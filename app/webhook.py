@@ -10,9 +10,9 @@ from app.serializers import User
 
 import logging
 
-from app.utils.constants import MAP_GIRL_FORM_NAME, FOLLOW_UP_FORM_CHEW_NAME, APPOINTMENT_FORM_CHEW_NAME, \
+from app.utils.constants import FOLLOW_UP_FORM_CHEW_NAME, APPOINTMENT_FORM_CHEW_NAME, \
     MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME, APPOINTMENT_FORM_MIDWIFE_NAME, FOLLOW_UP_FORM_MIDWIFE_NAME, USER_TYPE_CHEW, \
-    MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME
+    MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME, POSTNATAL_FORM_CHEW_NAME, POSTNATAL_FORM_MIDWIFE_NAME
 
 logger = logging.getLogger('testlogger')
 
@@ -56,6 +56,8 @@ class MappingEncounterWebhook(APIView):
             return self.process_follow_up_and_delivery_encounter(girl_id, json_result, user_id)
         elif APPOINTMENT_FORM_CHEW_NAME in json_result or APPOINTMENT_FORM_MIDWIFE_NAME in json_result:
             return self.process_appointment_encounter(girl_id, json_result, user_id)
+        elif POSTNATAL_FORM_CHEW_NAME in json_result or POSTNATAL_FORM_MIDWIFE_NAME in json_result:
+            return self.postnatal_encounter(girl_id, json_result, user_id)
         return Response({'result': 'failure'}, 400)
 
     def process_mapping_encounter(self, json_result, user_id):
@@ -341,3 +343,7 @@ class MappingEncounterWebhook(APIView):
         except Exception:
             print(traceback.print_exc())
         return Response({'result': 'failure'}, 400)
+
+    def postnatal_encounter(self, girl_id, json_result, user_id):
+
+        return Response()

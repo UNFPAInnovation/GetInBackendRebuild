@@ -34,11 +34,12 @@ EXPECTED = "Expected"
 # When you change a form and generate the xml, odk central will require you to upload one with a different id
 # from those that are already there
 #####################################
-APPOINTMENT_FORM_CHEW_NAME = "GetINTestAppointment5_chew"
-APPOINTMENT_FORM_MIDWIFE_NAME = "GetINTestAppointment5_midwife"
-MAP_GIRL_FORM_NAME = "GetInTest18"
+APPOINTMENT_FORM_CHEW_NAME = "GetINAppointment6_chew"
+APPOINTMENT_FORM_MIDWIFE_NAME = "GetINAppointment6_midwife"
 # each district has its own form.
-MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME = "GetInMapGirlBundibugyo5_chew"
-MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME = "GetInMapGirlBundibugyo5_midwife"
-FOLLOW_UP_FORM_CHEW_NAME = "GetInFollowup13_chew"
+MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME = "GetInMapGirlBundibugyo6_chew"
+MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME = "GetInMapGirlBundibugyo6_midwife"
+FOLLOW_UP_FORM_CHEW_NAME = "GetInFollowup14_chew"
 FOLLOW_UP_FORM_MIDWIFE_NAME = "GetInFollowup13_midwife"
+POSTNATAL_FORM_CHEW_NAME = "GetINPostnatalForm3_chew"
+POSTNATAL_FORM_MIDWIFE_NAME = "GetINPostnatalForm3_midwife"
