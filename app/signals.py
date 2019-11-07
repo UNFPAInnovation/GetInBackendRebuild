@@ -25,11 +25,14 @@ def update_last_appointment_status(sender, **kwargs):
         current_time_18_hours_ahead = timezone.now() + timezone.timedelta(hours=18)
         if second_last_appointment.status == EXPECTED and second_last_appointment.date <= current_time_18_hours_ahead:
             second_last_appointment.status = ATTENDED
+            second_last_appointment.save(update_fields=['status'])
             print(second_last_appointment)
             print("changed second last appointment status")
-        else:
+
+        current_time_24_hours_ahead = timezone.now() + timezone.timedelta(hours=24)
+        if second_last_appointment.status == EXPECTED and second_last_appointment.date <= current_time_24_hours_ahead:
             second_last_appointment.status = MISSED
-        second_last_appointment.save(update_fields=['status'])
+            second_last_appointment.save(update_fields=['status'])
 
         update_girls_completed_all_visits_column(girl)
     except Exception as e:
