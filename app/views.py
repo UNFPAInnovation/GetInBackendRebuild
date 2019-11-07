@@ -18,6 +18,8 @@ from app.serializers import UserSerializer, User, GirlSerializer, DistrictGetSer
 
 import logging
 
+from app.utils.utilities import add_months
+
 logger = logging.getLogger('testlogger')
 
 
@@ -248,20 +250,7 @@ class MappingEncountersStatsView(APIView):
             response["count"] = total_girls_in_all_subcounties
             all_months_range_data.append(response)
             sub_created_at_from = add_months(sub_created_at_from, 1)
-
-        return Response({"results": all_months_range_data}, 200)
-
-
-import datetime
-import calendar
-
-def add_months(sourcedate, months):
-    month = sourcedate.month - 1 + months
-    year = sourcedate.year + month // 12
-    month = month % 12 + 1
-    day = min(sourcedate.day, calendar.monthrange(year,month)[1])
-    return timezone.datetime(year, month, day)
-    # return datetime.date(year, month, day)
+        return Response(all_months_range_data, 200)
 
 
 class DeliveriesStatsView(APIView):
