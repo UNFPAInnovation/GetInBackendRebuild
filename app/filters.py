@@ -1,6 +1,6 @@
 import django_filters
 
-from app.models import Girl, FollowUp, Appointment, MappingEncounter, Delivery
+from app.models import Girl, FollowUp, Appointment, MappingEncounter, Delivery, User
 
 
 class SuperFilter(django_filters.FilterSet):
@@ -18,7 +18,7 @@ class SuperFilter(django_filters.FilterSet):
 
 class GirlFilter(SuperFilter):
     completed_all_visits = django_filters.BooleanFilter(field_name='completed_all_visits', lookup_expr='icontains',
-                                                         help_text='Girl who got completed all visits')
+                                                        help_text='Girl who got completed all visits')
 
     class Meta:
         model = Girl
@@ -63,4 +63,16 @@ class DeliveryFilter(SuperFilter):
         model = Delivery
         fields = {
             'created_from', 'created_to', 'delivery_location'
+        }
+
+
+class UserFilter(SuperFilter):
+    role = django_filters.NumberFilter(field_name='role', lookup_expr='icontains',
+                                       help_text='Filter user by their role, 1- Developer, 2 - DHO, 3 - CHEW, '
+                                                 '4 - Midwife, 5 - Ambulance')
+
+    class Meta:
+        model = User
+        fields = {
+            'created_from', 'created_to', 'role'
         }

@@ -7,7 +7,8 @@ from rest_framework.permissions import *
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from app.filters import GirlFilter, FollowUpFilter, MappingEncounterFilter, DeliveryFilter, AppointmentFilter
+from app.filters import GirlFilter, FollowUpFilter, MappingEncounterFilter, DeliveryFilter, AppointmentFilter, \
+    UserFilter
 from app.models import Girl, District, County, SubCounty, Parish, Village, \
     HealthFacility, FollowUp, Delivery, MappingEncounter, AppointmentEncounter, Appointment
 from app.permissions import IsPostOrIsAuthenticated
@@ -30,6 +31,7 @@ class UserCreateView(ListCreateAPIView):
     permission_classes = (IsPostOrIsAuthenticated,)
     serializer_class = UserSerializer
     queryset = User.objects.all()
+    filter_class = UserFilter
 
 
 class GirlCreateView(CreateAPIView):
