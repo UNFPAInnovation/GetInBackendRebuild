@@ -1,8 +1,9 @@
 from django.db.models import Q
 from django.db.models.signals import post_save
+from django.utils import timezone
 
 from app.models import Appointment
-from app.utils.constants import ATTENDED, EXPECTED
+from app.utils.constants import ATTENDED, EXPECTED, MISSED
 
 
 def update_last_appointment_status(sender, **kwargs):
@@ -19,13 +20,18 @@ def update_last_appointment_status(sender, **kwargs):
 
         print(second_last_appointment.status)
         print(second_last_appointment.id)
-        if second_last_appointment.status == EXPECTED:
+
+        # previous appointment must have been attended atleast within 18 hours margin on its deadline
+        current_time_18_hours_ahead = timezone.now() + timezone.timedelta(hours=18)
+        if second_last_appointment.status == EXPECTED and second_last_appointment.date <= current_time_18_hours_ahead:
             second_last_appointment.status = ATTENDED
-            second_last_appointment.save(update_fields=['status'])
             print(second_last_appointment)
             print("changed second last appointment status")
+        else:
+            second_last_appointment.status = MISSED
+        second_last_appointment.save(update_fields=['status'])
 
-            update_girls_completed_all_visits_column(girl)
+        update_girls_completed_all_visits_column(girl)
     except Exception as e:
         print(e)
 

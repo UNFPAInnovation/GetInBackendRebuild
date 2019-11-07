@@ -17,13 +17,13 @@ class SuperFilter(django_filters.FilterSet):
 
 
 class GirlFilter(SuperFilter):
-    completed_all_visits = django_filters.BooleanFilter(field_name='completed_all_visits', lookup_expr='icontains',
-                                                        help_text='Girl who got completed all visits')
+    status = django_filters.BooleanFilter(field_name='completed_all_visits', lookup_expr='icontains',
+                                                        help_text='Girl who have completed all ANC visits')
 
     class Meta:
         model = Girl
         fields = {
-            'created_from', 'created_to', 'completed_all_visits'
+            'created_from', 'created_to', 'status'
         }
 
 
