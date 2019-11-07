@@ -138,22 +138,37 @@ class MappingEncountersStatsView(APIView):
     """
     Provides statistical data for the GetIn dashboard
     Client query params
-    dashboard_stats?from=2019-10-01&to=2019-11-05
+    mapping_encounters_stats?from=2019-09-01&to=2020-01-10
 
     Server response
     {
-      count: 0,
-      district: "Arua",
-      month: "November",
-      year: "2019",
-      mappedGirlsInAgeGroup12_15: 0,
-      mappedGirlsInAgeGroup16_19: 10,
-      mappedGirlsInAgeGroup19_24: 3,
-      subcounties: ["Subcounty1", "Subcounty2", "etc"],
-      totalNumberOfGirlsMappedFromSubcounty1: 3,
-      totalNumberOfGirlsMappedFromSubcounty2: 4,
-      etc: 10
-    }
+    "results": [
+        {
+            "district": "BUNDIBUGYO",
+            "year": 2019,
+            "month": "September",
+            "mappedGirlsInAgeGroup12_15": 0,
+            "mappedGirlsInAgeGroup16_19": 2,
+            "mappedGirlsInAgeGroup20_24": 0,
+            "subcounties": [
+                "BUBANDI"
+            ],
+            "totalNumberOfGirlsMappedFromBUBANDI": 2,
+            "count": 2
+        },
+        {
+            "district": "BUNDIBUGYO",
+            "year": 2019,
+            "month": "October",
+            "mappedGirlsInAgeGroup12_15": 1,
+            "mappedGirlsInAgeGroup16_19": 1,
+            "mappedGirlsInAgeGroup20_24": 2,
+            "subcounties": [
+                "BUBANDI"
+            ],
+            "totalNumberOfGirlsMappedFromBUBANDI": 4,
+            "count": 4
+        },...
     """
 
     def get(self, request, format=None, **kwargs):
@@ -164,54 +179,89 @@ class MappingEncountersStatsView(APIView):
         created_at_from_param = get_params['from']
         created_at_to_param = get_params['to']
 
-        year, month, day = [int(x) for x in created_at_from_param.split("-")]
-        created_at_from = timezone.datetime(year, month, day)
+        year_from, month_from, day_from = [int(x) for x in created_at_from_param.split("-")]
+        created_at_from = timezone.datetime(year_from, month_from, day_from)
 
-        year, month, day = [int(x) for x in created_at_to_param.split("-")]
-        created_at_to = timezone.datetime(year, month, day)
+        year_to, month_to, day_to = [int(x) for x in created_at_to_param.split("-")]
+        created_at_to = timezone.datetime(year_to, month_to, day_to)
         print(created_at_from)
 
-        response = dict()
-        subcounty = request.user.village.parish.sub_county
-        district = subcounty.county.district
-        response["district"] = district.name
-        response["year"] = created_at_from.year
-        response["month"] = created_at_from.strftime("%B")
+        months_range = int(abs((created_at_to - created_at_from).days) / 30)
+        print("month range " + str(months_range))
+        month_counter = month_from
 
-        all_subcounties = []
+        all_months_range_data = []
+        print("month counter " + str(month_counter))
+        print("month to " + str(month_to))
 
-        girls = Girl.objects.filter(Q(age__gte=12) & Q(age__lte=15) &
-                                    Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to))
-        all_subcounties += [girl.village.parish.sub_county for girl in girls if
-                            girl.village.parish.sub_county.county.district == district]
-        response["mappedGirlsInAgeGroup12_15"] = girls.count()
+        sub_created_at_from = timezone.datetime(year_from, month_from, 1)
 
-        girls = Girl.objects.filter(Q(age__gte=16) & Q(age__lte=19) &
-                                    Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to))
-        all_subcounties += [girl.village.parish.sub_county for girl in girls if
-                            girl.village.parish.sub_county.county.district == district]
-        response["mappedGirlsInAgeGroup16_19"] = girls.count()
+        month_counter = 0
+        while True:
+            print("looping months")
+            month_counter += 1
+            response = dict()
+            subcounty = request.user.village.parish.sub_county
+            district = subcounty.county.district
+            response["district"] = district.name
 
-        girls = Girl.objects.filter(Q(age__gte=20) & Q(age__lte=24) &
-                                    Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to))
+            sub_created_at_to = add_months(sub_created_at_from, 1)
+            if sub_created_at_to > created_at_to:
+                break
 
-        all_subcounties += [girl.village.parish.sub_county for girl in girls if
-                            girl.village.parish.sub_county.county.district == district]
-        response["mappedGirlsInAgeGroup20_24"] = girls.count()
+            response["year"] = sub_created_at_from.year
+            response["month"] = sub_created_at_from.strftime("%B")
 
-        # remove duplicate subcounties
-        all_subcounties = list(set(all_subcounties))
+            all_subcounties = []
 
-        response["subcounties"] = [subcounty.name for subcounty in all_subcounties]
+            girls = Girl.objects.filter(Q(age__gte=12) & Q(age__lte=15) &
+                                        Q(created_at__gte=sub_created_at_from) & Q(created_at__lte=sub_created_at_to))
+            all_subcounties += [girl.village.parish.sub_county for girl in girls if
+                                girl.village.parish.sub_county.county.district == district]
+            response["mappedGirlsInAgeGroup12_15"] = girls.count()
 
-        total_girls_in_all_subcounties = 0
-        for subcounty in all_subcounties:
-            total_girls_in_subcounty = Girl.objects.filter(village__parish__sub_county=subcounty).count()
-            response["totalNumberOfGirlsMappedFrom" + subcounty.name] = total_girls_in_subcounty
-            total_girls_in_all_subcounties += total_girls_in_subcounty
-        response["count"] = total_girls_in_all_subcounties
+            girls = Girl.objects.filter(Q(age__gte=16) & Q(age__lte=19) &
+                                        Q(created_at__gte=sub_created_at_from) & Q(created_at__lte=sub_created_at_to))
+            all_subcounties += [girl.village.parish.sub_county for girl in girls if
+                                girl.village.parish.sub_county.county.district == district]
+            response["mappedGirlsInAgeGroup16_19"] = girls.count()
 
-        return Response({"results": response}, 200)
+            girls = Girl.objects.filter(Q(age__gte=20) & Q(age__lte=24) &
+                                        Q(created_at__gte=sub_created_at_from) & Q(created_at__lte=sub_created_at_to))
+
+            all_subcounties += [girl.village.parish.sub_county for girl in girls if
+                                girl.village.parish.sub_county.county.district == district]
+            response["mappedGirlsInAgeGroup20_24"] = girls.count()
+
+            # remove duplicate subcounties
+            all_subcounties = list(set(all_subcounties))
+
+            response["subcounties"] = [subcounty.name for subcounty in all_subcounties]
+
+            total_girls_in_all_subcounties = 0
+            for subcounty in all_subcounties:
+                total_girls_in_subcounty = Girl.objects.filter(Q(village__parish__sub_county=subcounty) &
+                                                               Q(created_at__gte=sub_created_at_from) &
+                                                               Q(created_at__lte=sub_created_at_to)).count()
+                response["totalNumberOfGirlsMappedFrom" + subcounty.name] = total_girls_in_subcounty
+                total_girls_in_all_subcounties += total_girls_in_subcounty
+            response["count"] = total_girls_in_all_subcounties
+            all_months_range_data.append(response)
+            sub_created_at_from = add_months(sub_created_at_from, 1)
+
+        return Response({"results": all_months_range_data}, 200)
+
+
+import datetime
+import calendar
+
+def add_months(sourcedate, months):
+    month = sourcedate.month - 1 + months
+    year = sourcedate.year + month // 12
+    month = month % 12 + 1
+    day = min(sourcedate.day, calendar.monthrange(year,month)[1])
+    return timezone.datetime(year, month, day)
+    # return datetime.date(year, month, day)
 
 
 class DeliveriesStatsView(APIView):
@@ -258,7 +308,8 @@ class DeliveriesStatsView(APIView):
 
         all_subcounties = []
 
-        deliveries = Delivery.objects.filter(Q(girl__created_at__gte=created_at_from) & Q(girl__created_at__lte=created_at_to))
+        deliveries = Delivery.objects.filter(
+            Q(girl__created_at__gte=created_at_from) & Q(girl__created_at__lte=created_at_to))
 
         all_subcounties += [delivery.girl.village.parish.sub_county for delivery in deliveries
                             if delivery.girl.village.parish.sub_county.county.district == district]
@@ -271,7 +322,8 @@ class DeliveriesStatsView(APIView):
         all_deliveries_total = 0
 
         for subcounty in all_subcounties:
-            delivery_total = Delivery.objects.filter(girl__village__parish_id__in=[parish.id for parish in subcounty.parish_set.all()]).count()
+            delivery_total = Delivery.objects.filter(
+                girl__village__parish_id__in=[parish.id for parish in subcounty.parish_set.all()]).count()
             response["deliveriesFromSubcounty" + subcounty.name] = delivery_total
             all_deliveries_total += delivery_total
 
