@@ -183,17 +183,12 @@ class Girl(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     pending_visits = models.IntegerField(default=3, validators=[MaxValueValidator(3), MinValueValidator(0)])
     missed_visits = models.IntegerField(default=0, validators=[MaxValueValidator(3), MinValueValidator(0)])
+    completed_all_visits = models.BooleanField(default=False, blank=True, null=True)
     odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.last_name + " " + self.first_name
-
-    @property
-    def completed_all_visits(self):
-        # true if girl has attended all three appointments
-        attended_count = Appointment.objects.filter(Q(girl__id=self.id) & Q(status=ATTENDED)).count()
-        return attended_count == 3
 
     @staticmethod
     def has_write_permission(request):

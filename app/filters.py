@@ -17,10 +17,13 @@ class SuperFilter(django_filters.FilterSet):
 
 
 class GirlFilter(SuperFilter):
+    completed_all_visits = django_filters.BooleanFilter(field_name='completed_all_visits', lookup_expr='icontains',
+                                                         help_text='Girl who got completed all visits')
+
     class Meta:
         model = Girl
         fields = {
-            'created_from', 'created_to'
+            'created_from', 'created_to', 'completed_all_visits'
         }
 
 
@@ -42,8 +45,8 @@ class MappingEncounterFilter(SuperFilter):
 
 class AppointmentFilter(SuperFilter):
     status = django_filters.CharFilter(field_name='status', lookup_expr='icontains',
-                                               help_text='Filter appointments by status: Missed, Attended, Expected, '
-                                                         'Completed')
+                                       help_text='Filter appointments by status: Missed, Attended, Expected, '
+                                                 'Completed')
 
     class Meta:
         model = Appointment
@@ -54,7 +57,7 @@ class AppointmentFilter(SuperFilter):
 
 class DeliveryFilter(SuperFilter):
     delivery_location = django_filters.CharFilter(field_name='delivery_location', lookup_expr='icontains',
-                                               help_text='Filter girls who delivered from home or health facility')
+                                                  help_text='Filter girls who delivered from home or health facility')
 
     class Meta:
         model = Delivery
