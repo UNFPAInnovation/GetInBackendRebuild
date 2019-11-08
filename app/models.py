@@ -126,6 +126,7 @@ class User(AbstractUser):
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     number_plate = models.CharField(max_length=50, blank=True, null=True)
     village = models.ForeignKey(Village, on_delete=models.CASCADE, blank=True, null=True)
+    district = models.ForeignKey(District, on_delete=models.CASCADE, blank=True, null=True)
     # midwife attached to vht. Midwife can have two VHTs at a time while VHT has one midwife
     midwife = models.ForeignKey('User', on_delete=models.DO_NOTHING, blank=True, null=True)
 
@@ -135,8 +136,14 @@ class User(AbstractUser):
         if self.role in [USER_TYPE_DEVELOPER, USER_TYPE_MANAGER]:
             self.is_superuser = True
 
-        if self.midwife.role is not USER_TYPE_MIDWIFE:
-            raise ValidationError("Attached person is not a midwife")
+        # the user attached to the CHEW should only be midwife
+        if self.midwife:
+            if self.midwife.role is not USER_TYPE_MIDWIFE:
+                raise ValidationError("Attached person is not a midwife")
+
+        if self.village:
+            # only get the village and extract the rest of the fields from there
+            self.district = self.village.parish.sub_county.county.district
         super(User, self).save(*args, **kwargs)
 
     def __str__(self):

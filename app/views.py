@@ -19,6 +19,7 @@ from app.serializers import UserSerializer, User, GirlSerializer, DistrictGetSer
 
 import logging
 
+from app.utils.constants import USER_TYPE_MIDWIFE, USER_TYPE_CHEW, USER_TYPE_DHO
 from app.utils.utilities import add_months
 
 logger = logging.getLogger('testlogger')
@@ -44,14 +45,37 @@ class GirlCreateView(CreateAPIView):
 
 
 class GirlView(ListCreateAPIView):
-    queryset = Girl.objects.all()
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == USER_TYPE_MIDWIFE:
+            users = User.objects.filter(midwife=user)
+            model = Girl.objects.filter(Q(user__in=users) | Q(user=user))
+        elif user.role in [USER_TYPE_CHEW]:
+            model = Girl.objects.filter(user=user)
+        elif user.role in [USER_TYPE_DHO]:
+            model = Girl.objects.filter(user__district=user.district)
+        else:
+            model = Girl.objects.all()
+        return model
+
     serializer_class = GirlSerializer
     permission_classes = (DRYPermissions, IsAuthenticated)
     filter_class = GirlFilter
 
 
 class MappingEncounterView(ListCreateAPIView):
-    queryset = MappingEncounter.objects.all()
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == USER_TYPE_MIDWIFE:
+            users = User.objects.filter(midwife=user)
+            model = MappingEncounter.objects.filter(Q(user__in=users) | Q(user=user))
+        elif user.role in [USER_TYPE_CHEW]:
+            model = MappingEncounter.objects.filter(user=user)
+        elif user.role in [USER_TYPE_DHO]:
+            model = MappingEncounter.objects.filter(user__district=user.district)
+        else:
+            model = MappingEncounter.objects.all()
+        return model
     serializer_class = MappingEncounterSerializer
     permission_classes = (DRYPermissions, IsAuthenticated)
     filter_class = MappingEncounterFilter
@@ -95,13 +119,32 @@ class VillageView(ListCreateAPIView):
 
 
 class HealthFacilityView(ListCreateAPIView):
+    def get_queryset(self):
+        user = self.request.user
+        if user.role in [USER_TYPE_DHO, USER_TYPE_CHEW, USER_TYPE_MIDWIFE]:
+            model = HealthFacility.objects.filter(user__district=user.district)
+        else:
+            model = HealthFacility.objects.all()
+        return model
+
     queryset = HealthFacility.objects.all()
     serializer_class = HealthFacilityGetSerializer
     permission_classes = (IsAdminUser, IsAuthenticated)
 
 
 class FollowUpView(ListCreateAPIView):
-    queryset = FollowUp.objects.all()
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == USER_TYPE_MIDWIFE:
+            users = User.objects.filter(midwife=user)
+            model = FollowUp.objects.filter(Q(user__in=users) | Q(user=user))
+        elif user.role in [USER_TYPE_CHEW, USER_TYPE_DHO]:
+            model = FollowUp.objects.filter(
+                girl__village__parish_id=user.village.parish_id)
+        else:
+            model = FollowUp.objects.all()
+        return model
+
     permission_classes = (IsAuthenticated, DRYPermissions)
     filter_class = FollowUpFilter
 
@@ -113,7 +156,19 @@ class FollowUpView(ListCreateAPIView):
 
 
 class DeliveriesView(ListCreateAPIView):
-    queryset = Delivery.objects.all()
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == USER_TYPE_MIDWIFE:
+            users = User.objects.filter(midwife=user)
+            model = Delivery.objects.filter(Q(user_id__in=[user.id for user in users]) | Q(user__id=user.id))
+        elif user.role in [USER_TYPE_CHEW]:
+            model = Delivery.objects.filter(user=user)
+        elif user.role in [USER_TYPE_DHO]:
+            model = Delivery.objects.filter(user__district=user.district)
+        else:
+            model = Delivery.objects.all()
+        return model
+
     permission_classes = (IsAuthenticated, DRYPermissions)
     filter_class = DeliveryFilter
 
@@ -125,14 +180,44 @@ class DeliveriesView(ListCreateAPIView):
 
 
 class AppointmentEncounterView(ListCreateAPIView):
-    queryset = AppointmentEncounter.objects.all()
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == USER_TYPE_MIDWIFE:
+            users = User.objects.filter(midwife=user)
+            model = AppointmentEncounter.objects.filter(
+                Q(user_id__in=[user.id for user in users]) | Q(user__id=user.id))
+        elif user.role in [USER_TYPE_CHEW]:
+            model = AppointmentEncounter.objects.filter(user=user)
+        elif user.role in [USER_TYPE_DHO]:
+            model = AppointmentEncounter.objects.filter(user__district=user.district)
+        else:
+            model = AppointmentEncounter.objects.all()
+        return model
+
     permission_classes = (IsAuthenticated, DRYPermissions)
     filter_class = DeliveryFilter
     serializer_class = AppointmentEncounterSerializer
 
 
 class AppointmentView(ListCreateAPIView):
-    queryset = Appointment.objects.all()
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == USER_TYPE_MIDWIFE:
+            # return all appointment from CHEWS attached to the midwife or
+            # any appointment created by the midwife herself
+            users = User.objects.filter(midwife=user)
+            appointments = Appointment.objects.filter(Q(user_id__in=[user.id for user in users]) | Q(user__id=user.id))
+        elif user.role in [USER_TYPE_CHEW]:
+            # return appointments created by CHEW
+            appointments = Appointment.objects.filter(user=user)
+        elif user.role in [USER_TYPE_DHO]:
+            # return all appointments in the DHO district
+            appointments = Appointment.objects.filter(user__district=user.district)
+        else:
+            # return everything for super users and developers
+            appointments = Appointment.objects.all()
+        return appointments
+
     permission_classes = (IsAuthenticated, DRYPermissions)
     filter_class = AppointmentFilter
     serializer_class = AppointmentSerializer
