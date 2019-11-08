@@ -12,8 +12,8 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'first_name', 'last_name', 'username', 'email', 'phone', 'password', 'gender', 'village', 'number_plate',
-            'role', 'created_at', 'user_permissions')
+            'id', 'first_name', 'last_name', 'username', 'email', 'phone', 'password', 'gender', 'village', 'number_plate',
+            'role', 'midwife', 'user_permissions', 'created_at')
         # extra_kwargs = {"password": {"write_only": True}}
 
     def validate_phone(self, value):
@@ -51,7 +51,7 @@ class UserPostSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'first_name', 'last_name', 'username', 'email', 'phone', 'password', 'gender', 'village', 'number_plate',
-            'role')
+            'role', 'midwife')
 
     def create(self, validated_data):
         """

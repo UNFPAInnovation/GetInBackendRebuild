@@ -126,12 +126,17 @@ class User(AbstractUser):
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     number_plate = models.CharField(max_length=50, blank=True, null=True)
     village = models.ForeignKey(Village, on_delete=models.CASCADE, blank=True, null=True)
+    # midwife attached to vht. Midwife can have two VHTs at a time while VHT has one midwife
+    midwife = models.ForeignKey('User', on_delete=models.DO_NOTHING, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if self.role in [USER_TYPE_DEVELOPER, USER_TYPE_DHO]:
             self.is_staff = True
         if self.role in [USER_TYPE_DEVELOPER, USER_TYPE_MANAGER]:
             self.is_superuser = True
+
+        if self.midwife.role is not USER_TYPE_MIDWIFE:
+            raise ValidationError("Attached person is not a midwife")
         super(User, self).save(*args, **kwargs)
 
     def __str__(self):
