@@ -1,5 +1,7 @@
 import jwt
+from djoser.serializers import TokenSerializer
 from rest_framework import serializers
+from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import ValidationError
 from rest_framework_jwt.utils import jwt_payload_handler
 
@@ -12,7 +14,8 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'id', 'first_name', 'last_name', 'username', 'email', 'phone', 'password', 'gender', 'village', 'number_plate',
+            'id', 'first_name', 'last_name', 'username', 'email', 'phone', 'password', 'gender', 'village',
+            'number_plate',
             'role', 'midwife', 'user_permissions', 'created_at')
         # extra_kwargs = {"password": {"write_only": True}}
 
@@ -183,3 +186,18 @@ class AppointmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Appointment
         fields = '__all__'
+
+
+class CustomTokenSerializer(TokenSerializer):
+    """
+    Override the djoser(https://djoser.readthedocs.io/en/latest/) token serializer
+    Allows us to return user details along side the djoser token
+    """
+    auth_token = serializers.CharField(source='key')
+    user = UserGetSerializer()
+
+    class Meta:
+        model = Token
+        fields = (
+            'auth_token', 'user'
+        )
