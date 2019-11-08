@@ -129,6 +129,8 @@ class User(AbstractUser):
     district = models.ForeignKey(District, on_delete=models.CASCADE, blank=True, null=True)
     # midwife attached to vht. Midwife can have two VHTs at a time while VHT has one midwife
     midwife = models.ForeignKey('User', on_delete=models.DO_NOTHING, blank=True, null=True)
+    # allows use to access these fields in /auth/me
+    REQUIRED_FIELDS = ["phone", "role"]
 
     def save(self, *args, **kwargs):
         if self.role in [USER_TYPE_DEVELOPER, USER_TYPE_DHO]:
