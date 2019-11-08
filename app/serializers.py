@@ -26,9 +26,6 @@ class UserSerializer(serializers.ModelSerializer):
             raise ValidationError("This user has already registered with the phone number")
         return value
 
-    def validate(self, data):
-        return data
-
     def create(self, validated_data):
         user = User(
             first_name=validated_data['first_name'],
@@ -71,7 +68,7 @@ class UserGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'id', 'first_name', 'last_name', 'email', 'gender', 'village', 'number_plate', 'role', 'phone')
+            'id', 'first_name', 'last_name', 'username', 'email', 'gender', 'village', 'number_plate', 'role', 'phone')
 
 
 class DistrictGetSerializer(serializers.ModelSerializer):
