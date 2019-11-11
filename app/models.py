@@ -5,18 +5,16 @@ import pytz
 from django.contrib.auth.models import AbstractUser, Permission
 from django.core.validators import RegexValidator, MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import Q
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
-from app.utils.constants import GENDER_FEMALE, GENDER_MALE, GENDER_NOT_SPECIFIED, PRIMARY_LEVEL, O_LEVEL, A_LEVEL, \
+from app.utils.constants import GENDER_FEMALE, GENDER_MALE, PRIMARY_LEVEL, O_LEVEL, A_LEVEL, \
     TERTIARY_LEVEL, SINGLE, MARRIED, DIVORCED, HOME, HEALTH_FACILITY, USER_TYPE_DEVELOPER, USER_TYPE_DHO, \
     USER_TYPE_CHEW, USER_TYPE_MIDWIFE, USER_TYPE_AMBULANCE, USER_TYPE_MANAGER, MISSED, ATTENDED, EXPECTED
 
 GENDER_CHOICES = (
     (GENDER_MALE, 'male'),
     (GENDER_FEMALE, 'female'),
-    (GENDER_NOT_SPECIFIED, 'not specified'),
 )
 
 EDUCATION_CHOICES = (
@@ -113,16 +111,17 @@ class HealthFacility(models.Model):
 
 class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    role = models.IntegerField(choices=USER_TYPE_CHOICES, default=USER_TYPE_DEVELOPER,
-                               help_text='1 - Developer, 2 - DHO, 3 - CHEW, 4 - Midwife, 5 - Ambulance, 6 - Manager')
+    role = models.CharField(choices=USER_TYPE_CHOICES, default=USER_TYPE_DEVELOPER, max_length=50,
+                            help_text='developer - Developer, dho - DHO, chew - CHEW, midwife - Midwife, '
+                                      'ambulance - Ambulance, manager - Manager')
     phone = models.CharField(max_length=12, validators=[
         RegexValidator(
             regex='^(07)[0-9]{8}$',
             message='Wrong phone number format',
         )
     ], unique=True)
-    gender = models.IntegerField(choices=GENDER_CHOICES, default=GENDER_NOT_SPECIFIED,
-                                 help_text='0 - Male, 1 - Female, 2 - Not Specified')
+    gender = models.CharField(choices=GENDER_CHOICES, default=GENDER_FEMALE, max_length=50,
+                              help_text='male - Male, female - Female')
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     number_plate = models.CharField(max_length=50, blank=True, null=True)
     village = models.ForeignKey(Village, on_delete=models.CASCADE, blank=True, null=True)

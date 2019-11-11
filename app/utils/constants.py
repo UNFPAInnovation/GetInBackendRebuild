@@ -1,7 +1,6 @@
 # user's gender
-GENDER_MALE = 0
-GENDER_FEMALE = 1
-GENDER_NOT_SPECIFIED = 2
+GENDER_MALE = "male"
+GENDER_FEMALE = "female"
 
 PRIMARY_LEVEL = "Primary level"
 O_LEVEL = "O level"
@@ -17,13 +16,13 @@ DIVORCED = "Divorced"
 HOME = "Home"
 HEALTH_FACILITY = "Health facility"
 
-USER_TYPE_DEVELOPER = 1
-USER_TYPE_DHO = 2
+USER_TYPE_DEVELOPER = "developer"
+USER_TYPE_DHO = "dho"
 # Also known as VHT
-USER_TYPE_CHEW = 3
-USER_TYPE_MIDWIFE = 4
-USER_TYPE_AMBULANCE = 5
-USER_TYPE_MANAGER = 6
+USER_TYPE_CHEW = "chew"
+USER_TYPE_MIDWIFE = "midwife"
+USER_TYPE_AMBULANCE = "ambulance"
+USER_TYPE_MANAGER = "manager"
 
 MISSED = "Missed"
 ATTENDED = "Attended"
