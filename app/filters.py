@@ -48,10 +48,15 @@ class AppointmentFilter(SuperFilter):
                                        help_text='Filter appointments by status: Missed, Attended, Expected, '
                                                  'Completed')
 
+    date_from = django_filters.DateTimeFilter(field_name='date', lookup_expr='gte',
+                                                 help_text='Date is greater than or equal to')
+    date_to = django_filters.DateTimeFilter(field_name='date', lookup_expr='lte',
+                                               help_text='Date is less than or equal to')
+
     class Meta:
         model = Appointment
         fields = {
-            'created_from', 'created_to', 'status'
+            'created_from', 'created_to', 'status', 'date_from', 'date_to'
         }
 
 
@@ -59,10 +64,15 @@ class DeliveryFilter(SuperFilter):
     delivery_location = django_filters.CharFilter(field_name='delivery_location', lookup_expr='icontains',
                                                   help_text='Filter girls who delivered from home or health facility')
 
+    date_from = django_filters.DateTimeFilter(field_name='date', lookup_expr='gte',
+                                              help_text='Date is greater than or equal to')
+    date_to = django_filters.DateTimeFilter(field_name='date', lookup_expr='lte',
+                                            help_text='Date is less than or equal to')
+
     class Meta:
         model = Delivery
         fields = {
-            'created_from', 'created_to', 'delivery_location'
+            'created_from', 'created_to', 'delivery_location', 'date_from', 'date_to'
         }
 
 

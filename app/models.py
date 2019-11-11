@@ -373,7 +373,7 @@ class Delivery(models.Model):
     no_family_planning_reason = models.CharField(max_length=250, blank=True, null=True)
     family_planning_type = models.CharField(max_length=250, blank=True, null=True)
     health_facility = models.ForeignKey(HealthFacility, on_delete=models.CASCADE, blank=True, null=True)
-    delivery_date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField(auto_now_add=True)
     delivery_location = models.CharField(choices=DELIVERY_LOCATION, default=HOME, max_length=250)
     odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
