@@ -49,11 +49,11 @@ class GirlView(ListCreateAPIView):
         user = self.request.user
         if user.role == USER_TYPE_MIDWIFE:
             users = User.objects.filter(midwife=user)
-            model = Girl.objects.filter(Q(user__in=users) | Q(user=user))
+            model = Girl.objects.filter(Q(user__in=users) | Q(user=user)).order_by('-created_at')
         elif user.role in [USER_TYPE_CHEW]:
-            model = Girl.objects.filter(user=user)
+            model = Girl.objects.filter(user=user).order_by('-created_at')
         elif user.role in [USER_TYPE_DHO]:
-            model = Girl.objects.filter(user__district=user.district)
+            model = Girl.objects.filter(user__district=user.district).order_by('-created_at')
         else:
             model = Girl.objects.all()
         return model
@@ -68,13 +68,13 @@ class MappingEncounterView(ListCreateAPIView):
         user = self.request.user
         if user.role == USER_TYPE_MIDWIFE:
             users = User.objects.filter(midwife=user)
-            model = MappingEncounter.objects.filter(Q(user__in=users) | Q(user=user))
+            model = MappingEncounter.objects.filter(Q(user__in=users) | Q(user=user)).order_by('-created_at')
         elif user.role in [USER_TYPE_CHEW]:
-            model = MappingEncounter.objects.filter(user=user)
+            model = MappingEncounter.objects.filter(user=user).order_by('-created_at')
         elif user.role in [USER_TYPE_DHO]:
-            model = MappingEncounter.objects.filter(user__district=user.district)
+            model = MappingEncounter.objects.filter(user__district=user.district).order_by('-created_at')
         else:
-            model = MappingEncounter.objects.all()
+            model = MappingEncounter.objects.all().order_by('-created_at')
         return model
     serializer_class = MappingEncounterSerializer
     permission_classes = (DRYPermissions, IsAuthenticated)
@@ -137,12 +137,12 @@ class FollowUpView(ListCreateAPIView):
         user = self.request.user
         if user.role == USER_TYPE_MIDWIFE:
             users = User.objects.filter(midwife=user)
-            model = FollowUp.objects.filter(Q(user__in=users) | Q(user=user))
+            model = FollowUp.objects.filter(Q(user__in=users) | Q(user=user)).order_by('-created_at')
         elif user.role in [USER_TYPE_CHEW, USER_TYPE_DHO]:
             model = FollowUp.objects.filter(
-                girl__village__parish_id=user.village.parish_id)
+                girl__village__parish_id=user.village.parish_id).order_by('-created_at')
         else:
-            model = FollowUp.objects.all()
+            model = FollowUp.objects.all().order_by('-created_at')
         return model
 
     permission_classes = (IsAuthenticated, DRYPermissions)
@@ -160,13 +160,13 @@ class DeliveriesView(ListCreateAPIView):
         user = self.request.user
         if user.role == USER_TYPE_MIDWIFE:
             users = User.objects.filter(midwife=user)
-            model = Delivery.objects.filter(Q(user_id__in=[user.id for user in users]) | Q(user__id=user.id))
+            model = Delivery.objects.filter(Q(user_id__in=[user.id for user in users]) | Q(user__id=user.id)).order_by('-created_at')
         elif user.role in [USER_TYPE_CHEW]:
-            model = Delivery.objects.filter(user=user)
+            model = Delivery.objects.filter(user=user).order_by('-created_at')
         elif user.role in [USER_TYPE_DHO]:
-            model = Delivery.objects.filter(user__district=user.district)
+            model = Delivery.objects.filter(user__district=user.district).order_by('-created_at')
         else:
-            model = Delivery.objects.all()
+            model = Delivery.objects.all().order_by('-created_at')
         return model
 
     permission_classes = (IsAuthenticated, DRYPermissions)
@@ -185,13 +185,13 @@ class AppointmentEncounterView(ListCreateAPIView):
         if user.role == USER_TYPE_MIDWIFE:
             users = User.objects.filter(midwife=user)
             model = AppointmentEncounter.objects.filter(
-                Q(user_id__in=[user.id for user in users]) | Q(user__id=user.id))
+                Q(user_id__in=[user.id for user in users]) | Q(user__id=user.id)).order_by('-created_at')
         elif user.role in [USER_TYPE_CHEW]:
-            model = AppointmentEncounter.objects.filter(user=user)
+            model = AppointmentEncounter.objects.filter(user=user).order_by('-created_at')
         elif user.role in [USER_TYPE_DHO]:
-            model = AppointmentEncounter.objects.filter(user__district=user.district)
+            model = AppointmentEncounter.objects.filter(user__district=user.district).order_by('-created_at')
         else:
-            model = AppointmentEncounter.objects.all()
+            model = AppointmentEncounter.objects.all().order_by('-created_at')
         return model
 
     permission_classes = (IsAuthenticated, DRYPermissions)
@@ -206,16 +206,16 @@ class AppointmentView(ListCreateAPIView):
             # return all appointment from CHEWS attached to the midwife or
             # any appointment created by the midwife herself
             users = User.objects.filter(midwife=user)
-            appointments = Appointment.objects.filter(Q(user_id__in=[user.id for user in users]) | Q(user__id=user.id))
+            appointments = Appointment.objects.filter(Q(user_id__in=[user.id for user in users]) | Q(user__id=user.id)).order_by('-created_at')
         elif user.role in [USER_TYPE_CHEW]:
             # return appointments created by CHEW
-            appointments = Appointment.objects.filter(user=user)
+            appointments = Appointment.objects.filter(user=user).order_by('-created_at')
         elif user.role in [USER_TYPE_DHO]:
             # return all appointments in the DHO district
-            appointments = Appointment.objects.filter(user__district=user.district)
+            appointments = Appointment.objects.filter(user__district=user.district).order_by('-created_at')
         else:
             # return everything for super users and developers
-            appointments = Appointment.objects.all()
+            appointments = Appointment.objects.all().order_by('-created_at')
         return appointments
 
     permission_classes = (IsAuthenticated, DRYPermissions)
