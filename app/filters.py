@@ -67,9 +67,9 @@ class DeliveryFilter(SuperFilter):
 
 
 class UserFilter(SuperFilter):
-    role = django_filters.NumberFilter(field_name='role', lookup_expr='icontains',
-                                       help_text='Filter user by their role, 1- Developer, 2 - DHO, 3 - CHEW, '
-                                                 '4 - Midwife, 5 - Ambulance')
+    role = django_filters.CharFilter(field_name='role', lookup_expr='icontains',
+                                       help_text='Filter user by their role, developer - Developer, dho - DHO, chew - CHEW, '
+                                                 'midwife - Midwife, ambulance - Ambulance')
 
     class Meta:
         model = User

@@ -10,36 +10,6 @@ from app.models import User, District, County, SubCounty, Parish, Village, Girl,
     MappingEncounter, AppointmentEncounter, Appointment
 
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = (
-            'id', 'first_name', 'last_name', 'username', 'email', 'phone', 'password', 'gender', 'village',
-            'number_plate',
-            'role', 'midwife', 'user_permissions', 'created_at')
-        # extra_kwargs = {"password": {"write_only": True}}
-
-    def validate_phone(self, value):
-        # user can only register one phone number
-        user = User.objects.filter(phone=value)
-        if user.exists():
-            raise ValidationError("This user has already registered with the phone number")
-        return value
-
-    def create(self, validated_data):
-        user = User(
-            first_name=validated_data['first_name'],
-            last_name=validated_data['last_name'],
-            # username is a combination of first and last name
-            username=validated_data['first_name'] + validated_data['last_name'],
-            email=validated_data['email'],
-            phone=validated_data['phone'],
-        )
-        user.set_password(validated_data['phone'])
-        user.save()
-        return user
-
-
 def create_token(user=None):
     payload = jwt_payload_handler(user)
     token = jwt.encode(payload, SECRET_KEY)
@@ -74,29 +44,31 @@ class UserGetSerializer(serializers.ModelSerializer):
 class DistrictGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = District
-        fields = (
-            'id', 'name')
+        fields = '__all__'
 
 
 class CountyGetSerializer(serializers.ModelSerializer):
+    district = DistrictGetSerializer(many=False, read_only=True)
+
     class Meta:
         model = County
-        fields = (
-            'id', 'district', 'name')
+        fields = '__all__'
 
 
 class SubCountyGetSerializer(serializers.ModelSerializer):
+    county = CountyGetSerializer(many=False, read_only=True)
+
     class Meta:
         model = SubCounty
-        fields = (
-            'id', 'county', 'name')
+        fields = '__all__'
 
 
 class ParishGetSerializer(serializers.ModelSerializer):
+    sub_county = SubCountyGetSerializer(many=False, read_only=True)
+
     class Meta:
         model = Parish
-        fields = (
-            'id', 'sub_county', 'name')
+        fields = '__all__'
 
 
 class VillageGetSerializer(serializers.ModelSerializer):
@@ -106,6 +78,38 @@ class VillageGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Village
         fields = '__all__'
+
+
+class UserSerializer(serializers.ModelSerializer):
+    village = VillageGetSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            'id', 'first_name', 'last_name', 'username', 'email', 'phone', 'password', 'gender', 'village',
+            'number_plate',
+            'role', 'midwife', 'user_permissions', 'created_at')
+        # extra_kwargs = {"password": {"write_only": True}}
+
+    def validate_phone(self, value):
+        # user can only register one phone number
+        user = User.objects.filter(phone=value)
+        if user.exists():
+            raise ValidationError("This user has already registered with the phone number")
+        return value
+
+    def create(self, validated_data):
+        user = User(
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
+            # username is a combination of first and last name
+            username=validated_data['first_name'] + validated_data['last_name'],
+            email=validated_data['email'],
+            phone=validated_data['phone'],
+        )
+        user.set_password(validated_data['phone'])
+        user.save()
+        return user
 
 
 class HealthFacilityGetSerializer(serializers.ModelSerializer):
