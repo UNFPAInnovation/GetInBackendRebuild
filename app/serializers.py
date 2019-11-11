@@ -7,7 +7,7 @@ from rest_framework_jwt.utils import jwt_payload_handler
 
 from GetInBackendRebuild.settings import SECRET_KEY
 from app.models import User, District, County, SubCounty, Parish, Village, Girl, HealthFacility, FollowUp, Delivery, \
-    MappingEncounter, AppointmentEncounter, Appointment
+    MappingEncounter, AppointmentEncounter, Appointment, SmsModel
 
 
 def create_token(user=None):
@@ -202,3 +202,12 @@ class CustomTokenSerializer(TokenSerializer):
         fields = (
             'auth_token', 'user'
         )
+
+
+class SmsModelSerializer(serializers.ModelSerializer):
+    recipient = UserGetSerializer()
+
+    class Meta:
+        model = SmsModel
+        fields = (
+            'id', 'recipient', 'sender_id', 'message', 'status', 'created_at')

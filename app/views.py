@@ -7,6 +7,7 @@ from rest_framework.permissions import *
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from app import sms_handler
 from app.filters import GirlFilter, FollowUpFilter, MappingEncounterFilter, DeliveryFilter, AppointmentFilter, \
     UserFilter
 from app.models import Girl, District, County, SubCounty, Parish, Village, \
@@ -76,6 +77,7 @@ class MappingEncounterView(ListCreateAPIView):
         else:
             model = MappingEncounter.objects.all().order_by('-created_at')
         return model
+
     serializer_class = MappingEncounterSerializer
     permission_classes = (DRYPermissions, IsAuthenticated)
     filter_class = MappingEncounterFilter
@@ -160,7 +162,8 @@ class DeliveriesView(ListCreateAPIView):
         user = self.request.user
         if user.role == USER_TYPE_MIDWIFE:
             users = User.objects.filter(midwife=user)
-            model = Delivery.objects.filter(Q(user_id__in=[user.id for user in users]) | Q(user__id=user.id)).order_by('-created_at')
+            model = Delivery.objects.filter(Q(user_id__in=[user.id for user in users]) | Q(user__id=user.id)).order_by(
+                '-created_at')
         elif user.role in [USER_TYPE_CHEW]:
             model = Delivery.objects.filter(user=user).order_by('-created_at')
         elif user.role in [USER_TYPE_DHO]:
@@ -206,7 +209,8 @@ class AppointmentView(ListCreateAPIView):
             # return all appointment from CHEWS attached to the midwife or
             # any appointment created by the midwife herself
             users = User.objects.filter(midwife=user)
-            appointments = Appointment.objects.filter(Q(user_id__in=[user.id for user in users]) | Q(user__id=user.id)).order_by('-created_at')
+            appointments = Appointment.objects.filter(
+                Q(user_id__in=[user.id for user in users]) | Q(user__id=user.id)).order_by('-created_at')
         elif user.role in [USER_TYPE_CHEW]:
             # return appointments created by CHEW
             appointments = Appointment.objects.filter(user=user).order_by('-created_at')
@@ -405,3 +409,23 @@ class DeliveriesStatsView(APIView):
 
         response["count"] = all_deliveries_total
         return Response({"results": response}, 200)
+
+
+class SmsView(APIView):
+    def post(self, request):
+        message = request.data.get('message')
+        print(message)
+
+        try:
+            sender = request.user
+        except Exception as e:
+            print(e)
+            # use the developer account as the sender incase the user is None
+            sender = User.objects.get(username__icontains="codephillip")
+
+        receiver_ids = request.data.get('receiver_ids')
+
+        # send message to multiple
+        response = sms_handler.send_sms(message, sender, receiver_ids)
+
+        return response

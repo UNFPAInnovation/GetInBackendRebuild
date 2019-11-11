@@ -454,3 +454,12 @@ class Appointment(models.Model):
     @staticmethod
     def has_object_write_permission(self, request):
         return True
+
+
+class SmsModel(models.Model):
+    recipient = models.ForeignKey('User', on_delete=models.CASCADE)
+    message = models.CharField(max_length=400, blank=True, null=True)
+    message_id = models.CharField(max_length=200, blank=True, null=True)
+    status = models.CharField(max_length=200, blank=True, null=True)
+    sender_id = models.CharField(max_length=200, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
