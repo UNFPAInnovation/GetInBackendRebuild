@@ -12,7 +12,7 @@ import logging
 
 from app.utils.constants import FOLLOW_UP_FORM_CHEW_NAME, APPOINTMENT_FORM_CHEW_NAME, \
     MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME, APPOINTMENT_FORM_MIDWIFE_NAME, FOLLOW_UP_FORM_MIDWIFE_NAME, USER_TYPE_CHEW, \
-    MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME, POSTNATAL_FORM_CHEW_NAME, POSTNATAL_FORM_MIDWIFE_NAME
+    MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME, POSTNATAL_FORM_CHEW_NAME, POSTNATAL_FORM_MIDWIFE_NAME, ATTENDED
 
 logger = logging.getLogger('testlogger')
 
@@ -72,6 +72,7 @@ class MappingEncounterWebhook(APIView):
             contraceptive_method = ""
             voucher_number = 0
             used_contraceptives = False
+            attended_anc_visit = False
             no_family_planning_reason = ""
 
             demographic1 = mapped_girl_object["GirlDemographic"][0]
@@ -98,7 +99,6 @@ class MappingEncounterWebhook(APIView):
             last_menstruation_date = observations3["MenstruationDate"][0]
 
             observations1 = mapped_girl_object["Observations1"][0]
-            attended_anc_visit = observations1["AttendedANCVisit"][0] == "yes"
             bleeding = observations1["bleeding"][0] == "yes"
             fever = observations1["fever"][0] == "yes"
 
@@ -124,9 +124,6 @@ class MappingEncounterWebhook(APIView):
             except KeyError or IndexError:
                 print(traceback.print_exc())
 
-            anc_group = mapped_girl_object["ANCAppointmentGroup"][0]
-            next_appointment_date = anc_group["ANCDate"][0]
-
             print("save form data")
 
             user = User.objects.get(id=user_id)
@@ -142,9 +139,25 @@ class MappingEncounterWebhook(APIView):
             try:
                 # incase girl who has already had ANC visit is mapped by midwife
                 # save that date and create an anc visit
-                anc_group = mapped_girl_object["ANCAppointmentPreviousGroup"][0]
-                previous_appointment_date = anc_group["ANCDatePrevious"][0]
-                appointment = Appointment(girl=girl, user=user, date=previous_appointment_date)
+                anc_previous_group = mapped_girl_object["ANCAppointmentPreviousGroup"][0]
+                attended_anc_visit = anc_previous_group["AttendedANCVisit"][0] == "yes"
+                print("attended anc visit " + str(attended_anc_visit))
+
+                if attended_anc_visit:
+                    previous_appointment_date = anc_previous_group["ANCDatePrevious"][0]
+                    # assume that a previous ANC appointment was attended
+                    appointment = Appointment(girl=girl, user=user, date=previous_appointment_date, status=ATTENDED)
+                    appointment.save()
+                    self.auto_generate_appointment(girl, user, previous_appointment_date)
+                else:
+                    self.auto_generate_appointment(girl, user)
+            except Exception:
+                print(traceback.print_exc())
+
+            try:
+                anc_group = mapped_girl_object["ANCAppointmentGroup"][0]
+                next_appointment_date = anc_group["ANCDate"][0]
+                appointment = Appointment(girl=girl, user=user, date=next_appointment_date)
                 appointment.save()
             except Exception:
                 print(traceback.print_exc())
@@ -157,13 +170,13 @@ class MappingEncounterWebhook(APIView):
                                                  attended_anc_visit=attended_anc_visit, voucher_number=voucher_number,
                                                  fever=fever, blurred_vision=blurred_vision)
             mapping_encounter.save()
-
-            appointment = Appointment(girl=girl, user=user, date=next_appointment_date)
-            appointment.save()
             return Response({'result': 'success'}, 200)
         except Exception:
             print(traceback.print_exc())
         return Response({'result': 'failure'}, 400)
+
+    def auto_generate_appointment(self, girl, user, previous_appointment_date=None):
+        pass
 
     def process_follow_up_and_delivery_encounter(self, girl_id, json_result, user_id):
         try:
