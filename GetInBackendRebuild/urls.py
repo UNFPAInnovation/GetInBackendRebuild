@@ -49,7 +49,5 @@ urlpatterns = [
     path(r'api/v1/appointments', AppointmentView.as_view(), name='appointments'),
     path(r'api/v1/mapping_encounters_stats', MappingEncountersStatsView.as_view(), name='mapping-encounters-stats'),
     path(r'api/v1/deliveries_stats', DeliveriesStatsView.as_view(), name='deliveries-stats'),
-    path(r'api/v1/send_sms', SmsView.as_view(), name='send-sms'),
-    path(r'api/v1/sms_history', SmsHistoryView.as_view(), name='sms'),
-
+    path(r'api/v1/sms', SmsView.as_view(), name='sms'),
 ]

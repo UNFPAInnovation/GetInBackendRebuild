@@ -411,10 +411,19 @@ class DeliveriesStatsView(APIView):
         return Response({"results": response}, 200)
 
 
-class SmsView(APIView):
+class SmsView(ListCreateAPIView):
     permission_classes = (DRYPermissions, IsAuthenticated)
+    serializer_class = SmsModelSerializer
 
-    def post(self, request):
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == USER_TYPE_DHO:
+            model = SmsModel.objects.filter(sender_id=user.id).order_by('-created_at')
+        else:
+            model = SmsModel.objects.all().order_by('-created_at')
+        return model
+
+    def post(self, request, *args, **kwargs):
         message = request.data.get('message')
         print(message)
 
@@ -427,15 +436,3 @@ class SmsView(APIView):
 
         receiver_ids = request.data.get('receiver_ids')
         return sms_handler.send_sms(message, sender, receiver_ids)
-
-
-class SmsHistoryView(ListCreateAPIView):
-    def get_queryset(self):
-        user = self.request.user
-        if user.role == USER_TYPE_DHO:
-            model = SmsModel.objects.filter(sender_id=user.id).order_by('-created_at')
-        else:
-            model = SmsModel.objects.all().order_by('-created_at')
-        return model
-    serializer_class = SmsModelSerializer
-    permission_classes = (DRYPermissions, IsAuthenticated)
