@@ -74,6 +74,10 @@ class MappingEncounterWebhook(APIView):
             used_contraceptives = False
             attended_anc_visit = False
             no_family_planning_reason = ""
+            bleeding = False
+            fever = False
+            swollenfeet = False
+            blurred_vision = False
 
             demographic1 = mapped_girl_object["GirlDemographic"][0]
             first_name = demographic1["FirstName"][0]

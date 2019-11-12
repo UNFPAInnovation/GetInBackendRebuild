@@ -195,7 +195,7 @@ class CustomTokenSerializer(TokenSerializer):
     Allows us to return user details along side the djoser token
     """
     auth_token = serializers.CharField(source='key')
-    user = UserGetSerializer()
+    user = UserSerializer()
 
     class Meta:
         model = Token
