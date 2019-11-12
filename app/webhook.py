@@ -98,13 +98,16 @@ class MappingEncounterWebhook(APIView):
             education_level = observations3["education_level"][0]
             last_menstruation_date = observations3["MenstruationDate"][0]
 
-            observations1 = mapped_girl_object["Observations1"][0]
-            bleeding = observations1["bleeding"][0] == "yes"
-            fever = observations1["fever"][0] == "yes"
+            try:
+                observations1 = mapped_girl_object["Observations1"][0]
+                bleeding = observations1["bleeding"][0] == "yes"
+                fever = observations1["fever"][0] == "yes"
 
-            observations2 = mapped_girl_object["Observations2"][0]
-            swollenfeet = observations2["swollenfeet"][0] == "yes"
-            blurred_vision = observations2["blurred_vision"][0] == "yes"
+                observations2 = mapped_girl_object["Observations2"][0]
+                swollenfeet = observations2["swollenfeet"][0] == "yes"
+                blurred_vision = observations2["blurred_vision"][0] == "yes"
+            except Exception:
+                print(traceback.print_exc())
 
             try:
                 contraceptive_group = mapped_girl_object["ContraceptiveGroup"][0]
