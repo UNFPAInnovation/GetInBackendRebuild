@@ -463,3 +463,16 @@ class SmsModel(models.Model):
     status = models.CharField(max_length=200, blank=True, null=True)
     sender_id = models.CharField(max_length=200, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+    @staticmethod
+    def has_write_permission(request):
+        return request.user.role in [USER_TYPE_DHO] or request.user.is_superuser
+
+    @staticmethod
+    def has_read_permission(request):
+        return request.user.role in [USER_TYPE_DHO] or request.user.is_superuser
+
+    @staticmethod
+    def has_object_write_permission(self, request):
+        return True

@@ -11,12 +11,12 @@ from app import sms_handler
 from app.filters import GirlFilter, FollowUpFilter, MappingEncounterFilter, DeliveryFilter, AppointmentFilter, \
     UserFilter
 from app.models import Girl, District, County, SubCounty, Parish, Village, \
-    HealthFacility, FollowUp, Delivery, MappingEncounter, AppointmentEncounter, Appointment
+    HealthFacility, FollowUp, Delivery, MappingEncounter, AppointmentEncounter, Appointment, SmsModel
 from app.permissions import IsPostOrIsAuthenticated
 from app.serializers import UserSerializer, User, GirlSerializer, DistrictGetSerializer, \
     CountyGetSerializer, SubCountyGetSerializer, ParishGetSerializer, VillageGetSerializer, HealthFacilityGetSerializer, \
     FollowUpGetSerializer, FollowUpPostSerializer, DeliveryPostSerializer, DeliveryGetSerializer, \
-    MappingEncounterSerializer, AppointmentEncounterSerializer, AppointmentSerializer
+    MappingEncounterSerializer, AppointmentEncounterSerializer, AppointmentSerializer, SmsModelSerializer
 
 import logging
 
@@ -412,6 +412,8 @@ class DeliveriesStatsView(APIView):
 
 
 class SmsView(APIView):
+    permission_classes = (DRYPermissions, IsAuthenticated)
+
     def post(self, request):
         message = request.data.get('message')
         print(message)
@@ -424,8 +426,16 @@ class SmsView(APIView):
             sender = User.objects.get(username__icontains="codephillip")
 
         receiver_ids = request.data.get('receiver_ids')
+        return sms_handler.send_sms(message, sender, receiver_ids)
 
-        # send message to multiple
-        response = sms_handler.send_sms(message, sender, receiver_ids)
 
-        return response
+class SmsHistoryView(ListCreateAPIView):
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == USER_TYPE_DHO:
+            model = SmsModel.objects.filter(sender_id=user.id).order_by('-created_at')
+        else:
+            model = SmsModel.objects.all().order_by('-created_at')
+        return model
+    serializer_class = SmsModelSerializer
+    permission_classes = (DRYPermissions, IsAuthenticated)
