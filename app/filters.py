@@ -1,6 +1,6 @@
 import django_filters
 
-from app.models import Girl, FollowUp, Appointment, MappingEncounter, Delivery, User
+from app.models import Girl, FollowUp, Appointment, MappingEncounter, Delivery, User, AppointmentEncounter
 
 
 class SuperFilter(django_filters.FilterSet):
@@ -85,4 +85,15 @@ class UserFilter(SuperFilter):
         model = User
         fields = {
             'created_from', 'created_to', 'role'
+        }
+
+
+class AppointmentEncountersFilter(SuperFilter):
+    trimester = django_filters.NumberFilter(field_name='girl__trimester', lookup_expr='equals',
+                                       help_text='Filter appointments by trimester: 1, 2, 3, 4')
+
+    class Meta:
+        model = AppointmentEncounter
+        fields = {
+            'created_from', 'created_to', 'trimester'
         }
