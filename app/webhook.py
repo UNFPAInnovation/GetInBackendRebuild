@@ -51,6 +51,7 @@ class MappingEncounterWebhook(APIView):
             print(traceback.print_exc())
 
         if MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME in json_result or MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME in json_result:
+            print("mapping forms matched")
             return self.process_mapping_encounter(json_result, user_id)
         elif FOLLOW_UP_FORM_CHEW_NAME in json_result or FOLLOW_UP_FORM_MIDWIFE_NAME in json_result:
             return self.process_follow_up_and_delivery_encounter(girl_id, json_result, user_id)
@@ -62,12 +63,20 @@ class MappingEncounterWebhook(APIView):
 
     def process_mapping_encounter(self, json_result, user_id):
         print("process mapping encounter")
+        print('json result')
+        print(json_result)
+        print('json result' + str(type(json_result)))
+
         try:
             try:
                 mapped_girl_object = json_result.get(MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME)
             except Exception:
                 print(traceback.print_exc())
                 mapped_girl_object = json_result.get(MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME)
+
+            print('mapped_girl_object')
+            print(mapped_girl_object)
+            print('mapped_girl_object' + str(type(mapped_girl_object)))
 
             contraceptive_method = ""
             next_of_kin_number = None
