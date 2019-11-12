@@ -36,11 +36,11 @@ DELIVERY_LOCATION = (
 )
 
 USER_TYPE_CHOICES = (
-    (USER_TYPE_DEVELOPER, 'Developer'),
-    (USER_TYPE_DHO, 'DHO'),
-    (USER_TYPE_CHEW, 'CHEW'),
-    (USER_TYPE_MIDWIFE, 'Midwife'),
-    (USER_TYPE_AMBULANCE, 'Ambulance'),
+    (USER_TYPE_DEVELOPER, 'developer'),
+    (USER_TYPE_DHO, 'dho'),
+    (USER_TYPE_CHEW, 'chew'),
+    (USER_TYPE_MIDWIFE, 'midwife'),
+    (USER_TYPE_AMBULANCE, 'ambulance'),
 )
 
 APPOINTMENT = (
