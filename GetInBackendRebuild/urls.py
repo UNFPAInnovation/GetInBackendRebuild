@@ -20,8 +20,7 @@ from rest_framework_swagger.views import get_swagger_view
 
 from app.views import GirlView, GirlDetailsView, UserCreateView, DistrictView, \
     CountyView, SubCountyView, ParishView, VillageView, HealthFacilityView, FollowUpView, \
-    DeliveriesView, MappingEncounterView, AppointmentView, MappingEncountersStatsView, DeliveriesStatsView, SmsView, \
-    SmsHistoryView
+    DeliveriesView, MappingEncounterView, AppointmentView, MappingEncountersStatsView, DeliveriesStatsView, SmsView
 from django.views.decorators.csrf import csrf_exempt
 
 from app.webhook import MappingEncounterWebhook
