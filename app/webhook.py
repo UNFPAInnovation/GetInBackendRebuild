@@ -70,6 +70,7 @@ class MappingEncounterWebhook(APIView):
                 mapped_girl_object = json_result.get(MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME)
 
             contraceptive_method = ""
+            next_of_kin_number = None
             voucher_number = 0
             used_contraceptives = False
             attended_anc_visit = False
@@ -85,10 +86,11 @@ class MappingEncounterWebhook(APIView):
             girls_phone_number = demographic1["GirlsPhoneNumber"][0]
             dob = demographic1["DOB"][0]
 
-            demographic2 = mapped_girl_object["GirlDemographic2"][0]
-            next_of_kin_number = demographic2["NextOfKinNumber"][0]
-            next_of_kin_first_name = demographic2["NextOfKinFirstName"][0]
-            next_of_kin_last_name = demographic2["NextOfKinLastName"][0]
+            try:
+                demographic2 = mapped_girl_object["GirlDemographic2"][0]
+                next_of_kin_number = demographic2["NextOfKinNumber"][0]
+            except Exception as e:
+                print(e)
 
             girl_location = mapped_girl_object["GirlLocation"][0]
             county = County.objects.filter(name__icontains=girl_location["county"][0])
@@ -138,7 +140,6 @@ class MappingEncounterWebhook(APIView):
 
             girl = Girl(first_name=first_name, last_name=last_name, village=village,
                         phone_number=girls_phone_number, user=user,
-                        next_of_kin_first_name=next_of_kin_first_name, next_of_kin_last_name=next_of_kin_last_name,
                         next_of_kin_phone_number=next_of_kin_number, education_level=education_level, dob=dob,
                         marital_status=marital_status, last_menstruation_date=last_menstruation_date)
             girl.save()
