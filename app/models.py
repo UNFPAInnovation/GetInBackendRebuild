@@ -131,6 +131,9 @@ class User(AbstractUser):
     # allows use to access these fields in /auth/me
     REQUIRED_FIELDS = ["phone", "role"]
 
+    class Meta:
+        ordering = ['-created_at']
+
     def save(self, *args, **kwargs):
         if self.role in [USER_TYPE_DEVELOPER, USER_TYPE_DHO]:
             self.is_staff = True
@@ -198,11 +201,14 @@ class Girl(models.Model):
     dob = models.DateField()
     age = models.IntegerField(blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    pending_visits = models.IntegerField(default=3, validators=[MaxValueValidator(3), MinValueValidator(0)])
+    pending_visits = models.IntegerField(default=30, validators=[MaxValueValidator(30), MinValueValidator(0)])
     missed_visits = models.IntegerField(default=0, validators=[MaxValueValidator(3), MinValueValidator(0)])
     completed_all_visits = models.BooleanField(default=False, blank=True, null=True)
     odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
         return self.last_name + " " + self.first_name
@@ -279,6 +285,9 @@ class FollowUp(models.Model):
     odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-created_at']
+
     def __str__(self):
         return self.girl.first_name + " " + self.girl.last_name
 
@@ -312,6 +321,9 @@ class MappingEncounter(models.Model):
     odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-created_at']
+
     def __str__(self):
         return self.girl.last_name + " " + self.girl.first_name
 
@@ -344,6 +356,9 @@ class AppointmentEncounter(models.Model):
     swollen_feet = models.BooleanField(default=False)
     odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
         return self.girl.last_name + " " + self.girl.first_name
@@ -382,6 +397,9 @@ class Delivery(models.Model):
     odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-created_at']
+
     def __str__(self):
         return self.girl.first_name + " " + self.girl.last_name
 
@@ -409,6 +427,9 @@ class Appointment(models.Model):
     status = models.CharField(choices=APPOINTMENT, default=EXPECTED, max_length=250)
     odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
         return self.girl.first_name + " " + self.girl.last_name
@@ -468,6 +489,8 @@ class SmsModel(models.Model):
     sender_id = models.CharField(max_length=200, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-created_at']
 
     @staticmethod
     def has_write_permission(request):
