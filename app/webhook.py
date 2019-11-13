@@ -69,10 +69,10 @@ class MappingEncounterWebhook(APIView):
 
         try:
             try:
-                mapped_girl_object = json_result.get(MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME)
+                mapped_girl_object = json_result.get(MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME)
             except Exception:
                 print(traceback.print_exc())
-                mapped_girl_object = json_result.get(MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME)
+                mapped_girl_object = json_result.get(MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME)
 
             print('mapped_girl_object')
             print(mapped_girl_object)
