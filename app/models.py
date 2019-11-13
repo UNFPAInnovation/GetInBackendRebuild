@@ -509,3 +509,28 @@ class SmsModel(models.Model):
     @staticmethod
     def has_object_write_permission(self, request):
         return True
+
+
+class Referral(models.Model):
+    girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    reason = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.girl.last_name + " " + self.girl.first_name
+
+    @staticmethod
+    def has_write_permission(request):
+        return True
+
+    @staticmethod
+    def has_read_permission(request):
+        return True
+
+    @staticmethod
+    def has_object_write_permission(self, request):
+        return True

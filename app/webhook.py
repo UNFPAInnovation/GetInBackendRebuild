@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from app.models import Girl, County, SubCounty, Parish, Village, FollowUp, Delivery, MappingEncounter, \
-    Appointment, AppointmentEncounter
+    Appointment, AppointmentEncounter, Referral
 from app.serializers import User
 
 import logging
@@ -236,6 +236,9 @@ class MappingEncounterWebhook(APIView):
             elif action_taken_by_health_person == "delivery":
                 print("action taken delivery")
                 self.save_delivery(follow_up_object, girl, user)
+            else:
+                referral = Referral(girl=girl, user=user, reason="critical")
+                referral.save()
 
             print('save results')
 
