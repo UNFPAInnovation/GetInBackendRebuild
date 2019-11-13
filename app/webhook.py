@@ -239,11 +239,10 @@ class MappingEncounterWebhook(APIView):
 
             print('save results')
 
-            if user.role == USER_TYPE_CHEW:
-                follow_up = FollowUp(girl=girl, user=user, blurred_vision=blurred_vision, fever=fever,
-                                     swollen_feet=swollenfeet, bleeding_heavily=bleeding,
-                                     follow_up_action_taken=action_taken_by_health_person)
-                follow_up.save()
+            follow_up = FollowUp(girl=girl, user=user, blurred_vision=blurred_vision, fever=fever,
+                                 swollen_feet=swollenfeet, bleeding_heavily=bleeding,
+                                 follow_up_action_taken=action_taken_by_health_person)
+            follow_up.save()
             return Response({'result': 'success'}, 200)
         except Exception:
             print(traceback.print_exc())
