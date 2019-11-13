@@ -264,7 +264,7 @@ class MappingEncounterWebhook(APIView):
 
         birth_place = delivery_follow_up_group["birth_place"][0]
         if birth_place == "HealthFacility":
-            birth_place = "Health Facility"
+            birth_place = "Health facility"
         delivery_action_taken = delivery_follow_up_group["action_taken"][0]
         family_planning_group = follow_up_object["family_planning_group"][0]
         postnatal_care = family_planning_group["postnatal_received"][0] == "yes"

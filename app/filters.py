@@ -81,10 +81,13 @@ class UserFilter(SuperFilter):
                                        help_text='Filter user by their role, developer - Developer, dho - DHO, chew - CHEW, '
                                                  'midwife - Midwife, ambulance - Ambulance')
 
+    midwife_id = django_filters.CharFilter(field_name='midwife__id', lookup_expr='icontains',
+                                       help_text='Filter users(vhts) where the midwife is attached')
+
     class Meta:
         model = User
         fields = {
-            'created_from', 'created_to', 'role'
+            'created_from', 'created_to', 'role', 'midwife_id'
         }
 
 
