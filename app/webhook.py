@@ -12,7 +12,7 @@ import logging
 
 from app.utils.constants import FOLLOW_UP_FORM_CHEW_NAME, APPOINTMENT_FORM_CHEW_NAME, \
     MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME, APPOINTMENT_FORM_MIDWIFE_NAME, FOLLOW_UP_FORM_MIDWIFE_NAME, USER_TYPE_CHEW, \
-    MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME, POSTNATAL_FORM_CHEW_NAME, POSTNATAL_FORM_MIDWIFE_NAME, ATTENDED
+    MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME, POSTNATAL_FORM_CHEW_NAME, POSTNATAL_FORM_MIDWIFE_NAME, ATTENDED, HEALTH_FACILITY
 
 logger = logging.getLogger('testlogger')
 
@@ -270,6 +270,8 @@ class MappingEncounterWebhook(APIView):
             mother_death_date = delivery_follow_up_group["mother_death_date"][0]
 
         birth_place = delivery_follow_up_group["birth_place"][0]
+        if birth_place == "HealthFacility":
+            birth_place = "Health Facility"
         delivery_action_taken = delivery_follow_up_group["action_taken"][0]
         family_planning_group = follow_up_object["family_planning_group"][0]
         postnatal_care = family_planning_group["postnatal_received"][0] == "yes"
