@@ -377,5 +377,17 @@ class MappingEncounterWebhook(APIView):
         return Response({'result': 'failure'}, 400)
 
     def postnatal_encounter(self, girl_id, json_result, user_id):
+        print("postnatal counter")
 
+        try:
+            postnatal_object = json_result[POSTNATAL_FORM_CHEW_NAME]
+        except Exception:
+            print(traceback.print_exc())
+            postnatal_object = json_result[POSTNATAL_FORM_MIDWIFE_NAME]
+        print(postnatal_object)
+
+        girl = Girl.objects.get(id=girl_id)
+        user = User.objects.get(id=user_id)
+
+        self.save_delivery(postnatal_object, girl, user)
         return Response()
