@@ -63,20 +63,13 @@ class MappingEncounterWebhook(APIView):
 
     def process_mapping_encounter(self, json_result, user_id):
         print("process mapping encounter")
-        print('json result')
-        print(json_result)
-        print('json result' + str(type(json_result)))
 
         try:
             try:
-                mapped_girl_object = json_result.get(MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME)
-            except Exception:
+                mapped_girl_object = json_result[MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME]
+            except KeyError:
                 print(traceback.print_exc())
-                mapped_girl_object = json_result.get(MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME)
-
-            print('mapped_girl_object')
-            print(mapped_girl_object)
-            print('mapped_girl_object' + str(type(mapped_girl_object)))
+                mapped_girl_object = json_result[MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME]
 
             contraceptive_method = ""
             next_of_kin_number = None
