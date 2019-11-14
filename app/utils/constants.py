@@ -40,7 +40,7 @@ POST = "Post"
 APPOINTMENT_FORM_CHEW_NAME = "GetINAppointment6_chew"
 APPOINTMENT_FORM_MIDWIFE_NAME = "GetINAppointment10_midwife"
 # each district has its own form.
-MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME = "GetInMapGirlBundibugyo16_chew"
+MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME = "GetInMapGirlBundibugyo17_chew"
 MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME = "GetInMapGirlBundibugyo16_midwife"
 FOLLOW_UP_FORM_CHEW_NAME = "GetInFollowup17_chew"
 FOLLOW_UP_FORM_MIDWIFE_NAME = "GetInFollowup17_midwife"

@@ -66,6 +66,7 @@ class GirlView(ListCreateAPIView):
 
 
 class MappingEncounterView(ListCreateAPIView):
+    print('mapping encounter')
     def get_queryset(self):
         user = self.request.user
         if user.role == USER_TYPE_MIDWIFE:

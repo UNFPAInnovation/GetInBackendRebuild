@@ -279,38 +279,6 @@ class Girl(models.Model):
         self.age = int(days_diff / 365)
 
 
-class FollowUp(models.Model):
-    girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    followup_reason = models.TextField(blank=True, null=True)
-    blurred_vision = models.BooleanField(default=False)
-    bleeding_heavily = models.BooleanField(default=False)
-    fever = models.BooleanField(default=False)
-    swollen_feet = models.BooleanField(default=False)
-    follow_up_action_taken = models.CharField(max_length=400, blank=True, null=True)
-    odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ['-created_at']
-
-    def __str__(self):
-        return self.girl.first_name + " " + self.girl.last_name
-
-    @staticmethod
-    def has_write_permission(request):
-        return request.user.role in [USER_TYPE_CHEW, USER_TYPE_MIDWIFE] or request.user.is_staff \
-               or request.user.is_superuser
-
-    @staticmethod
-    def has_read_permission(request):
-        return True
-
-    @staticmethod
-    def has_object_write_permission(self, request):
-        return True
-
-
 class FamilyPlanning(models.Model):
     status = models.CharField(choices=FAMILY_PLANNING_STATUS, default=PRE, max_length=250)
     method = models.CharField(max_length=250, blank=True, null=True)
@@ -363,11 +331,39 @@ class Observation(models.Model):
         return True
 
 
+class FollowUp(models.Model):
+    girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    observation = models.ForeignKey(Observation, on_delete=models.DO_NOTHING, blank=True, null=True)
+    follow_up_action_taken = models.CharField(max_length=400, blank=True, null=True)
+    odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.girl.first_name + " " + self.girl.last_name
+
+    @staticmethod
+    def has_write_permission(request):
+        return request.user.role in [USER_TYPE_CHEW, USER_TYPE_MIDWIFE] or request.user.is_staff \
+               or request.user.is_superuser
+
+    @staticmethod
+    def has_read_permission(request):
+        return True
+
+    @staticmethod
+    def has_object_write_permission(self, request):
+        return True
+
+
 class MappingEncounter(models.Model):
     girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    family_planning = models.ManyToManyField(FamilyPlanning)
-    observation = models.ForeignKey(Observation, on_delete=models.DO_NOTHING)
+    family_planning = models.ManyToManyField(FamilyPlanning, blank=True, null=True)
+    observation = models.ForeignKey(Observation, on_delete=models.DO_NOTHING, blank=True, null=True)
     voucher_card = models.CharField(max_length=250, blank=True, null=True)
     attended_anc_visit = models.BooleanField(default=False)
     odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
@@ -396,16 +392,14 @@ class MappingEncounter(models.Model):
 class AppointmentEncounter(models.Model):
     girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    appointment = models.ForeignKey('Appointment', on_delete=models.CASCADE)
     needed_ambulance = models.BooleanField(default=False)
     missed_anc_before = models.BooleanField(default=False)
     used_ambulance = models.BooleanField(default=False)
     missed_anc_reason = models.CharField(max_length=250, blank=True, null=True)
     action_taken = models.CharField(max_length=250, blank=True, null=True)
     appointment_method = models.CharField(max_length=250, blank=True, null=True)
-    blurred_vision = models.BooleanField(default=False)
-    bleeding_heavily = models.BooleanField(default=False)
-    fever = models.BooleanField(default=False)
-    swollen_feet = models.BooleanField(default=False)
+    observation = models.ForeignKey(Observation, on_delete=models.DO_NOTHING, blank=True, null=True)
     odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -433,7 +427,6 @@ class AppointmentEncounter(models.Model):
 class Delivery(models.Model):
     girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    followup_reason = models.CharField(max_length=200)
     action_taken = models.CharField(max_length=200)
     postnatal_care = models.BooleanField(default=True)
     mother_alive = models.BooleanField(default=True)
@@ -441,9 +434,7 @@ class Delivery(models.Model):
     baby_death_date = models.DateTimeField(blank=True, null=True)
     baby_birth_date = models.DateTimeField(blank=True, null=True)
     mother_death_date = models.DateTimeField(blank=True, null=True)
-    using_family_planning = models.BooleanField(default=True)
-    no_family_planning_reason = models.CharField(max_length=250, blank=True, null=True)
-    family_planning_type = models.CharField(max_length=250, blank=True, null=True)
+    family_planning = models.ManyToManyField(FamilyPlanning, blank=True, null=True)
     health_facility = models.ForeignKey(HealthFacility, on_delete=models.CASCADE, blank=True, null=True)
     date = models.DateTimeField(auto_now_add=True)
     delivery_location = models.CharField(choices=DELIVERY_LOCATION, default=HOME, max_length=250)
