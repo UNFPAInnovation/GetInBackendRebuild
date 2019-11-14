@@ -120,34 +120,6 @@ class MappingEncounterWebhook(APIView):
                 print(traceback.print_exc())
 
             try:
-                contraceptive_group = mapped_girl_object["ContraceptiveGroup"][0]
-                used_contraceptives = contraceptive_group["UsedContraceptives"][0] == "yes"
-                if used_contraceptives:
-                    contraceptive_method = str(contraceptive_group["ContraceptiveMethod"][0])
-                    print("contraceptive method " + contraceptive_method)
-                    if " " in contraceptive_method:
-                        contraceptive_method_names = contraceptive_method.split(" ")
-                        for contraceptive_method_name in contraceptive_method_names:
-                            family_planning = FamilyPlanning(method=contraceptive_method_name, status=PRE)
-                            family_planning.save()
-                            mapping_encounter.family_planning.add(family_planning)
-
-                        if "Others" in contraceptive_method_names:
-                            print("others present")
-                            other_contraceptive_method = contraceptive_group["other_contraceptive_method"]
-                            family_planning = FamilyPlanning(method=other_contraceptive_method, status=PRE)
-                            family_planning.save()
-                            mapping_encounter.family_planning.add(family_planning)
-                else:
-                    print("no contraceptive")
-                    no_family_planning_reason = contraceptive_group["ReasonNoContraceptives"][0]
-                    family_planning = FamilyPlanning(no_family_planning_reason=no_family_planning_reason, using_family_planning=False)
-                    family_planning.save()
-                    mapping_encounter.family_planning.add(family_planning)
-            except KeyError or IndexError as e:
-                print(e)
-
-            try:
                 voucher_card_group = mapped_girl_object["VouncherCardGroup"][0]
                 has_voucher_card = voucher_card_group["VoucherCard"][0] == "yes"
                 if has_voucher_card:
@@ -204,6 +176,37 @@ class MappingEncounterWebhook(APIView):
             mapping_encounter.user = user
             mapping_encounter.girl = girl
             mapping_encounter.save()
+
+            try:
+                contraceptive_group = mapped_girl_object["ContraceptiveGroup"][0]
+                used_contraceptives = contraceptive_group["UsedContraceptives"][0] == "yes"
+                if used_contraceptives:
+                    contraceptive_method = str(contraceptive_group["ContraceptiveMethod"][0])
+                    print("contraceptive method " + contraceptive_method)
+                    if " " in contraceptive_method:
+                        contraceptive_method_names = contraceptive_method.split(" ")
+                        for contraceptive_method_name in contraceptive_method_names:
+                            if "Others" == contraceptive_method_name:
+                                print("others present")
+                                other_contraceptive_method = contraceptive_group["other_contraceptive_method"]
+                                family_planning = FamilyPlanning(method=other_contraceptive_method, status=PRE)
+                                family_planning.save()
+                                mapping_encounter.family_planning.add(family_planning)
+                            else:
+                                family_planning = FamilyPlanning(method=contraceptive_method_name, status=PRE)
+                                family_planning.save()
+                                mapping_encounter.family_planning.add(family_planning)
+
+
+                else:
+                    print("no contraceptive")
+                    no_family_planning_reason = contraceptive_group["ReasonNoContraceptives"][0]
+                    family_planning = FamilyPlanning(no_family_planning_reason=no_family_planning_reason, using_family_planning=False)
+                    family_planning.save()
+                    mapping_encounter.family_planning.add(family_planning)
+            except KeyError or IndexError as e:
+                print(e)
+
             return Response({'result': 'success'}, 200)
         except Exception:
             print(traceback.print_exc())
