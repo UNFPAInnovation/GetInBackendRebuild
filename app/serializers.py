@@ -148,7 +148,6 @@ class FamilyPlanningSerializer(serializers.ModelSerializer):
 
 class FollowUpGetSerializer(serializers.ModelSerializer):
     girl = GirlSerializer(read_only=True)
-    user = UserGetSerializer(read_only=True)
     observation = ObservationSerializer(read_only=True)
 
 
@@ -165,7 +164,6 @@ class FollowUpPostSerializer(serializers.ModelSerializer):
 
 class DeliveryGetSerializer(serializers.ModelSerializer):
     girl = GirlSerializer(read_only=True)
-    user = UserGetSerializer(read_only=True)
     health_facility = HealthFacilityGetSerializer()
     family_planning = FamilyPlanningSerializer(read_only=True, many=True)
 
@@ -182,7 +180,6 @@ class DeliveryPostSerializer(serializers.ModelSerializer):
 
 class MappingEncounterSerializer(serializers.ModelSerializer):
     girl = GirlSerializer(read_only=True)
-    user = UserGetSerializer(read_only=True)
     family_planning = FamilyPlanningSerializer(read_only=True, many=True)
     observation = ObservationSerializer(read_only=True)
 
@@ -193,7 +190,6 @@ class MappingEncounterSerializer(serializers.ModelSerializer):
 
 class AppointmentSerializer(serializers.ModelSerializer):
     girl = GirlSerializer(read_only=True)
-    user = UserGetSerializer(read_only=True)
 
     class Meta:
         model = Appointment

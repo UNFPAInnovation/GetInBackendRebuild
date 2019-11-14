@@ -442,8 +442,8 @@ class SmsView(ListCreateAPIView):
 
 class ExtractView(APIView):
     def get(self, request, format=None, **kwargs):
-        # location_bundibugyo = ("/home/codephillip/PycharmProjects/GetInBackendRebuild/bundibugyo_org_units.xlsx")
-        location_arua = ("/home/codephillip/PycharmProjects/GetInBackendRebuild/arua_org_units.xlsx")
+        location_bundibugyo = ("/home/codephillip/PycharmProjects/GetInBackendRebuild/bundibugyo_org_units.xlsx")
+        # location_arua = ("/home/codephillip/PycharmProjects/GetInBackendRebuild/arua_org_units.xlsx")
 
-        extract_excel_data(location_arua)
+        extract_excel_data(location_bundibugyo)
         return Response({"result": "success"})

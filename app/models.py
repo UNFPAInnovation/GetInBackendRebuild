@@ -135,7 +135,7 @@ class User(AbstractUser):
     # midwife attached to vht. Midwife can have two VHTs at a time while VHT has one midwife
     midwife = models.ForeignKey('User', on_delete=models.DO_NOTHING, blank=True, null=True)
     # allows use to access these fields in /auth/me
-    REQUIRED_FIELDS = ["phone", "role"]
+    REQUIRED_FIELDS = ["phone", "role", "email"]
 
     class Meta:
         ordering = ['-created_at']
