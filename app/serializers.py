@@ -7,7 +7,7 @@ from rest_framework_jwt.utils import jwt_payload_handler
 
 from GetInBackendRebuild.settings import SECRET_KEY
 from app.models import User, District, County, SubCounty, Parish, Village, Girl, HealthFacility, FollowUp, Delivery, \
-    MappingEncounter, AppointmentEncounter, Appointment, SmsModel
+    MappingEncounter, AppointmentEncounter, Appointment, SmsModel, Observation, FamilyPlanning
 
 
 def create_token(user=None):
@@ -135,6 +135,18 @@ class GirlSerializer(serializers.ModelSerializer):
             'pending_visits', 'missed_visits', 'created_at')
 
 
+class ObservationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Observation
+        fields = '__all__'
+
+
+class FamilyPlanningSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FamilyPlanning
+        fields = '__all__'
+
+
 class FollowUpGetSerializer(serializers.ModelSerializer):
     girl = GirlSerializer()
     user = UserGetSerializer()
@@ -169,6 +181,8 @@ class DeliveryPostSerializer(serializers.ModelSerializer):
 class MappingEncounterSerializer(serializers.ModelSerializer):
     girl = GirlSerializer()
     user = UserGetSerializer()
+    family_planning = FamilyPlanningSerializer()
+    observation = ObservationSerializer()
 
     class Meta:
         model = MappingEncounter

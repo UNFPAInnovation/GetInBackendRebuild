@@ -5,14 +5,15 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from app.models import Girl, County, SubCounty, Parish, Village, FollowUp, Delivery, MappingEncounter, \
-    Appointment, AppointmentEncounter, Referral
+    Appointment, AppointmentEncounter, Referral, FamilyPlanning, Observation
 from app.serializers import User
 
 import logging
 
 from app.utils.constants import FOLLOW_UP_FORM_CHEW_NAME, APPOINTMENT_FORM_CHEW_NAME, \
     MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME, APPOINTMENT_FORM_MIDWIFE_NAME, FOLLOW_UP_FORM_MIDWIFE_NAME, USER_TYPE_CHEW, \
-    MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME, POSTNATAL_FORM_CHEW_NAME, POSTNATAL_FORM_MIDWIFE_NAME, ATTENDED, HEALTH_FACILITY
+    MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME, POSTNATAL_FORM_CHEW_NAME, POSTNATAL_FORM_MIDWIFE_NAME, ATTENDED, \
+    HEALTH_FACILITY, PRE
 
 logger = logging.getLogger('testlogger')
 
@@ -81,6 +82,7 @@ class MappingEncounterWebhook(APIView):
             fever = False
             swollenfeet = False
             blurred_vision = False
+            mapping_encounter = MappingEncounter()
 
             demographic1 = mapped_girl_object["GirlDemographic"][0]
             first_name = demographic1["FirstName"][0]
@@ -121,9 +123,27 @@ class MappingEncounterWebhook(APIView):
                 contraceptive_group = mapped_girl_object["ContraceptiveGroup"][0]
                 used_contraceptives = contraceptive_group["UsedContraceptives"][0] == "yes"
                 if used_contraceptives:
-                    contraceptive_method = contraceptive_group["ContraceptiveMethod"][0]
+                    contraceptive_method = str(contraceptive_group["ContraceptiveMethod"][0])
+                    print("contraceptive method " + contraceptive_method)
+                    if " " in contraceptive_method:
+                        contraceptive_method_names = contraceptive_method.split(" ")
+                        for contraceptive_method_name in contraceptive_method_names:
+                            family_planning = FamilyPlanning(method=contraceptive_method_name, status=PRE)
+                            family_planning.save()
+                            mapping_encounter.family_planning.add(family_planning)
+
+                        if "Others" in contraceptive_method_names:
+                            print("others present")
+                            other_contraceptive_method = contraceptive_group["other_contraceptive_method"]
+                            family_planning = FamilyPlanning(method=other_contraceptive_method, status=PRE)
+                            family_planning.save()
+                            mapping_encounter.family_planning.add(family_planning)
                 else:
+                    print("no contraceptive")
                     no_family_planning_reason = contraceptive_group["ReasonNoContraceptives"][0]
+                    family_planning = FamilyPlanning(no_family_planning_reason=no_family_planning_reason, using_family_planning=False)
+                    family_planning.save()
+                    mapping_encounter.family_planning.add(family_planning)
             except KeyError or IndexError as e:
                 print(e)
 
@@ -172,13 +192,17 @@ class MappingEncounterWebhook(APIView):
             except Exception:
                 print(traceback.print_exc())
 
-            mapping_encounter = MappingEncounter(girl=girl, user=user,
-                                                 no_family_planning_reason=no_family_planning_reason,
-                                                 using_family_planning=used_contraceptives,
-                                                 bleeding_heavily=bleeding, swollen_feet=swollenfeet,
-                                                 family_planning_type=contraceptive_method,
-                                                 attended_anc_visit=attended_anc_visit, voucher_number=voucher_number,
-                                                 fever=fever, blurred_vision=blurred_vision)
+            observation = Observation(blurred_vision=blurred_vision, bleeding_heavily=bleeding, fever=fever,
+                                      swollen_feet=swollenfeet)
+            observation.save()
+
+            mapping_encounter.observation = observation
+            mapping_encounter.attended_anc_visit = attended_anc_visit
+            mapping_encounter.voucher_card = voucher_number
+            mapping_encounter.odk_instance_id = attended_anc_visit
+            mapping_encounter.attended_anc_visit = attended_anc_visit
+            mapping_encounter.user = user
+            mapping_encounter.girl = girl
             mapping_encounter.save()
             return Response({'result': 'success'}, 200)
         except Exception:

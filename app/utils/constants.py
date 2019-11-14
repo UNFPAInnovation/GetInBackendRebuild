@@ -28,6 +28,10 @@ MISSED = "Missed"
 ATTENDED = "Attended"
 EXPECTED = "Expected"
 
+
+PRE = "Pre"
+POST = "Post"
+
 #####################################
 # NOTE: The form ids must be the same in odk central, android app, xslm forms and django backend
 # When you change a form and generate the xml, odk central will require you to upload one with a different id

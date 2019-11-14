@@ -10,7 +10,7 @@ from rest_framework.exceptions import ValidationError
 
 from app.utils.constants import GENDER_FEMALE, GENDER_MALE, PRIMARY_LEVEL, O_LEVEL, A_LEVEL, \
     TERTIARY_LEVEL, SINGLE, MARRIED, DIVORCED, HOME, HEALTH_FACILITY, USER_TYPE_DEVELOPER, USER_TYPE_DHO, \
-    USER_TYPE_CHEW, USER_TYPE_MIDWIFE, USER_TYPE_AMBULANCE, USER_TYPE_MANAGER, MISSED, ATTENDED, EXPECTED
+    USER_TYPE_CHEW, USER_TYPE_MIDWIFE, USER_TYPE_AMBULANCE, USER_TYPE_MANAGER, MISSED, ATTENDED, EXPECTED, PRE, POST
 
 GENDER_CHOICES = (
     (GENDER_MALE, 'male'),
@@ -47,6 +47,12 @@ APPOINTMENT = (
     (MISSED, 'Missed'),
     (ATTENDED, 'Attended'),
     (EXPECTED, 'Expected'),
+)
+
+
+FAMILY_PLANNING_STATUS = (
+    (PRE, 'Pre'),
+    (POST, 'Post'),
 )
 
 
@@ -305,19 +311,65 @@ class FollowUp(models.Model):
         return True
 
 
-class MappingEncounter(models.Model):
-    girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    using_family_planning = models.BooleanField(default=True)
+class FamilyPlanning(models.Model):
+    status = models.CharField(choices=FAMILY_PLANNING_STATUS, default=PRE, max_length=250)
+    method = models.CharField(max_length=250, blank=True, null=True)
     no_family_planning_reason = models.CharField(max_length=250, blank=True, null=True)
-    family_planning_type = models.CharField(max_length=250, blank=True, null=True)
+    using_family_planning = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return str(self.created_at)
+
+    @staticmethod
+    def has_write_permission(request):
+        return True
+
+    @staticmethod
+    def has_read_permission(request):
+        return True
+
+    @staticmethod
+    def has_object_write_permission(self, request):
+        return True
+
+
+class Observation(models.Model):
     blurred_vision = models.BooleanField(default=False)
     bleeding_heavily = models.BooleanField(default=False)
     fever = models.BooleanField(default=False)
     swollen_feet = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return str(self.created_at)
+
+    @staticmethod
+    def has_write_permission(request):
+        return True
+
+    @staticmethod
+    def has_read_permission(request):
+        return True
+
+    @staticmethod
+    def has_object_write_permission(self, request):
+        return True
+
+
+class MappingEncounter(models.Model):
+    girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    family_planning = models.ManyToManyField(FamilyPlanning)
+    observation = models.ForeignKey(Observation, on_delete=models.DO_NOTHING)
     voucher_card = models.CharField(max_length=250, blank=True, null=True)
     attended_anc_visit = models.BooleanField(default=False)
-    voucher_number = models.IntegerField(default=0, blank=True, null=True)
     odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
