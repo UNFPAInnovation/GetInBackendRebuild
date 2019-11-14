@@ -66,7 +66,6 @@ class GirlView(ListCreateAPIView):
 
 
 class MappingEncounterView(ListCreateAPIView):
-    print('mapping encounter')
     def get_queryset(self):
         user = self.request.user
         if user.role == USER_TYPE_MIDWIFE:
@@ -442,8 +441,8 @@ class SmsView(ListCreateAPIView):
 
 class ExtractView(APIView):
     def get(self, request, format=None, **kwargs):
-        location_bundibugyo = ("/home/codephillip/PycharmProjects/GetInBackendRebuild/bundibugyo_org_units.xlsx")
-        # location_arua = ("/home/codephillip/PycharmProjects/GetInBackendRebuild/arua_org_units.xlsx")
+        # location_bundibugyo = ("/home/codephillip/PycharmProjects/GetInBackendRebuild/bundibugyo_org_units.xlsx")
+        location_arua = ("/home/codephillip/PycharmProjects/GetInBackendRebuild/arua_org_units.xlsx")
 
-        extract_excel_data(location_bundibugyo)
+        extract_excel_data(location_arua)
         return Response({"result": "success"})

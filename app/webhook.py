@@ -94,11 +94,7 @@ class MappingEncounterWebhook(APIView):
                 print(e)
 
             girl_location = mapped_girl_object["GirlLocation"][0]
-            county = County.objects.filter(name__icontains=girl_location["county"][0])
-            subcounty = SubCounty.objects.filter(name__icontains=girl_location["subcounty"][0])
-            parish = Parish.objects.filter(name__icontains=girl_location["parish"][0])
-
-            village = Village.objects.get(name__icontains=girl_location["village"][0])
+            village = Village.objects.get(name__icontains=str(girl_location["village"][0]).replace("_", " "))
 
             observations3 = mapped_girl_object["Observations3"][0]
             marital_status = observations3["marital_status"][0]
