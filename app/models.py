@@ -390,8 +390,6 @@ class MappingEncounter(models.Model):
 
 
 class AppointmentEncounter(models.Model):
-    girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
     appointment = models.ForeignKey('Appointment', on_delete=models.CASCADE)
     needed_ambulance = models.BooleanField(default=False)
     missed_anc_before = models.BooleanField(default=False)

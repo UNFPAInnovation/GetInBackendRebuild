@@ -13,7 +13,7 @@ import logging
 from app.utils.constants import FOLLOW_UP_FORM_CHEW_NAME, APPOINTMENT_FORM_CHEW_NAME, \
     MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME, APPOINTMENT_FORM_MIDWIFE_NAME, FOLLOW_UP_FORM_MIDWIFE_NAME, USER_TYPE_CHEW, \
     MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME, POSTNATAL_FORM_CHEW_NAME, POSTNATAL_FORM_MIDWIFE_NAME, ATTENDED, \
-    HEALTH_FACILITY, PRE
+    HEALTH_FACILITY, PRE, POST
 
 logger = logging.getLogger('testlogger')
 
@@ -325,15 +325,15 @@ class MappingEncounterWebhook(APIView):
                         if "Others" == contraceptive_method_name:
                             print("others present")
                             other_contraceptive_method = contraceptive_group["other_contraceptive_method"][0]
-                            family_planning = FamilyPlanning(method=other_contraceptive_method, status=PRE)
+                            family_planning = FamilyPlanning(method=other_contraceptive_method, status=POST)
                             family_planning.save()
                             delivery.family_planning.add(family_planning)
                         else:
-                            family_planning = FamilyPlanning(method=contraceptive_method_name, status=PRE)
+                            family_planning = FamilyPlanning(method=contraceptive_method_name, status=POST)
                             family_planning.save()
                             delivery.family_planning.add(family_planning)
                 else:
-                    family_planning = FamilyPlanning(method=contraceptive_method, status=PRE)
+                    family_planning = FamilyPlanning(method=contraceptive_method, status=POST)
                     family_planning.save()
                     delivery.family_planning.add(family_planning)
             else:
@@ -411,7 +411,7 @@ class MappingEncounterWebhook(APIView):
             appointment = Appointment(girl=girl, user=user, date=next_appointment_date)
             appointment.save()
 
-            appointment_encounter = AppointmentEncounter(girl=girl, user=user, used_ambulance=used_ambulance,
+            appointment_encounter = AppointmentEncounter(used_ambulance=used_ambulance,
                                                          needed_ambulance=needed_ambulance,
                                                          missed_anc_reason=missed_anc_reason,
                                                          action_taken=action_taken,

@@ -202,8 +202,6 @@ class AppointmentSerializer(serializers.ModelSerializer):
 class AppointmentEncounterSerializer(serializers.ModelSerializer):
     observation = ObservationSerializer(read_only=True)
     appointment = AppointmentSerializer(read_only=True)
-    girl = GirlSerializer(read_only=True)
-    user = UserGetSerializer(read_only=True)
 
     class Meta:
         model = AppointmentEncounter
