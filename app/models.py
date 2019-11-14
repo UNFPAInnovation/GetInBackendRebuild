@@ -190,8 +190,6 @@ class Girl(models.Model):
         )
     ], blank=True, null=True)
     trimester = models.IntegerField(default=1, validators=[MaxValueValidator(3), MinValueValidator(1)])
-    next_of_kin_last_name = models.CharField(max_length=250, blank=True, null=True)
-    next_of_kin_first_name = models.CharField(max_length=250, blank=True, null=True)
     next_of_kin_phone_number = models.CharField(max_length=12, validators=[
         RegexValidator(
             regex='^(07)[0-9]{8}$',
