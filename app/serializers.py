@@ -150,6 +150,8 @@ class FamilyPlanningSerializer(serializers.ModelSerializer):
 class FollowUpGetSerializer(serializers.ModelSerializer):
     girl = GirlSerializer(read_only=True)
     user = UserGetSerializer(read_only=True)
+    observation = ObservationSerializer(read_only=True)
+
 
     class Meta:
         model = FollowUp
