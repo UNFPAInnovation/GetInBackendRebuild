@@ -13,8 +13,13 @@ def extract_excel_data(location):
     print(sheet.row_values(10)[0])
     print(sheet.utter_max_rows)
 
-    for row_number in range(519, 1000):
-        row_data = sheet.row_values(row_number)
+    for row_number in range(0, 1000):
+        try:
+            row_data = sheet.row_values(row_number)
+        except Exception as e:
+            print(e)
+            break
+
         print(row_data)
         district_value = row_data[0]
         county_value = row_data[1]
@@ -28,7 +33,7 @@ def extract_excel_data(location):
             break
 
         try:
-            district = District.objects.get(name__icontains=district_value)
+            district = District.objects.get(name=district_value)
         except Exception as e:
             print(e)
             district = District(name=district_value)

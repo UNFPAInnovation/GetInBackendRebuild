@@ -34,11 +34,11 @@ EXPECTED = "Expected"
 # from those that are already there
 #####################################
 APPOINTMENT_FORM_CHEW_NAME = "GetINAppointment6_chew"
-APPOINTMENT_FORM_MIDWIFE_NAME = "GetINAppointment9_midwife"
+APPOINTMENT_FORM_MIDWIFE_NAME = "GetINAppointment10_midwife"
 # each district has its own form.
-MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME = "GetInMapGirlBundibugyo9_chew"
-MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME = "GetInMapGirlBundibugyo11_midwife"
-FOLLOW_UP_FORM_CHEW_NAME = "GetInFollowup16_chew"
-FOLLOW_UP_FORM_MIDWIFE_NAME = "GetInFollowup14_midwife"
-POSTNATAL_FORM_CHEW_NAME = "GetINPostnatalForm4_chew"
-POSTNATAL_FORM_MIDWIFE_NAME = "GetINPostnatalForm4_midwife"
+MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME = "GetInMapGirlBundibugyo16_chew"
+MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME = "GetInMapGirlBundibugyo16_midwife"
+FOLLOW_UP_FORM_CHEW_NAME = "GetInFollowup17_chew"
+FOLLOW_UP_FORM_MIDWIFE_NAME = "GetInFollowup17_midwife"
+POSTNATAL_FORM_CHEW_NAME = "GetINPostnatalForm5_chew"
+POSTNATAL_FORM_MIDWIFE_NAME = "GetINPostnatalForm5_midwife"

@@ -89,7 +89,7 @@ WSGI_APPLICATION = 'GetInBackendRebuild.wsgi.application'
 
 DATABASES = {
     'main': {
-        'NAME': 'db.db',
+        'NAME': 'db.sqlite3',
         'ENGINE': 'django.db.backends.sqlite3'
     },
     'test': {
