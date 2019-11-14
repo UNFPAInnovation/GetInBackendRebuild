@@ -20,3 +20,4 @@ dry-rest-permissions==0.1.10
 django-rest-swagger==2.2.0
 psycopg2==2.8.4
 africastalking==1.1.9
+xlrd==1.2.0
