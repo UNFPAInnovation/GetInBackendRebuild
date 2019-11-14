@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from app import sms_handler
+from app.extractor import extract_excel_data
 from app.filters import GirlFilter, FollowUpFilter, MappingEncounterFilter, DeliveryFilter, AppointmentFilter, \
     UserFilter
 from app.models import Girl, District, County, SubCounty, Parish, Village, \
@@ -436,3 +437,12 @@ class SmsView(ListCreateAPIView):
 
         receiver_ids = request.data.get('receiver_ids')
         return sms_handler.send_sms(message, sender, receiver_ids)
+
+
+class ExtractView(APIView):
+    def get(self, request, format=None, **kwargs):
+        location_bundibugyo = ("/home/codephillip/PycharmProjects/GetInBackendRebuild/bundibugyo_org_units.xlsx")
+        # location_arua = ("/home/codephillip/PycharmProjects/GetInBackendRebuild/bundibugyo_org_units.xlsx")
+
+        extract_excel_data(location_bundibugyo)
+        return Response({"result": "success"})
