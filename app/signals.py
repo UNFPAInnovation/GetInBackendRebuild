@@ -20,6 +20,8 @@ def update_last_appointment_status(sender=Appointment, **kwargs):
         girl = last_saved_appointment.girl
         print(girl)
         girl_previous_appointments = Appointment.objects.filter(girl__id=girl.id).order_by("id")
+        if girl_previous_appointments.count() <= 1:
+            raise Exception("Girl only has one appointment")
         second_last_appointment = list(girl_previous_appointments)[girl_previous_appointments.count() - 2]
 
         print(second_last_appointment.status)
