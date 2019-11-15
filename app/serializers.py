@@ -182,6 +182,7 @@ class MappingEncounterSerializer(serializers.ModelSerializer):
     girl = GirlSerializer(read_only=True)
     family_planning = FamilyPlanningSerializer(read_only=True, many=True)
     observation = ObservationSerializer(read_only=True)
+    user = UserGetSerializer(read_only=True)
 
     class Meta:
         model = MappingEncounter
@@ -190,6 +191,7 @@ class MappingEncounterSerializer(serializers.ModelSerializer):
 
 class AppointmentSerializer(serializers.ModelSerializer):
     girl = GirlSerializer(read_only=True)
+    user = UserGetSerializer(read_only=True)
 
     class Meta:
         model = Appointment
