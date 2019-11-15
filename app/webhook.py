@@ -1,3 +1,4 @@
+import datetime
 import json
 import random
 import traceback
@@ -215,7 +216,7 @@ class MappingEncounterWebhook(APIView):
     def auto_generate_appointment(self, girl, user, previous_appointment_date=None):
         if girl.age < 25:
             # Priority is given to girls who are less than 25 years
-            current_date = timezone.now()
+            current_date = datetime.datetime.now()
 
             if previous_appointment_date:
                 # if girl has ever attended ANC
@@ -238,7 +239,11 @@ class MappingEncounterWebhook(APIView):
                 last_menstruation_date = girl.last_menstruation_date
                 print(last_menstruation_date)
 
-                lmd_days = (current_date.date() - last_menstruation_date).days
+                print(current_date)
+                print(last_menstruation_date)
+                print(current_date - last_menstruation_date)
+
+                lmd_days = (current_date - last_menstruation_date).days
                 print("lmd_days " + str(lmd_days))
 
                 if lmd_days > 84:
