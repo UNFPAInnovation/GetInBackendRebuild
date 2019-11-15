@@ -1,5 +1,10 @@
 import json
+import random
 import traceback
+from concurrent.futures._base import PENDING
+
+import pytz
+from django.utils import timezone
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -140,9 +145,6 @@ class MappingEncounterWebhook(APIView):
 
                 if attended_anc_visit:
                     previous_appointment_date = anc_previous_group["ANCDatePrevious"][0]
-                    # assume that a previous ANC appointment was attended
-                    appointment = Appointment(girl=girl, user=user, date=previous_appointment_date, status=ATTENDED)
-                    appointment.save()
                     self.auto_generate_appointment(girl, user, previous_appointment_date)
                 else:
                     self.auto_generate_appointment(girl, user)
@@ -210,7 +212,62 @@ class MappingEncounterWebhook(APIView):
             print(e)
 
     def auto_generate_appointment(self, girl, user, previous_appointment_date=None):
-        pass
+        if girl.age < 25:
+            # Priority is given to girls who are less than 25 years
+            current_date = timezone.now()
+
+            if previous_appointment_date:
+                # if girl has ever attended ANC
+                # Pick ANC date from card
+                print("has previous appointment")
+                # assume that a previous ANC appointment was attended
+                year, month, day = [int(x) for x in previous_appointment_date.split("-")]
+                previous_appointment_date = timezone.datetime(year, month, day)
+
+                status = PENDING if current_date.replace(tzinfo=pytz.utc) \
+                                    > previous_appointment_date.replace(tzinfo=pytz.utc) else ATTENDED
+                appointment = Appointment(girl=girl, user=user, date=previous_appointment_date, status=status)
+                appointment.save()
+            else:
+                print("no previous appointment")
+                last_menstruation_date = girl.last_menstruation_date
+                print(last_menstruation_date)
+
+                lmd_days = (current_date.date() - last_menstruation_date.date()).days
+
+                if lmd_days > 84:
+                    # If girls is greater than 12 weeks pregnant and has never attended ANC*
+                    # Get the day of week when she is mapped
+                    # Add the number of days to either Tuesday or Thursday
+                    appointment_date = current_date + timezone.timedelta(days=8 - current_date.weekday())
+                else:
+                    # If girl is less than 12 weeks pregnant and has never attended ANC
+                    # Get a random number , add it to the day she was mapped
+                    # Then work out the logic of her appointment being between Tuesday and Thursday
+                    rand_diff = 84 - lmd_days
+
+                    incremented_days = random.randint(0, rand_diff)
+                    current_date = current_date + timezone.timedelta(days=incremented_days)
+
+                    if current_date.weekday() == 0:
+                        appointment_date = current_date + timezone.timedelta(days=3)
+                    elif current_date.weekday() == 1:
+                        appointment_date = current_date + timezone.timedelta(days=2)
+                    elif current_date.weekday() == 2:
+                        appointment_date = current_date + timezone.timedelta(days=6)
+                    elif current_date.weekday() == 3:
+                        appointment_date = current_date + timezone.timedelta(days=5)
+                    elif current_date.weekday() == 4:
+                        appointment_date = current_date + timezone.timedelta(days=4)
+                    elif current_date.weekday() == 5:
+                        appointment_date = current_date + timezone.timedelta(days=5)
+                    else:
+                        appointment_date = current_date + timezone.timedelta(days=4)
+
+                print("create auto appointment")
+                print(appointment_date)
+                appointment = Appointment(girl=girl, user=user, date=appointment_date, status=PENDING)
+                appointment.save()
 
     def process_follow_up_and_delivery_encounter(self, girl_id, json_result, user_id):
         try:
