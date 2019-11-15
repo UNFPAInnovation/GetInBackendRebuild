@@ -229,7 +229,9 @@ class MappingEncounterWebhook(APIView):
                                     > previous_appointment_date.replace(tzinfo=pytz.utc) else ATTENDED
                 appointment = Appointment(girl=girl, user=user, date=previous_appointment_date, status=status)
                 appointment.save()
-            else:
+
+            if user.role == USER_TYPE_CHEW:
+                # create auto appointment is the user is a chew
                 print("no previous appointment")
                 last_menstruation_date = girl.last_menstruation_date
                 print(last_menstruation_date)
