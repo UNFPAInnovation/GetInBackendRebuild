@@ -3,6 +3,7 @@ import random
 import traceback
 
 import pytz
+from django.db.models import Q
 from django.utils import timezone
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
@@ -98,7 +99,8 @@ class MappingEncounterWebhook(APIView):
                 print(e)
 
             girl_location = mapped_girl_object["GirlLocation"][0]
-            village = Village.objects.get(name__icontains=str(girl_location["village"][0]).replace("_", " "))
+            parish = Parish.objects.filter(name__icontains=str(girl_location["parish"][0]).replace("_", " ")).first()
+            village = Village.objects.get(Q(name__icontains=str(girl_location["village"][0]).replace("_", " ")) & Q(parish=parish))
 
             observations3 = mapped_girl_object["Observations3"][0]
             marital_status = observations3["marital_status"][0]
