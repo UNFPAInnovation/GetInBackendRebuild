@@ -100,8 +100,10 @@ class MappingEncounterWebhook(APIView):
                 print(e)
 
             girl_location = mapped_girl_object["GirlLocation"][0]
+
+            # use filter and get first because there are so some duplication locations
             parish = Parish.objects.filter(name__icontains=str(girl_location["parish"][0]).replace("_", " ")).first()
-            village = Village.objects.get(Q(name__icontains=str(girl_location["village"][0]).replace("_", " ")) & Q(parish=parish))
+            village = Village.objects.filter(Q(name__icontains=str(girl_location["village"][0]).replace("_", " ")) & Q(parish=parish)).first()
 
             observations3 = mapped_girl_object["Observations3"][0]
             marital_status = observations3["marital_status"][0]
