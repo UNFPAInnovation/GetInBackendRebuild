@@ -1,7 +1,6 @@
 import json
 import random
 import traceback
-from concurrent.futures._base import PENDING
 
 import pytz
 from django.utils import timezone
@@ -18,7 +17,7 @@ import logging
 from app.utils.constants import FOLLOW_UP_FORM_CHEW_NAME, APPOINTMENT_FORM_CHEW_NAME, \
     MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME, APPOINTMENT_FORM_MIDWIFE_NAME, FOLLOW_UP_FORM_MIDWIFE_NAME, USER_TYPE_CHEW, \
     MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME, POSTNATAL_FORM_CHEW_NAME, POSTNATAL_FORM_MIDWIFE_NAME, ATTENDED, \
-    HEALTH_FACILITY, PRE, POST
+    HEALTH_FACILITY, PRE, POST, EXPECTED
 
 logger = logging.getLogger('testlogger')
 
@@ -220,11 +219,13 @@ class MappingEncounterWebhook(APIView):
                 # if girl has ever attended ANC
                 # Pick ANC date from card
                 print("has previous appointment")
+                print(previous_appointment_date)
+                print(type(previous_appointment_date))
                 # assume that a previous ANC appointment was attended
                 year, month, day = [int(x) for x in previous_appointment_date.split("-")]
                 previous_appointment_date = timezone.datetime(year, month, day)
 
-                status = PENDING if current_date.replace(tzinfo=pytz.utc) \
+                status = EXPECTED if current_date.replace(tzinfo=pytz.utc) \
                                     > previous_appointment_date.replace(tzinfo=pytz.utc) else ATTENDED
                 appointment = Appointment(girl=girl, user=user, date=previous_appointment_date, status=status)
                 appointment.save()
@@ -233,7 +234,8 @@ class MappingEncounterWebhook(APIView):
                 last_menstruation_date = girl.last_menstruation_date
                 print(last_menstruation_date)
 
-                lmd_days = (current_date.date() - last_menstruation_date.date()).days
+                lmd_days = (current_date.date() - last_menstruation_date).days
+                print("lmd_days " + str(lmd_days))
 
                 if lmd_days > 84:
                     # If girls is greater than 12 weeks pregnant and has never attended ANC*
@@ -266,7 +268,7 @@ class MappingEncounterWebhook(APIView):
 
                 print("create auto appointment")
                 print(appointment_date)
-                appointment = Appointment(girl=girl, user=user, date=appointment_date, status=PENDING)
+                appointment = Appointment(girl=girl, user=user, date=appointment_date, status=EXPECTED)
                 appointment.save()
 
     def process_follow_up_and_delivery_encounter(self, girl_id, json_result, user_id):
