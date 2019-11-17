@@ -10,7 +10,8 @@ from rest_framework.exceptions import ValidationError
 
 from app.utils.constants import GENDER_FEMALE, GENDER_MALE, PRIMARY_LEVEL, O_LEVEL, A_LEVEL, \
     TERTIARY_LEVEL, SINGLE, MARRIED, DIVORCED, HOME, HEALTH_FACILITY, USER_TYPE_DEVELOPER, USER_TYPE_DHO, \
-    USER_TYPE_CHEW, USER_TYPE_MIDWIFE, USER_TYPE_AMBULANCE, USER_TYPE_MANAGER, MISSED, ATTENDED, EXPECTED, PRE, POST
+    USER_TYPE_CHEW, USER_TYPE_MIDWIFE, USER_TYPE_AMBULANCE, USER_TYPE_MANAGER, MISSED, ATTENDED, EXPECTED, PRE, POST, \
+    BEFORE, AFTER, CURRENT
 
 GENDER_CHOICES = (
     (GENDER_MALE, 'male'),
@@ -47,6 +48,12 @@ APPOINTMENT = (
     (MISSED, 'Missed'),
     (ATTENDED, 'Attended'),
     (EXPECTED, 'Expected'),
+)
+
+STAGE = (
+    (BEFORE, BEFORE),
+    (AFTER, AFTER),
+    (CURRENT, CURRENT),
 )
 
 
@@ -134,6 +141,7 @@ class User(AbstractUser):
     district = models.ForeignKey(District, on_delete=models.CASCADE, blank=True, null=True)
     # midwife attached to vht. Midwife can have two VHTs at a time while VHT has one midwife
     midwife = models.ForeignKey('User', on_delete=models.DO_NOTHING, blank=True, null=True)
+    firebase_device_id = models.CharField(max_length=300, blank=True, null=True, default="")
     # allows use to access these fields in /auth/me
     REQUIRED_FIELDS = ["phone", "role", "email"]
 
@@ -461,6 +469,7 @@ class Delivery(models.Model):
 class Appointment(models.Model):
     # Also known as ANC visit
     girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
+    # only the Midwife user can make an appoinment
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateTimeField(blank=True, null=True)
     health_facility = models.ForeignKey(HealthFacility, on_delete=models.CASCADE, blank=True, null=True)
@@ -476,6 +485,10 @@ class Appointment(models.Model):
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
+        # only Midwife user is responsible to handling appointment
+        # the assumption is that every vht is attached to a midwife
+        if self.user.role != USER_TYPE_MIDWIFE:
+            self.user = self.user.midwife
         self.update_pending_and_completed_visits(force_insert, force_update, update_fields, using)
 
     def update_pending_and_completed_visits(self, force_insert, force_update, update_fields, using):
@@ -561,6 +574,30 @@ class Referral(models.Model):
 
     def __str__(self):
         return self.girl.last_name + " " + self.girl.first_name
+
+    @staticmethod
+    def has_write_permission(request):
+        return True
+
+    @staticmethod
+    def has_read_permission(request):
+        return True
+
+    @staticmethod
+    def has_object_write_permission(self, request):
+        return True
+
+
+class NotificationLog(models.Model):
+    appointment = models.ForeignKey('Appointment', on_delete=models.CASCADE)
+    stage = models.CharField(choices=STAGE, default=AFTER, max_length=250)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.appointment.girl.last_name + " " + self.appointment.girl.first_name + " " + str(self.created_at)
 
     @staticmethod
     def has_write_permission(request):

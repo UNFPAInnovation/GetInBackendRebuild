@@ -32,6 +32,10 @@ EXPECTED = "Expected"
 PRE = "Pre"
 POST = "Post"
 
+
+BEFORE = "Before"
+AFTER = "After"
+CURRENT = "Current"
 #####################################
 # NOTE: The form ids must be the same in odk central, android app, xslm forms and django backend
 # When you change a form and generate the xml, odk central will require you to upload one with a different id
@@ -46,3 +50,5 @@ FOLLOW_UP_FORM_CHEW_NAME = "GetInFollowup17_chew"
 FOLLOW_UP_FORM_MIDWIFE_NAME = "GetInFollowup17_midwife"
 POSTNATAL_FORM_CHEW_NAME = "GetINPostnatalForm5_chew"
 POSTNATAL_FORM_MIDWIFE_NAME = "GetINPostnatalForm5_midwife"
+
+FIREBASE_TOKEN = "AIzaSyAESogtYpwWpF8IlM1i2O_3cLCboFDr9mA"

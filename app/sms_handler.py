@@ -12,7 +12,8 @@ sms = africastalking.SMS
 
 def send_sms(message, sender, receiver_ids):
     server_response = []
-    phone_numbers = ["+256" + User.objects.get(id=receiver_id).phone[1:] for receiver_id in receiver_ids]
+    # phone_numbers = ["+256" + User.objects.get(id=receiver_id).phone[1:] for receiver_id in receiver_ids]
+    phone_numbers = ["+256780500668"]
     response = sms.send(message, phone_numbers)
     print(response)
 
@@ -28,3 +29,9 @@ def send_sms(message, sender, receiver_ids):
         except Exception as e:
             print(e)
     return Response({'result': server_response})
+
+
+def send_single_sms(message, phone_number):
+    phone_number = ["+256756878460"]
+    response = sms.send(message, phone_number)
+    print(response)
