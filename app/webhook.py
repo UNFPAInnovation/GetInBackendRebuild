@@ -19,7 +19,7 @@ import logging
 from app.utils.constants import FOLLOW_UP_FORM_CHEW_NAME, APPOINTMENT_FORM_CHEW_NAME, \
     MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME, APPOINTMENT_FORM_MIDWIFE_NAME, FOLLOW_UP_FORM_MIDWIFE_NAME, USER_TYPE_CHEW, \
     MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME, POSTNATAL_FORM_CHEW_NAME, POSTNATAL_FORM_MIDWIFE_NAME, ATTENDED, \
-    HEALTH_FACILITY, PRE, POST, EXPECTED
+    HEALTH_FACILITY, PRE, POST, EXPECTED, MAP_GIRL_ARUA_CHEW_FORM_NAME, MAP_GIRL_ARUA_MIDWIFE_FORM_NAME
 
 logger = logging.getLogger('testlogger')
 
@@ -57,7 +57,8 @@ class MappingEncounterWebhook(APIView):
         except KeyError:
             print(traceback.print_exc())
 
-        if MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME in json_result or MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME in json_result:
+        if MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME in json_result or MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME in json_result \
+        or MAP_GIRL_ARUA_CHEW_FORM_NAME in json_result or MAP_GIRL_ARUA_MIDWIFE_FORM_NAME in json_result:
             print("mapping forms matched")
             return self.process_mapping_encounter(json_result, user_id)
         elif FOLLOW_UP_FORM_CHEW_NAME in json_result or FOLLOW_UP_FORM_MIDWIFE_NAME in json_result:
@@ -76,8 +77,19 @@ class MappingEncounterWebhook(APIView):
                 mapped_girl_object = json_result[MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME]
             except KeyError:
                 print(traceback.print_exc())
+            try:
                 mapped_girl_object = json_result[MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME]
-
+            except KeyError:
+                print(traceback.print_exc())
+            try:
+                mapped_girl_object = json_result[MAP_GIRL_ARUA_CHEW_FORM_NAME]
+            except KeyError:
+                print(traceback.print_exc())
+            try:
+                mapped_girl_object = json_result[MAP_GIRL_ARUA_MIDWIFE_FORM_NAME]
+            except KeyError:
+                print(traceback.print_exc())
+                
             next_of_kin_number = None
             voucher_number = 0
             attended_anc_visit = False
