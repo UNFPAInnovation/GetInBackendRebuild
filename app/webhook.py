@@ -102,8 +102,9 @@ class MappingEncounterWebhook(APIView):
             girl_location = mapped_girl_object["GirlLocation"][0]
 
             # use filter and get first because there are so some duplication locations
-            parish = Parish.objects.filter(name__icontains=str(girl_location["parish"][0]).replace("_", " ")).first()
-            village = Village.objects.filter(Q(name__icontains=str(girl_location["village"][0]).replace("_", " ")) & Q(parish=parish)).first()
+            parish = Parish.objects.filter(name__icontains=replace_underscore(girl_location["parish"][0])).first()
+            village = Village.objects.filter(
+                Q(name__icontains=replace_underscore(girl_location["village"][0])) & Q(parish=parish)).first()
 
             observations3 = mapped_girl_object["Observations3"][0]
             marital_status = observations3["marital_status"][0]
@@ -231,7 +232,7 @@ class MappingEncounterWebhook(APIView):
                 previous_appointment_date = timezone.datetime(year, month, day)
 
                 status = EXPECTED if current_date.replace(tzinfo=pytz.utc) \
-                                    > previous_appointment_date.replace(tzinfo=pytz.utc) else ATTENDED
+                                     > previous_appointment_date.replace(tzinfo=pytz.utc) else ATTENDED
                 appointment = Appointment(girl=girl, user=user, date=previous_appointment_date, status=status)
                 appointment.save()
 
@@ -296,6 +297,7 @@ class MappingEncounterWebhook(APIView):
             swollenfeet = False
             bleeding = False
             blurred_vision = False
+            missed_anc_reason = ""
 
             try:
                 # captured in chew follow up
@@ -308,6 +310,15 @@ class MappingEncounterWebhook(APIView):
                 blurred_vision = observations2["blurred_vision"][0] == "yes"
             except Exception:
                 print(traceback.print_exc())
+
+            missed_anc_before_group = follow_up_object["missed_anc_before_group"][0]
+            missed_anc_before = missed_anc_before_group["missed_anc_before"][0] == "yes"
+
+            if missed_anc_before:
+                missed_anc_before_group2 = follow_up_object["missed_anc_before_group2"][0]
+                missed_anc_reason = missed_anc_before_group2["missed_anc_reason"][0]
+                if missed_anc_reason == "Other":
+                    missed_anc_reason = missed_anc_before_group2["missed_anc_reason_other"][0]
 
             action_taken_group = follow_up_object["action_taken_by_health_person_group"][0]
             action_taken_by_health_person = action_taken_group["action_taken_by_health_person"][0]
@@ -323,7 +334,7 @@ class MappingEncounterWebhook(APIView):
             elif action_taken_by_health_person == "delivery":
                 print("action taken delivery")
                 self.save_delivery(follow_up_object, girl, user)
-            else:
+            elif action_taken_by_health_person == "delivery":
                 referral = Referral(girl=girl, user=user, reason="critical")
                 referral.save()
 
@@ -333,8 +344,9 @@ class MappingEncounterWebhook(APIView):
                                       swollen_feet=swollenfeet)
             observation.save()
 
-            follow_up = FollowUp(girl=girl, user=user, follow_up_action_taken=action_taken_by_health_person)
-            follow_up.observation = observation
+            follow_up = FollowUp(girl=girl, user=user, follow_up_action_taken=action_taken_by_health_person,
+                                 missed_anc_reason=missed_anc_reason, missed_anc_before=missed_anc_before,
+                                 observation=observation)
             follow_up.save()
             return Response({'result': 'success'}, 200)
         except Exception:
@@ -360,7 +372,7 @@ class MappingEncounterWebhook(APIView):
         birth_place = delivery_follow_up_group["birth_place"][0]
         if birth_place == "HealthFacility":
             birth_place = "Health facility"
-        delivery_action_taken = delivery_follow_up_group["action_taken"][0]
+        delivery_action_taken = replace_underscore(delivery_follow_up_group["action_taken"][0])
         contraceptive_group = follow_up_object["family_planning_group"][0]
         postnatal_care = contraceptive_group["postnatal_received"][0] == "yes"
         used_contraceptives = contraceptive_group["family_planning"][0] == "yes"
@@ -462,7 +474,7 @@ class MappingEncounterWebhook(APIView):
                     print(traceback.print_exc())
 
             action_taken_group = appointment_object["action_taken_group"][0]
-            action_taken = action_taken_group["action_taken_meeting_girl"][0]
+            action_taken = replace_underscore(action_taken_group["action_taken_meeting_girl"][0])
 
             schedule_appointment_group = appointment_object["schedule_appointment_group"][0]
             next_appointment_date = schedule_appointment_group["schedule_appointment"][0]
@@ -505,3 +517,7 @@ class MappingEncounterWebhook(APIView):
 
         self.save_delivery(postnatal_object, girl, user)
         return Response()
+
+
+def replace_underscore(text):
+    return str(text).replace("_", " ")

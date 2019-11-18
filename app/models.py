@@ -342,6 +342,8 @@ class FollowUp(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     observation = models.ForeignKey(Observation, on_delete=models.DO_NOTHING, blank=True, null=True)
     follow_up_action_taken = models.CharField(max_length=400, blank=True, null=True)
+    missed_anc_before = models.BooleanField(default=False)
+    missed_anc_reason = models.CharField(max_length=250, blank=True, null=True)
     odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
