@@ -229,7 +229,7 @@ class AppointmentView(ListCreateAPIView):
             appointments = Appointment.objects.all().order_by('-created_at')
         # appointments = Appointment.objects.all().order_by('-created_at')
         return appointments
-    
+
     queryset = Appointment.objects.all()
     permission_classes = (IsAuthenticated, DRYPermissions)
     filter_class = AppointmentFilter
@@ -259,27 +259,26 @@ class MappingEncountersStatsView(APIView):
 
         all_months_range_data = []
 
-        month_counter = 0
-        while month_counter < number_of_months:
+        while month_from <= month_to:
             '''We loop through all months for the data querried.
-            we do some ugly mutation to the dates so as to group the data in months '''
+            we do some ugly mutation on the dates so as to group the data in months '''
 
             start_month = created_at_from.month
 
-            ''' Adjust last date and month accordingly for each month '''
-            if (month_counter != 0):
+            ''' Adjust last date and month accordingly for each month
+            For each month, we set its last day to the last day of that month
+            If the month is the created_to month, we set the end date to the date
+            chosen instead. '''
+
+            if (month_from == month_to):
                 '''Set to end day of created_to month as the created_to date'''
                 created_at_to = created_at_to.replace(month = start_month, day = day_to)
-                # print ("New date for Else is :" + str(created_at_to))
             else:
                 '''Get last day of the month'''
                 last_month_day = calendar.monthrange(year_from,month_from)[1]
-                print("This is run: " + str(month_counter) + " and setting last day to: " + str(last_month_day))
 
-                ''' Construct date object using our last day and
-                Set last day of the month from date object as the created_to date '''
+                ''' Set last day of the month from date object as the created_to date '''
                 created_at_to = created_at_from.replace(day = last_month_day)
-                # print ("New date is :" + str(created_at_to))
 
             response = dict()
 
@@ -300,7 +299,7 @@ class MappingEncountersStatsView(APIView):
 
             print("----------------------------------------------------------------------------------------------------------------------------------------")
             print("Month is " + response["month"])
-            print("This is run: " + str(month_counter) + " and created_at_from is: " + str(created_at_from) + " and created_at_to is: " + str(created_at_to))
+            print("created_at_from is: " + str(created_at_from) + " and created_at_to is: " + str(created_at_to))
 
             response["mappedGirlsInAgeGroup12_15"] = girls.count()
 
@@ -336,14 +335,17 @@ class MappingEncountersStatsView(APIView):
 
             all_months_range_data.append(response)
 
-            '''Shift month to next month by mutating our date object'''
-            created_at_from = created_at_from.replace(month = start_month + 1)
+            '''Shift month to next month by mutating our date object
+            If month is 12 [December], no need to add 1 '''
 
-            month_counter += 1
+            if(start_month == 12):
+                created_at_from = created_at_from.replace(month = start_month)
+            else:
+                created_at_from = created_at_from.replace(month = start_month + 1)
 
+            month_from += 1
 
         return Response(all_months_range_data, 200)
-
 
 
 class DeliveriesStatsView(APIView):
@@ -443,10 +445,7 @@ class SmsView(ListCreateAPIView):
 class ExtractView(APIView):
     def get(self, request, format=None, **kwargs):
         # location_bundibugyo = ("/home/codephillip/PycharmProjects/GetInBackendRebuild/bundibugyo_org_units.xlsx")
-        location_arua = ("/home/codephillip/PycharmProjects/GetInBackendRebuild/arua_org_units.xlsx")
+        location_bundibugyo = ("bundibugyo_org_units.xlsx")
 
-        extract_excel_data(location_arua)
-
-        arua_users = ("/home/codephillip/PycharmProjects/GetInBackendRebuild/GetInAruaUsers.xlsx")
-        extract_excel_user_data_from_sheet(arua_users)
+        extract_excel_data(location_bundibugyo)
         return Response({"result": "success"})
