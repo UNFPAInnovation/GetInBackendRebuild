@@ -2,9 +2,13 @@ from django.db.models import Q
 from django.db.models.signals import post_save
 from django.utils import timezone
 
-from app.models import Appointment
+from app.models import Appointment, Referral
 from app.utils.constants import ATTENDED, EXPECTED, MISSED
 
+"""
+These functions are called whenever data is saved in the models.
+They are called after the save() function has run.
+"""
 
 def update_last_appointment_status(sender=Appointment, **kwargs):
     """
@@ -51,4 +55,10 @@ def update_girls_completed_all_visits_column(girl):
         girl.save(update_fields=['completed_all_visits'])
 
 
+def send_referral_message_to_midwife(sender=Referral, **kwargs):
+    # todo send firebase notification and sms
+    pass
+
+
 post_save.connect(update_last_appointment_status, sender=Appointment)
+post_save.connect(send_referral_message_to_midwife, sender=Referral)

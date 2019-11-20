@@ -309,7 +309,9 @@ class MappingEncounterWebhook(APIView):
             swollenfeet = False
             bleeding = False
             blurred_vision = False
+            missed_anc_before = False
             missed_anc_reason = ""
+            action_taken_by_health_person = "appointment"
 
             try:
                 # captured in chew follow up
@@ -323,17 +325,23 @@ class MappingEncounterWebhook(APIView):
             except Exception:
                 print(traceback.print_exc())
 
-            missed_anc_before_group = follow_up_object["missed_anc_before_group"][0]
-            missed_anc_before = missed_anc_before_group["missed_anc_before"][0] == "yes"
+            try:
+                missed_anc_before_group = follow_up_object["missed_anc_before_group"][0]
+                missed_anc_before = missed_anc_before_group["missed_anc_before"][0] == "yes"
 
-            if missed_anc_before:
-                missed_anc_before_group2 = follow_up_object["missed_anc_before_group2"][0]
-                missed_anc_reason = missed_anc_before_group2["missed_anc_reason"][0]
-                if missed_anc_reason == "Other":
-                    missed_anc_reason = missed_anc_before_group2["missed_anc_reason_other"][0]
+                if missed_anc_before:
+                    missed_anc_before_group2 = follow_up_object["missed_anc_before_group2"][0]
+                    missed_anc_reason = missed_anc_before_group2["missed_anc_reason"][0]
+                    if missed_anc_reason == "Other":
+                        missed_anc_reason = missed_anc_before_group2["missed_anc_reason_other"][0]
+            except Exception:
+                print(traceback.print_exc())
 
-            action_taken_group = follow_up_object["action_taken_by_health_person_group"][0]
-            action_taken_by_health_person = action_taken_group["action_taken_by_health_person"][0]
+            try:
+                action_taken_group = follow_up_object["action_taken_by_health_person_group"][0]
+                action_taken_by_health_person = action_taken_group["action_taken_by_health_person"][0]
+            except Exception:
+                print(traceback.print_exc())
 
             girl = Girl.objects.get(id=girl_id)
             user = User.objects.get(id=user_id)
@@ -346,7 +354,7 @@ class MappingEncounterWebhook(APIView):
             elif action_taken_by_health_person == "delivery":
                 print("action taken delivery")
                 self.save_delivery(follow_up_object, girl, user)
-            elif action_taken_by_health_person == "delivery":
+            elif action_taken_by_health_person in ["referral", "referred"]:
                 referral = Referral(girl=girl, user=user, reason="critical")
                 referral.save()
 
@@ -366,6 +374,11 @@ class MappingEncounterWebhook(APIView):
         return Response({'result': 'failure'}, 400)
 
     def save_delivery(self, follow_up_object, girl, user):
+        """
+        The follow up and postnatal form have the same structure.
+        Postnatal form will use this function directly while follow up will depend on
+        whether the health worker selected 'delivery' as the action taken
+        """
         print("action taken delivery")
         baby_birth_date = ""
         baby_death_date = ""
@@ -385,9 +398,9 @@ class MappingEncounterWebhook(APIView):
         if birth_place == "HealthFacility":
             birth_place = "Health facility"
         delivery_action_taken = replace_underscore(delivery_follow_up_group["action_taken"][0])
+        used_contraceptives = delivery_action_taken == "offered_family_planning"
         contraceptive_group = follow_up_object["family_planning_group"][0]
         postnatal_care = contraceptive_group["postnatal_received"][0] == "yes"
-        used_contraceptives = contraceptive_group["family_planning"][0] == "yes"
 
         print('save delivery')
         delivery = Delivery(girl=girl, user=user, action_taken=delivery_action_taken,
@@ -402,35 +415,30 @@ class MappingEncounterWebhook(APIView):
             delivery.mother_death_date = mother_death_date
         delivery.save()
 
-        self.save_family_planning_methods_in_delivery(contraceptive_group, delivery, used_contraceptives)
+        if used_contraceptives:
+            self.save_family_planning_methods_in_delivery(contraceptive_group, delivery)
 
-    def save_family_planning_methods_in_delivery(self, contraceptive_group, delivery, used_contraceptives):
+    def save_family_planning_methods_in_delivery(self, contraceptive_group, delivery):
         try:
-            if used_contraceptives:
-                contraceptive_method = str(contraceptive_group["ContraceptiveMethod"][0])
-                print("contraceptive method " + contraceptive_method)
-                if " " in contraceptive_method:
-                    contraceptive_method_names = contraceptive_method.split(" ")
-                    for contraceptive_method_name in contraceptive_method_names:
-                        if "Others" == contraceptive_method_name:
-                            print("others present")
-                            other_contraceptive_method = contraceptive_group["other_contraceptive_method"][0]
-                            family_planning = FamilyPlanning(method=other_contraceptive_method, status=POST)
-                            family_planning.save()
-                            delivery.family_planning.add(family_planning)
-                        else:
-                            family_planning = FamilyPlanning(method=contraceptive_method_name, status=POST)
-                            family_planning.save()
-                            delivery.family_planning.add(family_planning)
-                else:
-                    family_planning = FamilyPlanning(method=contraceptive_method, status=POST)
-                    family_planning.save()
-                    delivery.family_planning.add(family_planning)
+            contraceptive_method = str(contraceptive_group["ContraceptiveMethod"][0])
+            print("contraceptive method " + contraceptive_method)
+
+            # separate the contraceptive methods which are in a string 'IUD condoms pills'
+            if " " in contraceptive_method:
+                contraceptive_method_names = contraceptive_method.split(" ")
+                for contraceptive_method_name in contraceptive_method_names:
+                    if "Others" == contraceptive_method_name:
+                        print("others present")
+                        other_contraceptive_method = contraceptive_group["other_contraceptive_method"][0]
+                        family_planning = FamilyPlanning(method=other_contraceptive_method, status=POST)
+                        family_planning.save()
+                        delivery.family_planning.add(family_planning)
+                    else:
+                        family_planning = FamilyPlanning(method=contraceptive_method_name, status=POST)
+                        family_planning.save()
+                        delivery.family_planning.add(family_planning)
             else:
-                print("no contraceptive")
-                no_family_planning_reason = contraceptive_group["ReasonNoContraceptives"][0]
-                family_planning = FamilyPlanning(no_family_planning_reason=no_family_planning_reason,
-                                                 using_family_planning=False)
+                family_planning = FamilyPlanning(method=contraceptive_method, status=POST)
                 family_planning.save()
                 delivery.family_planning.add(family_planning)
         except KeyError or IndexError as e:
