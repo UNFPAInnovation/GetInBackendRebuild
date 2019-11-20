@@ -120,7 +120,7 @@ class MappingEncounterWebhook(APIView):
 
             observations3 = mapped_girl_object["Observations3"][0]
             marital_status = observations3["marital_status"][0]
-            education_level = observations3["education_level"][0]
+            education_level = replace_underscore(["education_level"][0])
             last_menstruation_date = observations3["MenstruationDate"][0]
 
             try:
@@ -331,9 +331,9 @@ class MappingEncounterWebhook(APIView):
 
                 if missed_anc_before:
                     missed_anc_before_group2 = follow_up_object["missed_anc_before_group2"][0]
-                    missed_anc_reason = missed_anc_before_group2["missed_anc_reason"][0]
+                    missed_anc_reason = replace_underscore(missed_anc_before_group2["missed_anc_reason"][0])
                     if missed_anc_reason == "Other":
-                        missed_anc_reason = missed_anc_before_group2["missed_anc_reason_other"][0]
+                        missed_anc_reason = replace_underscore(missed_anc_before_group2["missed_anc_reason_other"][0])
             except Exception:
                 print(traceback.print_exc())
 
