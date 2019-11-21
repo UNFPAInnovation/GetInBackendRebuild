@@ -90,8 +90,13 @@ WSGI_APPLICATION = 'GetInBackendRebuild.wsgi.application'
 
 DATABASES = {
     'main': {
-        'NAME': 'db.sqlite3',
-        'ENGINE': 'django.db.backends.sqlite3'
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'getInApp',
+        'USER': 'postgres',
+        # 'PASSWORD': environ.get('PASSWORD', ''),
+        'PASSWORD': 'Doppler25',
+        'HOST': 'getindjangodb.chsjmdyi1oys.us-west-2.rds.amazonaws.com',
+        'PORT': '5432'
     },
     'test': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -104,7 +109,8 @@ DATABASES = {
     }
 }
 
-default_database = environ.get('DJANGO_DATABASE', 'test')
+# default_database = environ.get('DJANGO_DATABASE', 'test')
+default_database = 'main'
 DATABASES['default'] = DATABASES[default_database]
 
 
