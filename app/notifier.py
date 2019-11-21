@@ -1,3 +1,5 @@
+import traceback
+
 from django.db.models import Q
 from django.utils import timezone
 from dry_rest_permissions.generics import DRYPermissions
@@ -13,11 +15,25 @@ from app.utils.constants import BEFORE, AFTER, CURRENT, EXPECTED, MISSED
 
 class NotifierView(APIView):
     """
-    Send sms and firebase notification to vhts and midwife
+    Send sms and firebase notification to vhts and midwife.
+    Receives the new firebase_device_id from the android phone and updates the use model
     """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.current_date = timezone.now().date()
+
+    def post(self, request, *args, **kwargs):
+        try:
+            user = request.user
+            firebase_device_id = request.data.get('firebase_device_id')
+            print(user.id)
+            print(firebase_device_id)
+            user.firebase_device_id = firebase_device_id
+            user.save(update_fields=['firebase_device_id'])
+            return Response({"result": "success"}, 200)
+        except Exception:
+            print(traceback.print_exc())
+        return Response({"result": "failure"}, 400)
 
     def get(self, request, format=None, **kwargs):
         self.send_appointment_three_days_before_date()
