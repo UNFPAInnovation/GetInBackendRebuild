@@ -216,7 +216,7 @@ class AppointmentView(ListCreateAPIView):
                 Q(user_id__in=[user.id for user in users]) | Q(user__id=user.id)).order_by('-created_at')
         elif user.role in [USER_TYPE_CHEW]:
             # return appointments created by CHEW
-            appointments = Appointment.objects.filter(user=user).order_by('-created_at')
+            appointments = Appointment.objects.filter(Q(user=user) | Q(girl__user=user)).order_by('-created_at')
         elif user.role in [USER_TYPE_DHO]:
             # return all appointments in the DHO district
             appointments = Appointment.objects.filter(user__district=user.district).order_by('-created_at')
