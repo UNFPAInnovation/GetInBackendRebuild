@@ -24,9 +24,10 @@ class NotifierView(APIView):
 
     def post(self, request, *args, **kwargs):
         try:
-            user = request.user
             firebase_device_id = request.data.get('firebase_device_id')
-            print(user.id)
+            user_id = request.data.get('user_id')
+            user = User.objects.get(id=user_id)
+
             print(firebase_device_id)
             user.firebase_device_id = firebase_device_id
             user.save(update_fields=['firebase_device_id'])
