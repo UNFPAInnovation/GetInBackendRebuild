@@ -187,17 +187,19 @@ class DeliveriesView(ListCreateAPIView):
 
 class AppointmentEncounterView(ListCreateAPIView):
     def get_queryset(self):
-        user = self.request.user
-        if user.role == USER_TYPE_MIDWIFE:
-            users = User.objects.filter(midwife=user)
-            model = AppointmentEncounter.objects.filter(
-                Q(user_id__in=[user.id for user in users]) | Q(user__id=user.id)).order_by('-created_at')
-        elif user.role in [USER_TYPE_CHEW]:
-            model = AppointmentEncounter.objects.filter(user=user).order_by('-created_at')
-        elif user.role in [USER_TYPE_DHO]:
-            model = AppointmentEncounter.objects.filter(user__district=user.district).order_by('-created_at')
-        else:
-            model = AppointmentEncounter.objects.all().order_by('-created_at')
+        # todo reactivate after matching midwife and vht
+        # user = self.request.user
+        # if user.role == USER_TYPE_MIDWIFE:
+        #     users = User.objects.filter(midwife=user)
+        #     model = AppointmentEncounter.objects.filter(
+        #         Q(user_id__in=[user.id for user in users]) | Q(user__id=user.id)).order_by('-created_at')
+        # elif user.role in [USER_TYPE_CHEW]:
+        #     model = AppointmentEncounter.objects.filter(user=user).order_by('-created_at')
+        # elif user.role in [USER_TYPE_DHO]:
+        #     model = AppointmentEncounter.objects.filter(user__district=user.district).order_by('-created_at')
+        # else:
+        #     model = AppointmentEncounter.objects.all().order_by('-created_at')
+        model = AppointmentEncounter.objects.all().order_by('-created_at')
         return model
 
     permission_classes = (IsAuthenticated, DRYPermissions)
