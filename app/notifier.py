@@ -62,10 +62,6 @@ class NotifierView(APIView):
             print('health_worker_ids')
             print(health_worker_ids)
 
-            # TODO REMOVE ON RELEASE
-            health_worker_ids = ['0756878460']
-            girl_phone_numbers = ['0756878460']
-
             message_title = "GetIn ANC reminder"
             message_body = "GetIN. " + appointment.girl.first_name + " " + appointment.girl.last_name \
                            + "'s ANC visits is in three days"
@@ -101,10 +97,6 @@ class NotifierView(APIView):
             print('health_workers_ids')
             print(health_workers_ids)
 
-            # TODO REMOVE ON RELEASE
-            health_workers_ids = ['0756878460']
-            girl_phone_numbers = ['0756878460']
-
             message_title = "GetIn ANC reminder"
             message_body = "GetIN. " + appointment.girl.first_name + " " + appointment.girl.last_name \
                            + "'s has missed ANC visit"
@@ -139,10 +131,6 @@ class NotifierView(APIView):
             health_workers_ids = list({appointment.user.id, appointment.girl.user.id})
             print('health_workers_ids')
             print(health_workers_ids)
-
-            # TODO REMOVE ON RELEASE
-            health_workers_ids = ['0756878460']
-            girl_phone_numbers = ['0756878460']
 
             message_title = "GetIn ANC reminder"
             message_body = "GetIN. " + appointment.girl.first_name + " " + appointment.girl.last_name \
