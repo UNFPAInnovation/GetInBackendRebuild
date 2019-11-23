@@ -38,7 +38,7 @@ class NotifierView(APIView):
 
     def get(self, request, format=None, **kwargs):
         self.send_appointment_three_days_before_date()
-        self.send_appointment_three_days_after_date()
+        self.send_appointment_one_day_after_date()
         self.send_appointment_on_actual_day()
         return Response({"result": "success"}, 200)
 
@@ -77,11 +77,11 @@ class NotifierView(APIView):
 
                 NotificationLog(appointment=appointment, stage=BEFORE).save()
 
-    def send_appointment_three_days_after_date(self):
+    def send_appointment_one_day_after_date(self):
         girl_phone_numbers = []
 
         appointments = Appointment.objects.filter(Q(date__lte=self.current_date)
-                                                  & Q(date__gte=self.current_date - timezone.timedelta(days=3)))
+                                                  & Q(date__gte=self.current_date - timezone.timedelta(days=1)))
 
         for appointment in appointments:
             print(appointment.date)
