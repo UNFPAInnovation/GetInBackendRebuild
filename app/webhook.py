@@ -120,7 +120,7 @@ class MappingEncounterWebhook(APIView):
 
             observations3 = mapped_girl_object["Observations3"][0]
             marital_status = observations3["marital_status"][0]
-            education_level = replace_underscore(["education_level"][0])
+            education_level = ["education_level"][0]
             last_menstruation_date = observations3["MenstruationDate"][0]
 
             try:
