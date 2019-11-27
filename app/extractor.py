@@ -112,3 +112,58 @@ def extract_excel_user_data(location):
             user.save()
         except Exception:
             print(traceback.print_exc())
+
+
+def extract_excel_user_data_from_sheet(location):
+    wb = xlrd.open_workbook(location)
+    sheet = wb.sheet_by_index(0)
+
+    sheet.cell_value(0, 0)
+
+    print(sheet.utter_max_rows)
+
+    for row_number in range(0, 1000):
+        try:
+            row_data = sheet.row_values(row_number)
+        except Exception as e:
+            print(e)
+            break
+
+        if row_number == 0:
+            continue
+
+        print(row_data)
+        first_name_value = row_data[0]
+        last_name_value = row_data[1]
+        personal_number = int(row_data[2])
+        getin_number_value = int(row_data[3])
+        role = row_data[4]
+        sub_county = row_data[5]
+        username = row_data[6]
+        print(first_name_value+last_name_value+str(personal_number)+str(getin_number_value)+role)
+
+        print(row_number)
+
+        if not first_name_value:
+            break
+
+        try:
+            subcounty = SubCounty.objects.get(name=sub_county)
+            village = subcounty.parish_set.first().village_set.first()
+        except Exception as e:
+            print(e)
+            village = Village.objects.get(id=144)
+
+        try:
+            role = str(role).lower()
+            getin_number_value = "0" + str(int(getin_number_value))
+            print(getin_number_value)
+            print(first_name_value)
+            print(last_name_value)
+            user = User(first_name=first_name_value, village=village, last_name=last_name_value,
+                        username=str(username).lower(),
+                        email=username + "@getinmobile.org", phone=getin_number_value, role=str(role).lower())
+            user.set_password(getin_number_value)
+            user.save()
+        except Exception:
+            print(traceback.print_exc())
