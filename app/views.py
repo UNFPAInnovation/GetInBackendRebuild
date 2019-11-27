@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from app import sms_handler
-from app.extractor import extract_excel_data
+from app.extractor import extract_excel_data, extract_excel_user_data_from_sheet
 from app.filters import GirlFilter, FollowUpFilter, MappingEncounterFilter, DeliveryFilter, AppointmentFilter, \
     UserFilter
 from app.models import Girl, District, County, SubCounty, Parish, Village, \
@@ -446,4 +446,7 @@ class ExtractView(APIView):
         location_arua = ("/home/codephillip/PycharmProjects/GetInBackendRebuild/arua_org_units.xlsx")
 
         extract_excel_data(location_arua)
+
+        arua_users = ("/home/codephillip/PycharmProjects/GetInBackendRebuild/GetInAruaUsers.xlsx")
+        extract_excel_user_data_from_sheet(arua_users)
         return Response({"result": "success"})
