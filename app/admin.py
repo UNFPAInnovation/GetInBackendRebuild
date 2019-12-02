@@ -9,7 +9,16 @@ admin.site.register(County)
 admin.site.register(SubCounty)
 admin.site.register(Parish)
 admin.site.register(Village)
-admin.site.register(Girl)
+
+
+class GirlAdmin(admin.ModelAdmin):
+    search_fields = ('first_name', 'last_name')
+    list_display = ['first_name', 'last_name', 'user', 'created_at']
+    exclude = ('followup', 'mappingencounter', 'delivery', 'appointment', 'referral')
+
+
+admin.site.register(Girl, GirlAdmin)
+
 admin.site.register(HealthFacility)
 admin.site.register(FollowUp)
 admin.site.register(Delivery)
