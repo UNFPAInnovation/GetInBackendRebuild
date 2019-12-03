@@ -18,6 +18,7 @@ class NotifierView(APIView):
     Send sms and firebase notification to vhts and midwife.
     Receives the new firebase_device_id from the android phone and updates the use model
     """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.current_date = timezone.now().date()
@@ -65,16 +66,21 @@ class NotifierView(APIView):
             message_title = "GetIn ANC reminder"
             message_body = "GetIN. " + appointment.girl.first_name + " " + appointment.girl.last_name \
                            + "'s ANC visits is in three days"
-            girls_message_body = "GetIN. Please visit hospital for ANC visits in three days"
 
             # only send notification and sms if the user has never received. this prevents spamming
             if not NotificationLog.objects.filter(Q(appointment=appointment) & Q(stage=BEFORE)):
                 send_firebase_notification(firebase_device_ids, message_title, message_body)
 
                 sender = User.objects.get(username__icontains="admin")
-                send_sms(girls_message_body, sender, receiver_ids=health_worker_ids)
+                send_sms(message_body, sender, receiver_ids=health_worker_ids)
+
                 NotificationLog(appointment=appointment, stage=BEFORE).save()
         send_single_sms(message_body, phone_number=girl_phone_numbers)
+
+
+        girls_message_body = "GetIN. Please visit hospital for ANC visits in three days"
+        send_single_sms(girls_message_body, phone_number=girl_phone_numbers)
+
 
     def send_appointment_one_day_after_date(self):
         girl_phone_numbers = []
@@ -99,17 +105,20 @@ class NotifierView(APIView):
             message_title = "GetIn ANC reminder"
             message_body = "GetIN. " + appointment.girl.first_name + " " + appointment.girl.last_name \
                            + "'s has missed ANC visit"
-            girls_message_body = "GetIN. You have missed your ANC visit. Please visit health facility immediately"
 
             # only send notification and sms if the user has never received. this prevents spamming
             if not NotificationLog.objects.filter(Q(appointment=appointment) & Q(stage=AFTER)):
                 send_firebase_notification(firebase_device_ids, message_title, message_body)
 
                 sender = User.objects.get(username__icontains="admin")
-                send_sms(girls_message_body, sender, receiver_ids=health_workers_ids)
+                send_sms(message_body, sender, receiver_ids=health_workers_ids)
+
                 NotificationLog(appointment=appointment, stage=AFTER).save()
         send_single_sms(message_body, phone_number=girl_phone_numbers)
 
+
+        girls_message_body = "GetIN. You have missed your ANC visit. Please visit health facility immediately"
+        send_single_sms(girls_message_body, phone_number=girl_phone_numbers)
 
     def send_appointment_on_actual_day(self):
         girl_phone_numbers = []
@@ -134,14 +143,15 @@ class NotifierView(APIView):
             message_title = "GetIn ANC reminder"
             message_body = "GetIN. " + appointment.girl.first_name + " " + appointment.girl.last_name \
                            + "'s ANC visits is today"
-            girls_message_body = "GetIN. Please visit hospital today for your ANC visits"
 
             # only send notification and sms if the user has never received. this prevents spamming
             if not NotificationLog.objects.filter(Q(appointment=appointment) & Q(stage__in=[CURRENT, AFTER])):
                 send_firebase_notification(firebase_device_ids, message_title, message_body)
 
                 sender = User.objects.get(username__icontains="admin")
-                send_sms(girls_message_body, sender, receiver_ids=health_workers_ids)
+                send_sms(message_body, sender, receiver_ids=health_workers_ids)
                 NotificationLog(appointment=appointment, stage=CURRENT).save()
-        send_single_sms(message_body, phone_number=girl_phone_numbers)
+
+        girls_message_body = "GetIN. Please visit hospital today for your ANC visits"
+        send_single_sms(girls_message_body, phone_number=girl_phone_numbers)
 

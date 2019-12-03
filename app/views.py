@@ -229,7 +229,6 @@ class AppointmentView(ListCreateAPIView):
             appointments = Appointment.objects.all().order_by('-created_at')
         # appointments = Appointment.objects.all().order_by('-created_at')
         return appointments
-
     queryset = Appointment.objects.all()
     permission_classes = (IsAuthenticated, DRYPermissions)
     filter_class = AppointmentFilter
@@ -446,6 +445,9 @@ class ExtractView(APIView):
     def get(self, request, format=None, **kwargs):
         # location_bundibugyo = ("/home/codephillip/PycharmProjects/GetInBackendRebuild/bundibugyo_org_units.xlsx")
         location_bundibugyo = ("bundibugyo_org_units.xlsx")
+        extract_excel_data(location_arua)
 
-        extract_excel_data(location_bundibugyo)
+        arua_users = ("/home/codephillip/PycharmProjects/GetInBackendRebuild/GetInAruaUsers.xlsx")
+        extract_excel_user_data_from_sheet(arua_users)
+
         return Response({"result": "success"})
