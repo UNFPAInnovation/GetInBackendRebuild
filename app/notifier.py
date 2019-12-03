@@ -53,7 +53,7 @@ class NotifierView(APIView):
 
             # extract midwife and vht firebase device ids
             firebase_device_ids = list({appointment.user.firebase_device_id, appointment.girl.user.firebase_device_id})
-            girl_phone_numbers.append(appointment.girl.phone_number)
+            girl_phone_numbers.append("+256" + appointment.girl.phone_number[1:])
             print('girl_phone_numbers')
             print(girl_phone_numbers)
 
@@ -88,7 +88,7 @@ class NotifierView(APIView):
 
             # extract midwife and vht firebase device ids
             firebase_device_ids = list({appointment.user.firebase_device_id, appointment.girl.user.firebase_device_id})
-            girl_phone_numbers.append(appointment.girl.phone_number)
+            girl_phone_numbers.append("+256" + appointment.girl.phone_number[1:])
             print('girl_phone_numbers')
             print(girl_phone_numbers)
 
@@ -123,7 +123,7 @@ class NotifierView(APIView):
 
             # extract midwife and vht firebase device ids
             firebase_device_ids = list({appointment.user.firebase_device_id, appointment.girl.user.firebase_device_id})
-            girl_phone_numbers.append(appointment.girl.phone_number)
+            girl_phone_numbers.append("+256" + appointment.girl.phone_number[1:])
             print('girl_phone_numbers')
             print(girl_phone_numbers)
 
