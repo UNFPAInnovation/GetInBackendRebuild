@@ -73,9 +73,8 @@ class NotifierView(APIView):
 
                 sender = User.objects.get(username__icontains="admin")
                 send_sms(girls_message_body, sender, receiver_ids=health_worker_ids)
-                send_single_sms(message_body, phone_number=girl_phone_numbers)
-
                 NotificationLog(appointment=appointment, stage=BEFORE).save()
+        send_single_sms(message_body, phone_number=girl_phone_numbers)
 
     def send_appointment_one_day_after_date(self):
         girl_phone_numbers = []
@@ -108,9 +107,9 @@ class NotifierView(APIView):
 
                 sender = User.objects.get(username__icontains="admin")
                 send_sms(girls_message_body, sender, receiver_ids=health_workers_ids)
-                send_single_sms(message_body, phone_number=girl_phone_numbers)
-
                 NotificationLog(appointment=appointment, stage=AFTER).save()
+        send_single_sms(message_body, phone_number=girl_phone_numbers)
+
 
     def send_appointment_on_actual_day(self):
         girl_phone_numbers = []
@@ -143,6 +142,6 @@ class NotifierView(APIView):
 
                 sender = User.objects.get(username__icontains="admin")
                 send_sms(girls_message_body, sender, receiver_ids=health_workers_ids)
-                send_single_sms(message_body, phone_number=girl_phone_numbers)
-
                 NotificationLog(appointment=appointment, stage=CURRENT).save()
+        send_single_sms(message_body, phone_number=girl_phone_numbers)
+
