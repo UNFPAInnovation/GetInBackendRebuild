@@ -103,7 +103,7 @@ class Village(models.Model):
 
 
 class HealthFacility(models.Model):
-    parish = models.ForeignKey(Parish, on_delete=models.CASCADE)
+    sub_county = models.ForeignKey(SubCounty, on_delete=models.CASCADE, blank=True, null=True)
     name = models.CharField(max_length=50)
 
     def __str__(self):
