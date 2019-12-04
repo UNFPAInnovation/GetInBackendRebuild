@@ -117,7 +117,7 @@ class HealthFacilityGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = HealthFacility
         fields = (
-            'id', 'parish', 'name')
+            'id', 'sub_county', 'name')
 
 
 class GirlSerializer(serializers.ModelSerializer):
