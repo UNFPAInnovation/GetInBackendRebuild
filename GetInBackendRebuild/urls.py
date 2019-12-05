@@ -21,7 +21,7 @@ from rest_framework_swagger.views import get_swagger_view
 from app.notifier import NotifierView
 from app.views import GirlView, GirlDetailsView, UserCreateView, DistrictView, \
     CountyView, SubCountyView, ParishView, VillageView, HealthFacilityView, FollowUpView, \
-    DeliveriesView, MappingEncounterView, AppointmentView, MappingEncountersStatsView, DeliveriesStatsView, SmsView, \
+    DeliveriesView, MappingEncounterView, AppointmentView, DashboardStatsView, DeliveriesStatsView, SmsView, \
     ExtractView
 from django.views.decorators.csrf import csrf_exempt
 
@@ -48,8 +48,8 @@ urlpatterns = [
     path(r'api/v1/followups', FollowUpView.as_view(), name='followups'),
     path(r'api/v1/deliveries', DeliveriesView.as_view(), name='deliveries'),
     path(r'api/v1/appointments', AppointmentView.as_view(), name='appointments'),
-    path(r'api/v1/mapping_encounters_stats', MappingEncountersStatsView.as_view(), name='mapping-encounters-stats'),
-    path(r'api/v1/deliveries_stats', DeliveriesStatsView.as_view(), name='deliveries-stats'),
+    path(r'api/v1/mapping_encounters_stats', DashboardStatsView.as_view(), name='mapping-encounters-stats'),
+    path(r'api/v1/deliveries_stats', DashboardStatsView.as_view(), name='deliveries-stats'),
     path(r'api/v1/sms', SmsView.as_view(), name='sms'),
     path(r'api/v1/extractor', ExtractView.as_view(), name='extractor'),
     path(r'api/v1/notifier', NotifierView.as_view(), name='notifier'),
