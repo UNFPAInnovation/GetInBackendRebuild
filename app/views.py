@@ -237,7 +237,8 @@ class AppointmentView(ListCreateAPIView):
 
 
 
-class MappingEncountersStatsView(APIView):
+class DashboardStatsView(APIView):
+    ''' View that handles dashboard data'''
 
     def get(self, request, format=None, **kwargs):
         ''' Get date params from request '''
@@ -290,49 +291,94 @@ class MappingEncountersStatsView(APIView):
 
             all_subcounties = []
 
-            girls = Girl.objects.filter(Q(age__gte=12) & Q(age__lte=15) &
-                                        Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to))
+            if request.path == '/api/v1/mapping_encounters_stats':
 
-            all_subcounties += [girl.village.parish.sub_county for girl in girls if
-                                girl.village.parish.sub_county.county.district == district]
+                girls = Girl.objects.filter(Q(age__gte=12) & Q(age__lte=15) &
+                                            Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to))
 
-            print("----------------------------------------------------------------------------------------------------------------------------------------")
-            print("Month is " + response["month"])
-            print("created_at_from is: " + str(created_at_from) + " and created_at_to is: " + str(created_at_to))
+                all_subcounties += [girl.village.parish.sub_county for girl in girls if
+                                    girl.village.parish.sub_county.county.district == district]
 
-            response["mappedGirlsInAgeGroup12_15"] = girls.count()
+                print("----------------------------------------------------------------------------------------------------------------------------------------")
+                print("Month is " + response["month"])
+                print("created_at_from is: " + str(created_at_from) + " and created_at_to is: " + str(created_at_to))
 
-            girls = Girl.objects.filter(Q(age__gte=16) & Q(age__lte=19) &
-                                        Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to))
-            all_subcounties += [girl.village.parish.sub_county for girl in girls if
-                                girl.village.parish.sub_county.county.district == district]
-            response["mappedGirlsInAgeGroup16_19"] = girls.count()
+                response["mappedGirlsInAgeGroup12_15"] = girls.count()
 
-            girls = Girl.objects.filter(Q(age__gte=20) & Q(age__lte=24) &
-                                        Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to))
+                girls = Girl.objects.filter(Q(age__gte=16) & Q(age__lte=19) &
+                                            Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to))
+                all_subcounties += [girl.village.parish.sub_county for girl in girls if
+                                    girl.village.parish.sub_county.county.district == district]
+                response["mappedGirlsInAgeGroup16_19"] = girls.count()
 
-            all_subcounties += [girl.village.parish.sub_county for girl in girls if
-                                girl.village.parish.sub_county.county.district == district]
-            response["mappedGirlsInAgeGroup20_24"] = girls.count()
+                girls = Girl.objects.filter(Q(age__gte=20) & Q(age__lte=24) &
+                                            Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to))
 
-            # remove duplicate subcounties
-            all_subcounties = list(set(all_subcounties))
+                all_subcounties += [girl.village.parish.sub_county for girl in girls if
+                                    girl.village.parish.sub_county.county.district == district]
+                response["mappedGirlsInAgeGroup20_24"] = girls.count()
 
-            response["subcounties"] = [subcounty.name for subcounty in all_subcounties]
+                # remove duplicate subcounties
+                all_subcounties = list(set(all_subcounties))
 
-            total_girls_in_all_subcounties = 0
+                response["subcounties"] = [subcounty.name for subcounty in all_subcounties]
 
-            for subcounty in all_subcounties:
-                total_girls_in_subcounty = Girl.objects.filter(Q(village__parish__sub_county=subcounty) &
-                                                               Q(created_at__gte=created_at_from) &
-                                                               Q(created_at__lte=created_at_to)).count()
-                response["totalNumberOfGirlsMappedFrom" + subcounty.name] = total_girls_in_subcounty
-                total_girls_in_all_subcounties += total_girls_in_subcounty
+                total_girls_in_all_subcounties = 0
 
-            response["count"] = total_girls_in_all_subcounties
-            response["subcounties"] = [subcounty.name for subcounty in all_subcounties]
+                for subcounty in all_subcounties:
+                    total_girls_in_subcounty = Girl.objects.filter(Q(village__parish__sub_county=subcounty) &
+                                                                   Q(created_at__gte=created_at_from) &
+                                                                   Q(created_at__lte=created_at_to)).count()
+                    response["totalNumberOfGirlsMappedFrom" + subcounty.name] = total_girls_in_subcounty
+                    total_girls_in_all_subcounties += total_girls_in_subcounty
 
-            all_months_range_data.append(response)
+                response["count"] = total_girls_in_all_subcounties
+                response["subcounties"] = [subcounty.name for subcounty in all_subcounties]
+
+                all_months_range_data.append(response)
+            elif request.path == '/api/v1/deliveries_stats':
+                """
+                Provides statistical data for deliveries statistics
+                Client query params
+                dashboard_stats?from=2019-10-01&to=2019-11-05
+
+                Server response
+                {
+                count: 0,
+                district: "Arua",
+                month: "November",
+                year: "2019",
+                subcounties: ["Subcounty1", "Subcounty2", "etc"],
+                deliveriesFromSubcounty1: 3,
+                deliveriesFromSubcounty2: 4,
+                etc: 10
+                }
+                """
+
+                deliveries = Delivery.objects.filter(
+                    Q(girl__created_at__gte=created_at_from) & Q(girl__created_at__lte=created_at_to))
+
+                all_subcounties += [delivery.girl.village.parish.sub_county for delivery in deliveries
+                                    if delivery.girl.village.parish.sub_county.county.district == district]
+
+                # remove duplicate subcounties
+                all_subcounties = list(set(all_subcounties))
+
+                response["subcounties"] = [subcounty.name for subcounty in all_subcounties]
+
+                all_deliveries_total = 0
+
+                for subcounty in all_subcounties:
+                    delivery_total = Delivery.objects.filter(
+                        girl__village__parish_id__in=[parish.id for parish in subcounty.parish_set.all()]).count()
+                    response["deliveriesFromSubcounty" + subcounty.name] = delivery_total
+                    all_deliveries_total += delivery_total
+
+                response["count"] = all_deliveries_total
+
+                all_months_range_data.append(response)
+            else:
+                print('-----Followups stats instead ----------')
 
             '''Shift month to next month by mutating our date object
             If month is 12 [December], no need to add 1 '''
