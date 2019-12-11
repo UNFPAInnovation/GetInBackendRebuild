@@ -147,6 +147,12 @@ class MappingEncounterWebhook(APIView):
             user = User.objects.get(id=user_id)
             print(user)
 
+            if not village:
+                # incase the village does not exist use the health worker's village
+                village = user.village
+
+            print('village')
+
             girl = Girl(first_name=first_name, last_name=last_name, village=village,
                         phone_number=girls_phone_number, user=user,
                         next_of_kin_phone_number=next_of_kin_number, education_level=education_level, dob=dob,
