@@ -2,15 +2,13 @@ import traceback
 
 from django.db.models import Q
 from django.utils import timezone
-from dry_rest_permissions.generics import DRYPermissions
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from app.firebase_notification import send_firebase_notification
-from app.models import Appointment, MappingEncounter, User, NotificationLog
+from app.models import Appointment, User, NotificationLog
 from app.sms_handler import send_sms, send_single_sms
-from app.utils.constants import BEFORE, AFTER, CURRENT, EXPECTED, MISSED
+from app.utils.constants import BEFORE, AFTER, CURRENT
 
 
 class NotifierView(APIView):
@@ -114,9 +112,6 @@ class NotifierView(APIView):
                 send_sms(message_body, sender, receiver_ids=health_workers_ids)
 
                 NotificationLog(appointment=appointment, stage=AFTER).save()
-        send_single_sms(message_body, phone_number=girl_phone_numbers)
-
-
         girls_message_body = "GetIN. You have missed your ANC visit. Please visit health facility immediately"
         send_single_sms(girls_message_body, phone_number=girl_phone_numbers)
 

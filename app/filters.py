@@ -18,7 +18,7 @@ class SuperFilter(django_filters.FilterSet):
 
 class GirlFilter(SuperFilter):
     status = django_filters.BooleanFilter(field_name='completed_all_visits', lookup_expr='icontains',
-                                                        help_text='Girl who have completed all ANC visits')
+                                          help_text='Girl who have completed all ANC visits')
 
     class Meta:
         model = Girl
@@ -49,9 +49,9 @@ class AppointmentFilter(SuperFilter):
                                                  'Completed')
 
     date_from = django_filters.DateTimeFilter(field_name='date', lookup_expr='gte',
-                                                 help_text='Date is greater than or equal to')
+                                              help_text='Date is greater than or equal to')
     date_to = django_filters.DateTimeFilter(field_name='date', lookup_expr='lte',
-                                               help_text='Date is less than or equal to')
+                                            help_text='Date is less than or equal to')
 
     class Meta:
         model = Appointment
@@ -78,11 +78,11 @@ class DeliveryFilter(SuperFilter):
 
 class UserFilter(SuperFilter):
     role = django_filters.CharFilter(field_name='role', lookup_expr='icontains',
-                                       help_text='Filter user by their role, developer - Developer, dho - DHO, chew - CHEW, '
-                                                 'midwife - Midwife, ambulance - Ambulance')
+                                     help_text='Filter user by their role, developer - Developer, dho - DHO, chew - CHEW, '
+                                               'midwife - Midwife, ambulance - Ambulance')
 
     midwife_id = django_filters.CharFilter(field_name='midwife__id', lookup_expr='icontains',
-                                       help_text='Filter users(vhts) where the midwife is attached')
+                                           help_text='Filter users(vhts) where the midwife is attached')
 
     class Meta:
         model = User
@@ -93,7 +93,7 @@ class UserFilter(SuperFilter):
 
 class AppointmentEncountersFilter(SuperFilter):
     trimester = django_filters.NumberFilter(field_name='girl__trimester', lookup_expr='equals',
-                                       help_text='Filter appointments by trimester: 1, 2, 3, 4')
+                                            help_text='Filter appointments by trimester: 1, 2, 3, 4')
 
     class Meta:
         model = AppointmentEncounter

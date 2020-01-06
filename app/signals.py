@@ -10,6 +10,7 @@ These functions are called whenever data is saved in the models.
 They are called after the save() function has run.
 """
 
+
 def update_last_appointment_status(sender=Appointment, **kwargs):
     """
     Updates the last appointment status to ATTENDED only if it has not been MISSED

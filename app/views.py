@@ -229,12 +229,11 @@ class AppointmentView(ListCreateAPIView):
             appointments = Appointment.objects.all().order_by('-created_at')
         # appointments = Appointment.objects.all().order_by('-created_at')
         return appointments
+
     queryset = Appointment.objects.all()
     permission_classes = (IsAuthenticated, DRYPermissions)
     filter_class = AppointmentFilter
     serializer_class = AppointmentSerializer
-
-
 
 
 class DashboardStatsView(APIView):
@@ -272,13 +271,13 @@ class DashboardStatsView(APIView):
 
             if (month_from == month_to):
                 '''Set to end day of created_to month as the created_to date'''
-                created_at_to = created_at_to.replace(month = start_month, day = day_to)
+                created_at_to = created_at_to.replace(month=start_month, day=day_to)
             else:
                 '''Get last day of the month'''
-                last_month_day = calendar.monthrange(year_from,month_from)[1]
+                last_month_day = calendar.monthrange(year_from, month_from)[1]
 
                 ''' Set last day of the month from date object as the created_to date '''
-                created_at_to = created_at_from.replace(day = last_month_day)
+                created_at_to = created_at_from.replace(day=last_month_day)
 
             response = dict()
 
@@ -299,7 +298,7 @@ class DashboardStatsView(APIView):
                 all_subcounties += [girl.village.parish.sub_county for girl in girls if
                                     girl.village.parish.sub_county.county.district == district]
 
-                print("----------------------------------------------------------------------------------------------------------------------------------------")
+                print("--------------------------------------------------------------------------------------------")
                 print("Month is " + response["month"])
                 print("created_at_from is: " + str(created_at_from) + " and created_at_to is: " + str(created_at_to))
 
@@ -383,10 +382,10 @@ class DashboardStatsView(APIView):
             '''Shift month to next month by mutating our date object
             If month is 12 [December], no need to add 1 '''
 
-            if(start_month == 12):
-                created_at_from = created_at_from.replace(month = start_month)
+            if (start_month == 12):
+                created_at_from = created_at_from.replace(month=start_month)
             else:
-                created_at_from = created_at_from.replace(month = start_month + 1)
+                created_at_from = created_at_from.replace(month=start_month + 1)
 
             month_from += 1
 

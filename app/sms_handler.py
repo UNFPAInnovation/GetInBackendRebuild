@@ -20,7 +20,8 @@ def send_sms(message, sender, receiver_ids):
 
     for recipient in recipients_results:
         try:
-            sms_model = SmsModel(recipient=User.objects.get(phone__contains=recipient['number'][5:]), sender_id=sender.id,
+            sms_model = SmsModel(recipient=User.objects.get(phone__contains=recipient['number'][5:]),
+                                 sender_id=sender.id,
                                  message=message, status=recipient['status'],
                                  message_id=recipient['messageId'])
             sms_model.save()

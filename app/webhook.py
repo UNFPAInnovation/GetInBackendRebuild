@@ -10,7 +10,7 @@ from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from app.models import Girl, County, SubCounty, Parish, Village, FollowUp, Delivery, MappingEncounter, \
+from app.models import Girl, Parish, Village, FollowUp, Delivery, MappingEncounter, \
     Appointment, AppointmentEncounter, Referral, FamilyPlanning, Observation
 from app.serializers import User
 
@@ -19,7 +19,7 @@ import logging
 from app.utils.constants import FOLLOW_UP_FORM_CHEW_NAME, APPOINTMENT_FORM_CHEW_NAME, \
     MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME, APPOINTMENT_FORM_MIDWIFE_NAME, FOLLOW_UP_FORM_MIDWIFE_NAME, USER_TYPE_CHEW, \
     MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME, POSTNATAL_FORM_CHEW_NAME, POSTNATAL_FORM_MIDWIFE_NAME, ATTENDED, \
-    HEALTH_FACILITY, PRE, POST, EXPECTED, MAP_GIRL_ARUA_CHEW_FORM_NAME, MAP_GIRL_ARUA_MIDWIFE_FORM_NAME
+    PRE, POST, EXPECTED, MAP_GIRL_ARUA_CHEW_FORM_NAME, MAP_GIRL_ARUA_MIDWIFE_FORM_NAME
 
 logger = logging.getLogger('testlogger')
 
@@ -113,7 +113,7 @@ class MappingEncounterWebhook(APIView):
 
             girl_location = mapped_girl_object["GirlLocation"][0]
 
-            # use filter and get first because there are so some duplication locations
+            # use filter and get first because there are so some duplicate locations
             parish = Parish.objects.filter(name__icontains=replace_underscore(girl_location["parish"][0])).first()
             village = Village.objects.filter(
                 Q(name__icontains=replace_underscore(girl_location["village"][0])) & Q(parish=parish)).first()
@@ -147,8 +147,8 @@ class MappingEncounterWebhook(APIView):
             user = User.objects.get(id=user_id)
             print(user)
 
+            # incase the village does not exist use the health worker's village
             if not village:
-                # incase the village does not exist use the health worker's village
                 village = user.village
 
             print('village')
