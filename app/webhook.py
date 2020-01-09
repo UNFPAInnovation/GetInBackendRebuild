@@ -404,7 +404,7 @@ class MappingEncounterWebhook(APIView):
         if birth_place == "HealthFacility":
             birth_place = "Health facility"
         delivery_action_taken = replace_underscore(delivery_follow_up_group["action_taken"][0])
-        used_contraceptives = delivery_action_taken == "offered family planning"
+        used_contraceptives = "offered family planning" in delivery_action_taken
         contraceptive_group = follow_up_object["family_planning_group"][0]
         postnatal_care = contraceptive_group["postnatal_received"][0] == "yes"
 
