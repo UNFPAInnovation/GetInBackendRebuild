@@ -185,11 +185,13 @@ CRONJOBS = [
     # https://github.com/kraiz/django-crontab
     # https://gutsytechster.wordpress.com/2019/06/24/how-to-setup-a-cron-job-in-django/
     # activate cron job. python manage.py crontab add
-    # activate cron job. python manage.py crontab show
+    # show cron job. python manage.py crontab show
     # deactivate cron job. python manage.py crontab remove
 
     # run cron job at 10:05 every day
-    ('5 10 * * *', 'app.cron.notifier_cron_job')
+    ('5 10 * * *', 'app.cron.notifier_appointment_reminder_cron_job'),
+    # run cron job at 11:05 every day
+    ('5 11 * * *', 'app.cron.notifier_daily_usage_reminder_cron_job')
 ]
 
 # Internationalization

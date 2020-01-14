@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from app.firebase_notification import send_firebase_notification
 from app.models import Appointment, User, NotificationLog
 from app.sms_handler import send_sms, send_single_sms
-from app.utils.constants import BEFORE, AFTER, CURRENT
+from app.utils.constants import BEFORE, AFTER, CURRENT, USER_TYPE_CHEW, USER_TYPE_MIDWIFE
 
 
 class NotifierView(APIView):
@@ -150,3 +150,10 @@ class NotifierView(APIView):
         girls_message_body = "GetIN. Please visit hospital today for your ANC visits"
         send_single_sms(girls_message_body, phone_number=girl_phone_numbers)
 
+    def send_daily_usage_reminder(self):
+        print('start sending daily usage reminders')
+        users = User.objects.filter(Q(role__icontains=USER_TYPE_CHEW) | Q(role__icontains=USER_TYPE_MIDWIFE))
+        firebase_device_ids = [user.firebase_device_id for user in users]
+        message_title = 'GetIn Reminder'
+        message_body = 'Please remember to use the GetIn app to map girls, follow up on appointments and call the girls'
+        send_firebase_notification(firebase_device_ids, message_title, message_body)
