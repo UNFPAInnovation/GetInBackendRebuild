@@ -73,9 +73,6 @@ class NotifierView(APIView):
                 send_sms(message_body, sender, receiver_ids=health_worker_ids)
 
                 NotificationLog(appointment=appointment, stage=BEFORE).save()
-        send_single_sms(message_body, phone_number=girl_phone_numbers)
-
-
         girls_message_body = "GetIN. Please visit hospital for ANC visits in three days"
         send_single_sms(girls_message_body, phone_number=girl_phone_numbers)
 
