@@ -1,6 +1,7 @@
 import datetime
 import calendar
 
+import pytz
 from django.db.models import Q
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend, OrderingFilter
@@ -22,13 +23,13 @@ from app.serializers import UserSerializer, User, GirlSerializer, DistrictGetSer
     FollowUpGetSerializer, FollowUpPostSerializer, DeliveryPostSerializer, DeliveryGetSerializer, \
     MappingEncounterSerializer, AppointmentEncounterSerializer, AppointmentSerializer, SmsModelSerializer
 
-import logging
-
 from app.utils.constants import USER_TYPE_MIDWIFE, USER_TYPE_CHEW, USER_TYPE_DHO
 from app.utils.utilities import add_months
 
-logger = logging.getLogger('testlogger')
-
+# disabled the markdown manually
+# https://www.reddit.com/r/django/comments/d5ob15/help_drf_markdown_is_optional_but_my_project/
+from rest_framework import compat
+compat.md_filter_add_syntax_highlight = lambda md: False
 
 class UserCreateView(ListCreateAPIView):
     """
@@ -250,17 +251,18 @@ class DashboardStatsView(APIView):
         year_to, month_to, day_to = [int(x) for x in created_at_to_param.split("-")]
 
         ''' So we can manipulate the date object, we convert it here '''
-        created_at_from = timezone.datetime(year_from, month_from, day_from)
-        created_at_to = timezone.datetime(year_to, month_to, day_to)
+        created_at_from = timezone.datetime(year_from, month_from, day_from).replace(tzinfo=pytz.utc)
+        created_at_to_limit = timezone.datetime(year_to, month_to, day_to).replace(tzinfo=pytz.utc)
 
         # Set number of months we are going to poll data for. We add + 1 to include the current month
         number_of_months = (month_to - month_from) + 1
 
         all_months_range_data = []
 
-        while month_from <= month_to:
+        while created_at_from <= created_at_to_limit:
             '''We loop through all months for the data querried.
             we do some ugly mutation on the dates so as to group the data in months '''
+            created_at_to = add_months(created_at_from, 1).replace(tzinfo=pytz.utc)
 
             start_month = created_at_from.month
 
@@ -387,7 +389,8 @@ class DashboardStatsView(APIView):
             else:
                 created_at_from = created_at_from.replace(month=start_month + 1)
 
-            month_from += 1
+            created_at_from = add_months(created_at_from, 1).replace(tzinfo=pytz.utc)
+            print('end looping ... ' + str(created_at_from))
 
         return Response(all_months_range_data, 200)
 
