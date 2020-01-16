@@ -488,14 +488,6 @@ class Appointment(models.Model):
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
-        # only Midwife user is responsible to handling appointment
-        # the assumption is that every vht is attached to a midwife
-        # try:
-        #     if self.user.role != USER_TYPE_MIDWIFE:
-        #         self.user = self.user.midwife
-        # except Exception as e:
-        #     print(e)
-        
         self.update_pending_and_completed_visits(force_insert, force_update, update_fields, using)
 
     def update_pending_and_completed_visits(self, force_insert, force_update, update_fields, using):
