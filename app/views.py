@@ -1,6 +1,7 @@
 import datetime
 import calendar
 
+import pytz
 from django.db.models import Q
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend, OrderingFilter
@@ -22,13 +23,13 @@ from app.serializers import UserSerializer, User, GirlSerializer, DistrictGetSer
     FollowUpGetSerializer, FollowUpPostSerializer, DeliveryPostSerializer, DeliveryGetSerializer, \
     MappingEncounterSerializer, AppointmentEncounterSerializer, AppointmentSerializer, SmsModelSerializer
 
-import logging
-
 from app.utils.constants import USER_TYPE_MIDWIFE, USER_TYPE_CHEW, USER_TYPE_DHO
 from app.utils.utilities import add_months
 
-logger = logging.getLogger('testlogger')
-
+# disabled the markdown manually
+# https://www.reddit.com/r/django/comments/d5ob15/help_drf_markdown_is_optional_but_my_project/
+from rest_framework import compat
+compat.md_filter_add_syntax_highlight = lambda md: False
 
 class UserCreateView(ListCreateAPIView):
     """
@@ -250,89 +251,59 @@ class DashboardStatsView(APIView):
         year_to, month_to, day_to = [int(x) for x in created_at_to_param.split("-")]
 
         ''' So we can manipulate the date object, we convert it here '''
-        created_at_from = timezone.datetime(year_from, month_from, day_from)
-        created_at_to = timezone.datetime(year_to, month_to, day_to)
+        created_at_from = timezone.datetime(year_from, month_from, day_from).replace(tzinfo=pytz.utc)
+        created_at_to_limit = timezone.datetime(year_to, month_to, day_to).replace(tzinfo=pytz.utc)
 
         # Set number of months we are going to poll data for. We add + 1 to include the current month
         number_of_months = (month_to - month_from) + 1
 
         all_months_range_data = []
 
-        while month_from <= month_to:
+        subcounty = request.user.village.parish.sub_county
+        district = subcounty.county.district
+        sub_counties = SubCounty.objects.filter(county__district=district)
+
+        while created_at_from <= created_at_to_limit:
             '''We loop through all months for the data querried.
             we do some ugly mutation on the dates so as to group the data in months '''
+            created_at_to = add_months(created_at_from, 1).replace(tzinfo=pytz.utc)
 
-            start_month = created_at_from.month
-
-            ''' Adjust last date and month accordingly for each month
-            For each month, we set its last day to the last day of that month
-            If the month is the created_to month, we set the end date to the date
-            chosen instead. '''
-
-            if (month_from == month_to):
-                '''Set to end day of created_to month as the created_to date'''
-                created_at_to = created_at_to.replace(month=start_month, day=day_to)
-            else:
-                '''Get last day of the month'''
-                last_month_day = calendar.monthrange(year_from, month_from)[1]
-
-                ''' Set last day of the month from date object as the created_to date '''
-                created_at_to = created_at_from.replace(day=last_month_day)
-
-            response = dict()
-
-            subcounty = request.user.village.parish.sub_county
-            district = subcounty.county.district
-            response["district"] = district.name
-
-            response["year"] = created_at_from.year
-            response["month"] = created_at_from.strftime("%B")
-
+            print("--------------------------------------------------------------------------------------------")
+            print("Month is " + created_at_from.strftime("%B"))
+            print("created_at_from is: " + str(created_at_from) + " and created_at_to is: " + str(created_at_to))
             all_subcounties = []
 
             if request.path == '/api/v1/mapping_encounters_stats':
+                total_girls_in_all_subcounties = 0
+                response = dict()
+                response["district"] = district.name
+                response["year"] = created_at_from.year
+                response["month"] = created_at_from.strftime("%B")
 
-                girls = Girl.objects.filter(Q(age__gte=12) & Q(age__lte=15) &
+                for subcounty in sub_counties:
+                    total_girls_in_subcounty = Girl.objects.filter(Q(village__parish__sub_county=subcounty) &
+                                                Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to)).count()
+                    response["totalNumberOfGirlsMappedFrom" + subcounty.name] = total_girls_in_subcounty
+                    print('total girls in subcounty ' + str(total_girls_in_subcounty))
+                    total_girls_in_all_subcounties += total_girls_in_subcounty
+
+                print('total girls in all subcounties ' + str(total_girls_in_all_subcounties))
+
+                girls = Girl.objects.filter(Q(age__gte=12) & Q(age__lte=15) & Q(user__district=district) &
                                             Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to))
-
-                all_subcounties += [girl.village.parish.sub_county for girl in girls if
-                                    girl.village.parish.sub_county.county.district == district]
-
-                print("--------------------------------------------------------------------------------------------")
-                print("Month is " + response["month"])
-                print("created_at_from is: " + str(created_at_from) + " and created_at_to is: " + str(created_at_to))
 
                 response["mappedGirlsInAgeGroup12_15"] = girls.count()
 
-                girls = Girl.objects.filter(Q(age__gte=16) & Q(age__lte=19) &
+                girls = Girl.objects.filter(Q(age__gte=16) & Q(age__lte=19) & Q(user__district=district) &
                                             Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to))
-                all_subcounties += [girl.village.parish.sub_county for girl in girls if
-                                    girl.village.parish.sub_county.county.district == district]
                 response["mappedGirlsInAgeGroup16_19"] = girls.count()
 
-                girls = Girl.objects.filter(Q(age__gte=20) & Q(age__lte=24) &
+                girls = Girl.objects.filter(Q(age__gte=20) & Q(age__lte=24) & Q(user__district=district) &
                                             Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to))
-
-                all_subcounties += [girl.village.parish.sub_county for girl in girls if
-                                    girl.village.parish.sub_county.county.district == district]
                 response["mappedGirlsInAgeGroup20_24"] = girls.count()
 
-                # remove duplicate subcounties
-                all_subcounties = list(set(all_subcounties))
-
-                response["subcounties"] = [subcounty.name for subcounty in all_subcounties]
-
-                total_girls_in_all_subcounties = 0
-
-                for subcounty in all_subcounties:
-                    total_girls_in_subcounty = Girl.objects.filter(Q(village__parish__sub_county=subcounty) &
-                                                                   Q(created_at__gte=created_at_from) &
-                                                                   Q(created_at__lte=created_at_to)).count()
-                    response["totalNumberOfGirlsMappedFrom" + subcounty.name] = total_girls_in_subcounty
-                    total_girls_in_all_subcounties += total_girls_in_subcounty
-
                 response["count"] = total_girls_in_all_subcounties
-                response["subcounties"] = [subcounty.name for subcounty in all_subcounties]
+                response["subcounties"] = [subcounty.name for subcounty in sub_counties]
 
                 all_months_range_data.append(response)
             elif request.path == '/api/v1/deliveries_stats':
@@ -379,15 +350,8 @@ class DashboardStatsView(APIView):
             else:
                 print('-----Followups stats instead ----------')
 
-            '''Shift month to next month by mutating our date object
-            If month is 12 [December], no need to add 1 '''
-
-            if (start_month == 12):
-                created_at_from = created_at_from.replace(month=start_month)
-            else:
-                created_at_from = created_at_from.replace(month=start_month + 1)
-
-            month_from += 1
+            created_at_from = add_months(created_at_from, 1).replace(tzinfo=pytz.utc)
+            print('end looping ... ' + str(created_at_from))
 
         return Response(all_months_range_data, 200)
 
