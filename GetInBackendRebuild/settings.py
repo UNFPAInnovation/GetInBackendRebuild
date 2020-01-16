@@ -109,7 +109,8 @@ DATABASES = {
     }
 }
 
-default_database = environ.get('DJANGO_DATABASE', 'main')
+# default_database = environ.get('DJANGO_DATABASE', 'main')
+default_database = 'test'
 DATABASES['default'] = DATABASES[default_database]
 
 
@@ -191,7 +192,9 @@ CRONJOBS = [
     # run cron job at 10:05 every day
     ('5 10 * * *', 'app.cron.notifier_appointment_reminder_cron_job'),
     # run cron job at 11:05 every day
-    ('5 11 * * *', 'app.cron.notifier_daily_usage_reminder_cron_job')
+    ('5 11 * * *', 'app.cron.notifier_daily_usage_reminder_cron_job'),
+    # run cron job at 18:05 every day
+    ('5 18 * * *', 'app.cron.transition_expected_appointments')
 ]
 
 # Internationalization
