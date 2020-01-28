@@ -33,7 +33,6 @@ class MappingEncounterWebhook(APIView):
 
     def post(self, request, *args, **kwargs):
         print("post request called")
-        # todo replace with proper form ids
         json_result = request.data
         print(json_result)
 
@@ -99,6 +98,12 @@ class MappingEncounterWebhook(APIView):
             blurred_vision = False
             mapping_encounter = MappingEncounter()
 
+            try:
+                odk_instance_id = mapped_girl_object["meta"]["instanceID"]
+            except Exception as e:
+                print(e)
+                odk_instance_id = "abc123"
+
             demographic1 = mapped_girl_object["GirlDemographic"][0]
             first_name = demographic1["FirstName"][0]
             last_name = demographic1["LastName"][0]
@@ -156,7 +161,7 @@ class MappingEncounterWebhook(APIView):
             girl = Girl(first_name=first_name, last_name=last_name, village=village,
                         phone_number=girls_phone_number, user=user,
                         next_of_kin_phone_number=next_of_kin_number, education_level=education_level, dob=dob,
-                        marital_status=marital_status, last_menstruation_date=last_menstruation_date)
+                        marital_status=marital_status, last_menstruation_date=last_menstruation_date, odk_instance_id=odk_instance_id)
             girl.save()
 
             try:
@@ -189,8 +194,7 @@ class MappingEncounterWebhook(APIView):
             mapping_encounter.observation = observation
             mapping_encounter.attended_anc_visit = attended_anc_visit
             mapping_encounter.voucher_card = voucher_number
-            mapping_encounter.odk_instance_id = attended_anc_visit
-            mapping_encounter.attended_anc_visit = attended_anc_visit
+            mapping_encounter.odk_instance_id = odk_instance_id
             mapping_encounter.user = user
             mapping_encounter.girl = girl
             mapping_encounter.save()
