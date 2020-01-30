@@ -160,7 +160,7 @@ class MappingEncounterWebhook(APIView):
 
             # incase the girl already exists with the same name,
             # create a new girl and swap the new girl for the old one with udpated
-            old_girl = Girl.objects.get(Q(first_name__icontains=first_name) & Q(last_name__icontains=last_name))
+            old_girl = Girl.objects.filter(Q(first_name__icontains=first_name) & Q(last_name__icontains=last_name))
             if old_girl:
                 edited_girl = Girl(first_name=first_name, last_name=last_name, village=village,
                                    phone_number=girls_phone_number, user=user,
@@ -171,6 +171,7 @@ class MappingEncounterWebhook(APIView):
                 girl = edited_girl
 
                 # swap the old girl for the edited girl
+                old_girl = old_girl.first()
                 old_appointments = old_girl.appointment_set.all()
                 for appointment in old_appointments:
                     appointment.girl = edited_girl
