@@ -57,7 +57,7 @@ class MappingEncounterWebhook(APIView):
             print(traceback.print_exc())
 
         if MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME in json_result or MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME in json_result \
-        or MAP_GIRL_ARUA_CHEW_FORM_NAME in json_result or MAP_GIRL_ARUA_MIDWIFE_FORM_NAME in json_result:
+                or MAP_GIRL_ARUA_CHEW_FORM_NAME in json_result or MAP_GIRL_ARUA_MIDWIFE_FORM_NAME in json_result:
             print("mapping forms matched")
             return self.process_mapping_encounter(json_result, user_id)
         elif FOLLOW_UP_FORM_CHEW_NAME in json_result or FOLLOW_UP_FORM_MIDWIFE_NAME in json_result:
@@ -88,7 +88,7 @@ class MappingEncounterWebhook(APIView):
                 mapped_girl_object = json_result[MAP_GIRL_ARUA_MIDWIFE_FORM_NAME]
             except KeyError:
                 print(traceback.print_exc())
-                
+
             next_of_kin_number = None
             voucher_number = 0
             attended_anc_visit = False
@@ -158,34 +158,62 @@ class MappingEncounterWebhook(APIView):
 
             print('village')
 
-            girl = Girl(first_name=first_name, last_name=last_name, village=village,
-                        phone_number=girls_phone_number, user=user,
-                        next_of_kin_phone_number=next_of_kin_number, education_level=education_level, dob=dob,
-                        marital_status=marital_status, last_menstruation_date=last_menstruation_date, odk_instance_id=odk_instance_id)
-            girl.save()
+            # incase the girl already exists with the same name,
+            # create a new girl and swap the new girl for the old one with udpated
+            old_girl = Girl.objects.get(Q(first_name__icontains=first_name) & Q(last_name__icontains=last_name))
+            if old_girl:
+                edited_girl = Girl(first_name=first_name, last_name=last_name, village=village,
+                                   phone_number=girls_phone_number, user=user,
+                                   next_of_kin_phone_number=next_of_kin_number,
+                                   education_level=education_level, dob=dob, marital_status=marital_status,
+                                   last_menstruation_date=last_menstruation_date, odk_instance_id=odk_instance_id)
+                edited_girl.save()
+                girl = edited_girl
 
-            try:
-                # incase girl who has already had ANC visit is mapped by midwife
-                # save that date and create an anc visit
-                anc_previous_group = mapped_girl_object["ANCAppointmentPreviousGroup"][0]
-                attended_anc_visit = anc_previous_group["AttendedANCVisit"][0] == "yes"
-                print("attended anc visit " + str(attended_anc_visit))
+                # swap the old girl for the edited girl
+                old_appointments = old_girl.appointment_set.all()
+                for appointment in old_appointments:
+                    appointment.girl = edited_girl
+                    appointment.save(update_fields=['girl'])
 
-                if attended_anc_visit:
-                    previous_appointment_date = anc_previous_group["ANCDatePrevious"][0]
-                    self.auto_generate_appointment(girl, user, previous_appointment_date)
-                else:
-                    self.auto_generate_appointment(girl, user)
-            except Exception:
-                print(traceback.print_exc())
+                old_referrals = old_girl.referral_set.all()
+                for referral in old_referrals:
+                    referral.girl = edited_girl
+                    referral.save(update_fields=['girl'])
 
-            try:
-                anc_group = mapped_girl_object["ANCAppointmentGroup"][0]
-                next_appointment_date = anc_group["ANCDate"][0]
-                appointment = Appointment(girl=girl, user=user, date=next_appointment_date)
-                appointment.save()
-            except Exception:
-                print(traceback.print_exc())
+                # lastly delete the old girl
+                old_girl.delete()
+            else:
+                new_girl = Girl(first_name=first_name, last_name=last_name, village=village,
+                            phone_number=girls_phone_number, user=user,
+                            next_of_kin_phone_number=next_of_kin_number, education_level=education_level, dob=dob,
+                            marital_status=marital_status, last_menstruation_date=last_menstruation_date,
+                            odk_instance_id=odk_instance_id)
+                new_girl.save()
+                girl = new_girl
+
+                try:
+                    # incase girl who has already had ANC visit is mapped by midwife
+                    # save that date and create an anc visit
+                    anc_previous_group = mapped_girl_object["ANCAppointmentPreviousGroup"][0]
+                    attended_anc_visit = anc_previous_group["AttendedANCVisit"][0] == "yes"
+                    print("attended anc visit " + str(attended_anc_visit))
+
+                    if attended_anc_visit:
+                        previous_appointment_date = anc_previous_group["ANCDatePrevious"][0]
+                        self.auto_generate_appointment(new_girl, user, previous_appointment_date)
+                    else:
+                        self.auto_generate_appointment(new_girl, user)
+                except Exception:
+                    print(traceback.print_exc())
+
+                try:
+                    anc_group = mapped_girl_object["ANCAppointmentGroup"][0]
+                    next_appointment_date = anc_group["ANCDate"][0]
+                    appointment = Appointment(girl=new_girl, user=user, date=next_appointment_date)
+                    appointment.save()
+                except Exception:
+                    print(traceback.print_exc())
 
             observation = Observation(blurred_vision=blurred_vision, bleeding_heavily=bleeding, fever=fever,
                                       swollen_feet=swollenfeet)
