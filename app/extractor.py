@@ -1,8 +1,14 @@
 import traceback
 
+import pytz
 import xlrd
+from django.db.models import Q
+from django.utils import timezone
 
-from app.models import District, County, SubCounty, Parish, Village, User
+from app.models import District, County, SubCounty, Parish, Village, User, Girl
+from app.utils.utilities import add_months
+from openpyxl import Workbook, load_workbook
+from openpyxl.utils.dataframe import dataframe_to_rows
 
 
 def extract_excel_data(location):
@@ -28,7 +34,7 @@ def extract_excel_data(location):
         sub_county_value = row_data[2]
         parish_value = row_data[3]
         village_value = row_data[4]
-        print(district_value+county_value+sub_county_value+parish_value+village_value)
+        print(district_value + county_value + sub_county_value + parish_value + village_value)
         print(row_number)
 
         if not district_value:
@@ -69,6 +75,7 @@ def extract_excel_data(location):
             village = Village(name=village_value, parish=parish)
             village.save()
 
+
 def extract_excel_user_data(location):
     wb = xlrd.open_workbook(location)
     sheet = wb.sheet_by_index(1)
@@ -92,7 +99,7 @@ def extract_excel_user_data(location):
         personal_number = int(row_data[2])
         getin_number_value = int(row_data[3])
         role = row_data[4]
-        print(first_name_value+last_name_value+str(personal_number)+str(getin_number_value)+role)
+        print(first_name_value + last_name_value + str(personal_number) + str(getin_number_value) + role)
 
         print(row_number)
 
@@ -105,7 +112,8 @@ def extract_excel_user_data(location):
             print(getin_number_value)
             print(first_name_value)
             print(last_name_value)
-            user = User(first_name=first_name_value, village=village, last_name=last_name_value, username=str(first_name_value).lower()[0] + str(last_name_value).lower(),
+            user = User(first_name=first_name_value, village=village, last_name=last_name_value,
+                        username=str(first_name_value).lower()[0] + str(last_name_value).lower(),
                         email=first_name_value + last_name_value + "@getinmobile.org", phone=getin_number_value,
                         role=str(role).lower())
             user.set_password(getin_number_value)
@@ -140,7 +148,7 @@ def extract_excel_user_data_from_sheet(location):
         role = row_data[4]
         sub_county = row_data[5]
         username = row_data[6]
-        print(first_name_value+last_name_value+str(personal_number)+str(getin_number_value)+role)
+        print(first_name_value + last_name_value + str(personal_number) + str(getin_number_value) + role)
 
         print(row_number)
 
@@ -167,3 +175,20 @@ def extract_excel_user_data_from_sheet(location):
             user.save()
         except Exception:
             print(traceback.print_exc())
+
+
+def generate_system_user_stats():
+    for district in District.objects.all():
+        created_at = timezone.datetime(2019, 11, 1).replace(tzinfo=pytz.utc)
+        while created_at < timezone.datetime(2020, 2, 1).replace(tzinfo=pytz.utc):
+            for user in User.objects.filter(district=district):
+                girls = Girl.objects.filter(Q(created_at__gte=created_at) &
+                                            Q(created_at__lte=add_months(created_at, 1)
+                                              .replace(tzinfo=pytz.utc)) & Q(user=user)).count()
+                filename = "/home/codephillip/PycharmProjects/GetInBackendRebuild/GetIN Traceability Form.xlsx"
+                wb = load_workbook(filename)
+                sheet = wb['Sheet1']
+                sheet.append([user.first_name + " " + user.last_name, user.phone, user.role, district.name,
+                              created_at.strftime("%B"), girls])
+                wb.save(filename)
+            created_at = add_months(created_at, 1).replace(tzinfo=pytz.utc)
