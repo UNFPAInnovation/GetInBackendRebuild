@@ -109,7 +109,8 @@ DATABASES = {
     }
 }
 
-default_database = environ.get('DJANGO_DATABASE', 'main')
+#default_database = environ.get('DJANGO_DATABASE', 'main')
+default_database = 'test'
 DATABASES['default'] = DATABASES[default_database]
 
 
@@ -155,8 +156,8 @@ REST_FRAMEWORK = {
         # 'rest_framework.permissions.IsAdminUser',
     ),
     'DEFAULT_PAGINATION_CLASS':
-        'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 100,
+        'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 10000,
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
 }
 
