@@ -155,9 +155,8 @@ REST_FRAMEWORK = {
         # 'app.permissions.IsPostOrIsAuthenticated',
         # 'rest_framework.permissions.IsAdminUser',
     ),
-    'DEFAULT_PAGINATION_CLASS':
-        'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 10000,
+    'DEFAULT_PAGINATION_CLASS': 'app.custom_pagination.LargeResultsSetPagination',
+    # 'PAGE_SIZE': 10000,
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
 }
 
