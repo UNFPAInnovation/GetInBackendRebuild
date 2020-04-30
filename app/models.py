@@ -79,6 +79,9 @@ class County(models.Model):
 
 
 class SubCounty(models.Model):
+    """
+    NOTE: Works as SubCounty and Division since Kampala has no County
+    """
     name = models.CharField(max_length=250)
     county = models.ForeignKey(County, on_delete=models.CASCADE)
 
