@@ -20,7 +20,7 @@ from app.utils.constants import FOLLOW_UP_FORM_CHEW_NAME, APPOINTMENT_FORM_CHEW_
     MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME, APPOINTMENT_FORM_MIDWIFE_NAME, FOLLOW_UP_FORM_MIDWIFE_NAME, USER_TYPE_CHEW, \
     MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME, POSTNATAL_FORM_CHEW_NAME, POSTNATAL_FORM_MIDWIFE_NAME, ATTENDED, \
     PRE, POST, EXPECTED, MAP_GIRL_ARUA_CHEW_FORM_NAME, MAP_GIRL_ARUA_MIDWIFE_FORM_NAME, MAP_GIRL_KAMPALA_CHEW_FORM_NAME, \
-    MAP_GIRL_KAMPALA_MIDWIFE_FORM_NAME
+    MAP_GIRL_KAMPALA_MIDWIFE_FORM_NAME, DEFAULT_TAG
 
 logger = logging.getLogger('testlogger')
 
@@ -59,7 +59,8 @@ class MappingEncounterWebhook(APIView):
 
         if MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME in json_result or MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME in json_result \
                 or MAP_GIRL_ARUA_CHEW_FORM_NAME in json_result or MAP_GIRL_ARUA_MIDWIFE_FORM_NAME in json_result \
-                or MAP_GIRL_KAMPALA_CHEW_FORM_NAME in json_result or MAP_GIRL_KAMPALA_MIDWIFE_FORM_NAME in json_result:
+                or MAP_GIRL_KAMPALA_CHEW_FORM_NAME in json_result or MAP_GIRL_KAMPALA_MIDWIFE_FORM_NAME in json_result \
+                or DEFAULT_TAG in json_result:
             print("mapping forms matched")
             return self.process_mapping_encounter(json_result, user_id)
         elif FOLLOW_UP_FORM_CHEW_NAME in json_result or FOLLOW_UP_FORM_MIDWIFE_NAME in json_result:
@@ -96,6 +97,10 @@ class MappingEncounterWebhook(APIView):
                 print(traceback.print_exc())
             try:
                 mapped_girl_object = json_result[MAP_GIRL_KAMPALA_MIDWIFE_FORM_NAME]
+            except KeyError:
+                print(traceback.print_exc())
+            try:
+                mapped_girl_object = json_result[DEFAULT_TAG]
             except KeyError:
                 print(traceback.print_exc())
 
