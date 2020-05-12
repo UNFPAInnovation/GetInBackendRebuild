@@ -5,13 +5,13 @@ africastalking.initialize(username, api_key)
 
 
 class AirtimeModule:
-    def send_airtime(self, phone_numbers: list):
+    def send_airtime(self, phone_numbers, amount):
         airtime = africastalking.Airtime
         recipients = []
         for phone_number in phone_numbers:
             recipients.append({
                 'phoneNumber': phone_number,
-                'amount': '50',
+                'amount': amount,
                 'currency_code': 'UGX'
             })
         x = airtime.send(recipients=recipients, amount='50', currency_code='UGX')
