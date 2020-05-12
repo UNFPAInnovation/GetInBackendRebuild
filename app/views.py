@@ -474,5 +474,5 @@ class AirtimeDispatchView(APIView):
     """
     def post(self, request, format=None):
         airtime_module = AirtimeModule()
-        airtime_module.send_airtime(request.data["numbers"])
+        airtime_module.send_airtime(request.data["numbers"], request.data["amount"])
         return Response({"result": "success"})
