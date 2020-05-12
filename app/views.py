@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from app import sms_handler
+from app.airtime_dispatcher import AirtimeModule
 from app.extractor import extract_excel_data, extract_excel_user_data_from_sheet
 from app.filters import GirlFilter, FollowUpFilter, MappingEncounterFilter, DeliveryFilter, AppointmentFilter, \
     UserFilter
@@ -462,4 +463,16 @@ class ExtractView(APIView):
         # arua_users = ("/home/codephillip/PycharmProjects/GetInBackendRebuild/GetInAruaUsers.xlsx")
         # extract_excel_user_data_from_sheet(arua_users)
 
+        return Response({"result": "success"})
+
+
+class AirtimeDispatchView(APIView):
+    """
+    Sends airtime to provided phone numbers
+    Json body(example)
+    {numbers": ["+25675XXXXXXX", "+25678XXXXXXX"], "amount": 500}
+    """
+    def post(self, request, format=None):
+        airtime_module = AirtimeModule()
+        airtime_module.send_airtime(request.data["numbers"])
         return Response({"result": "success"})

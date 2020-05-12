@@ -3,9 +3,8 @@ from rest_framework.response import Response
 
 from app.models import SmsModel, User
 from app.serializers import SmsModelSerializer
+from app.utils.constants import username, api_key
 
-username = "getinapp"
-api_key = "9e8c2ca8d8a1897248036f1a9bf25fb1f9ba5898635044a96558e1323fd1c16b"
 africastalking.initialize(username, api_key)
 sms = africastalking.SMS
 

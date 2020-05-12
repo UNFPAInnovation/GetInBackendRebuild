@@ -22,7 +22,7 @@ from app.notifier import NotifierView
 from app.views import GirlView, GirlDetailsView, UserCreateView, DistrictView, \
     CountyView, SubCountyView, ParishView, VillageView, HealthFacilityView, FollowUpView, \
     DeliveriesView, MappingEncounterView, AppointmentView, DashboardStatsView, DeliveriesStatsView, SmsView, \
-    ExtractView
+    ExtractView, AirtimeDispatchView
 from django.views.decorators.csrf import csrf_exempt
 
 from app.webhook import MappingEncounterWebhook
@@ -53,4 +53,5 @@ urlpatterns = [
     path(r'api/v1/sms', SmsView.as_view(), name='sms'),
     path(r'api/v1/extractor', ExtractView.as_view(), name='extractor'),
     path(r'api/v1/notifier', NotifierView.as_view(), name='notifier'),
+    path(r'api/v1/airtime_dispatcher', AirtimeDispatchView.as_view(), name='airtime-dispatcher'),
 ]

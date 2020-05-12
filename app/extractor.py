@@ -1,7 +1,7 @@
 import traceback
 
 import pytz
-import xlrd
+#import xlrd
 from django.db.models import Q
 from django.utils import timezone
 
