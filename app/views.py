@@ -327,7 +327,7 @@ class DashboardStatsView(APIView):
                 etc: 10
                 }
                 """
-
+                response = dict()
                 deliveries = Delivery.objects.filter(
                     Q(girl__created_at__gte=created_at_from) & Q(girl__created_at__lte=created_at_to))
 
