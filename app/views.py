@@ -146,9 +146,10 @@ class FollowUpView(ListCreateAPIView):
         if user.role == USER_TYPE_MIDWIFE:
             users = User.objects.filter(midwife=user)
             model = FollowUp.objects.filter(Q(user__in=users) | Q(user=user)).order_by('-created_at')
-        elif user.role in [USER_TYPE_CHEW, USER_TYPE_DHO]:
-            model = FollowUp.objects.filter(
-                girl__village__parish_id=user.village.parish_id).order_by('-created_at')
+        elif user.role == USER_TYPE_CHEW:
+            model = FollowUp.objects.filter(Q(user=user)).order_by('-created_at')
+        elif user.role == USER_TYPE_DHO:
+            model = FollowUp.objects.filter(user__district=user.district).order_by('-created_at')
         else:
             model = FollowUp.objects.all().order_by('-created_at')
         return model
@@ -170,9 +171,9 @@ class DeliveriesView(ListCreateAPIView):
             users = User.objects.filter(midwife=user)
             model = Delivery.objects.filter(Q(user_id__in=[user.id for user in users]) | Q(user__id=user.id)).order_by(
                 '-created_at')
-        elif user.role in [USER_TYPE_CHEW]:
+        elif user.role  == USER_TYPE_CHEW:
             model = Delivery.objects.filter(user=user).order_by('-created_at')
-        elif user.role in [USER_TYPE_DHO]:
+        elif user.role == USER_TYPE_DHO:
             model = Delivery.objects.filter(user__district=user.district).order_by('-created_at')
         else:
             model = Delivery.objects.all().order_by('-created_at')
