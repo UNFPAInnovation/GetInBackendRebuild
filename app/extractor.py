@@ -1,10 +1,11 @@
 import traceback
 
 import pytz
-#import xlrd
+import xlrd
 from django.db.models import Q
 from django.utils import timezone
 
+from app.airtime_dispatcher import AirtimeModule
 from app.models import District, County, SubCounty, Parish, Village, User, Girl
 from app.utils.utilities import add_months
 from openpyxl import Workbook, load_workbook
@@ -192,3 +193,31 @@ def generate_system_user_stats():
                               created_at.strftime("%B"), girls])
                 wb.save(filename)
             created_at = add_months(created_at, 1).replace(tzinfo=pytz.utc)
+
+
+def extract_excel_user_data_for_airtime_dispatchment(location, amount):
+    """
+    Sends airtime to users GetIN phone numbers
+    """
+    wb = xlrd.open_workbook(location)
+    sheet = wb.sheet_by_index(0)
+
+    sheet.cell_value(0, 0)
+    phone_numbers = []
+
+    try:
+        for row_number in range(0, sheet.utter_max_rows):
+            try:
+                row_data = sheet.row_values(row_number)
+            except Exception as e:
+                print(e)
+                break
+
+            phone_numbers.append("+256" + str(int(row_data[0])))
+    except Exception as e:
+        print(e)
+
+    print(phone_numbers)
+    print(len(phone_numbers))
+    airtime = AirtimeModule()
+    airtime.send_airtime(phone_numbers, amount)
