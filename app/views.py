@@ -251,6 +251,7 @@ class DashboardStatsView(APIView):
         ''' Extract year, month and day from requests '''
         year_from, month_from, day_from = [int(x) for x in created_at_from_param.split("-")]
         year_to, month_to, day_to = [int(x) for x in created_at_to_param.split("-")]
+        day_to += 1
 
         ''' So we can manipulate the date object, we convert it here '''
         created_at_from = timezone.datetime(year_from, month_from, day_from).replace(tzinfo=pytz.utc)
