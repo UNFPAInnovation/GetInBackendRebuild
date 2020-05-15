@@ -11,6 +11,7 @@ from rest_framework.permissions import *
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from GetInBackendRebuild.settings import SHEET_FILES_FOLDER
 from app import sms_handler
 from app.airtime_dispatcher import AirtimeModule
 from app.extractor import extract_excel_data, extract_excel_user_data_from_sheet
@@ -455,15 +456,14 @@ class SmsView(ListCreateAPIView):
 
 class ExtractView(APIView):
     def get(self, request, format=None, **kwargs):
-        # location = ("/home/codephillip/PycharmProjects/GetInBackendRebuild/bundibugyo_org_units.xlsx")
-        location = ("bundibugyo_org_units.xlsx")
+        location = (SHEET_FILES_FOLDER + "bundibugyo_org_units.xlsx")
         # extract_excel_data(location_arua)
 
-        location = ("/home/codephillip/PycharmProjects/GetInBackendRebuild/Kampala Org Units DB.xlsx")
+        location = (SHEET_FILES_FOLDER + "Kampala Org Units DB.xlsx")
         extract_excel_data(location)
 
-        # arua_users = ("/home/codephillip/PycharmProjects/GetInBackendRebuild/GetInAruaUsers.xlsx")
-        # extract_excel_user_data_from_sheet(arua_users)
+        arua_users = (SHEET_FILES_FOLDER + "GetInAruaUsers.xlsx")
+        extract_excel_user_data_from_sheet(arua_users)
 
         return Response({"result": "success"})
 

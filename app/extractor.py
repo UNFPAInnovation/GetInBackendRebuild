@@ -5,6 +5,7 @@ import xlrd
 from django.db.models import Q
 from django.utils import timezone
 
+from GetInBackendRebuild.settings import SHEET_FILES_FOLDER
 from app.airtime_dispatcher import AirtimeModule
 from app.models import District, County, SubCounty, Parish, Village, User, Girl
 from app.utils.utilities import add_months
@@ -186,7 +187,7 @@ def generate_system_user_stats():
                 girls = Girl.objects.filter(Q(created_at__gte=created_at) &
                                             Q(created_at__lte=add_months(created_at, 1)
                                               .replace(tzinfo=pytz.utc)) & Q(user=user)).count()
-                filename = "/home/codephillip/PycharmProjects/GetInBackendRebuild/GetIN Traceability Form.xlsx"
+                filename = SHEET_FILES_FOLDER + "GetIN Traceability Form.xlsx"
                 wb = load_workbook(filename)
                 sheet = wb['Sheet1']
                 sheet.append([user.first_name + " " + user.last_name, user.phone, user.role, district.name,
@@ -221,3 +222,13 @@ def extract_excel_user_data_for_airtime_dispatchment(location, amount):
     print(len(phone_numbers))
     airtime = AirtimeModule()
     airtime.send_airtime(phone_numbers, amount)
+
+
+def generate_user_credential_sheet(district_name):
+    for user in User.objects.filter(district__name=district_name):
+        girls = Girl.objects.filter(user=user).count()
+        filename = SHEET_FILES_FOLDER + "GetIN User Credentials.xlsx"
+        wb = load_workbook(filename)
+        sheet = wb['Sheet1']
+        sheet.append([user.first_name + " " + user.last_name, user.username, user.phone, user.role, girls])
+        wb.save(filename)
