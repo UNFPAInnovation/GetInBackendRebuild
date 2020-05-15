@@ -146,9 +146,10 @@ class FollowUpView(ListCreateAPIView):
         if user.role == USER_TYPE_MIDWIFE:
             users = User.objects.filter(midwife=user)
             model = FollowUp.objects.filter(Q(user__in=users) | Q(user=user)).order_by('-created_at')
-        elif user.role in [USER_TYPE_CHEW, USER_TYPE_DHO]:
-            model = FollowUp.objects.filter(
-                girl__village__parish_id=user.village.parish_id).order_by('-created_at')
+        elif user.role == USER_TYPE_CHEW:
+            model = FollowUp.objects.filter(Q(user=user)).order_by('-created_at')
+        elif user.role == USER_TYPE_DHO:
+            model = FollowUp.objects.filter(user__district=user.district).order_by('-created_at')
         else:
             model = FollowUp.objects.all().order_by('-created_at')
         return model
@@ -170,9 +171,9 @@ class DeliveriesView(ListCreateAPIView):
             users = User.objects.filter(midwife=user)
             model = Delivery.objects.filter(Q(user_id__in=[user.id for user in users]) | Q(user__id=user.id)).order_by(
                 '-created_at')
-        elif user.role in [USER_TYPE_CHEW]:
+        elif user.role  == USER_TYPE_CHEW:
             model = Delivery.objects.filter(user=user).order_by('-created_at')
-        elif user.role in [USER_TYPE_DHO]:
+        elif user.role == USER_TYPE_DHO:
             model = Delivery.objects.filter(user__district=user.district).order_by('-created_at')
         else:
             model = Delivery.objects.all().order_by('-created_at')
@@ -250,6 +251,7 @@ class DashboardStatsView(APIView):
         ''' Extract year, month and day from requests '''
         year_from, month_from, day_from = [int(x) for x in created_at_from_param.split("-")]
         year_to, month_to, day_to = [int(x) for x in created_at_to_param.split("-")]
+        day_to += 1
 
         ''' So we can manipulate the date object, we convert it here '''
         created_at_from = timezone.datetime(year_from, month_from, day_from).replace(tzinfo=pytz.utc)
@@ -325,7 +327,7 @@ class DashboardStatsView(APIView):
                 etc: 10
                 }
                 """
-
+                response = dict()
                 deliveries = Delivery.objects.filter(
                     Q(girl__created_at__gte=created_at_from) & Q(girl__created_at__lte=created_at_to))
 
