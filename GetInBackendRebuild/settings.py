@@ -162,7 +162,7 @@ REST_FRAMEWORK = {
 JWT_AUTH = {
     'JWT_SECRET_KEY': SECRET_KEY,
     'JWT_VERIFY': True,
-    'JWT_VERIFY_EXPIRATION': True,
+    'JWT_VERIFY_EXPIRATION': False,
     'JWT_LEEWAY': 0,
     # user is logged in for 6 hour before token expires
     'JWT_EXPIRATION_DELTA': datetime.timedelta(hours=6),
