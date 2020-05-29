@@ -202,6 +202,7 @@ Create directories and request for certificate from lets encrypt
 
 Update of code and server
 --------------------------
+
 Incase the code has changed in the repository
 
 .. code-block:: console
