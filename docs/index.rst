@@ -17,6 +17,7 @@ Tools
 
 Resources
 ============
+
 * Deployment
 
 https://medium.com/techkylabs/django-deployment-on-linux-ubuntu-16-04-with-postgresql-nginx-ssl-e6504a02f224
@@ -25,14 +26,17 @@ https://www.humankode.com/ssl/how-to-set-up-free-ssl-certificates-from-lets-encr
 
 Links
 ============
+
 * Django admin - http://backend.getinmobile.org/admin/
 * Swagger - http://backend.getinmobile.org
 
 
 Server Deployment
 ===================
+
 Setup EC2 instance
 -------------------
+
 #. Log into the GetIn AWS account
 #. Go to Services > compute > EC2.
 #. Click on Launch Instance.
@@ -206,6 +210,7 @@ Update of code and server
 Incase the code has changed in the repository
 
 .. code-block:: console
+
     git add .
     git stash save
     git pull
