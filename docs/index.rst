@@ -4,7 +4,7 @@ GetIn Documentation
 
 Introduction
 ============
-GetIn mobile
+GetIn Server that provides data to the dashboard and mobile app
 
 Tools
 ============
@@ -22,6 +22,11 @@ Resources
 https://medium.com/techkylabs/django-deployment-on-linux-ubuntu-16-04-with-postgresql-nginx-ssl-e6504a02f224
 https://www.humankode.com/ssl/how-to-set-up-free-ssl-certificates-from-lets-encrypt-using-docker-and-nginx
 
+
+Links
+============
+* Django admin - http://backend.getinmobile.org/admin/
+* Swagger - http://backend.getinmobile.org
 
 
 Server Deployment
