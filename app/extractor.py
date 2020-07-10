@@ -181,8 +181,8 @@ def extract_excel_user_data_from_sheet(location):
 
 def generate_system_user_stats():
     for district in District.objects.all():
-        created_at = timezone.datetime(2019, 11, 1).replace(tzinfo=pytz.utc)
-        while created_at < timezone.datetime(2020, 4, 1).replace(tzinfo=pytz.utc):
+        created_at = timezone.datetime(2020, 4, 1).replace(tzinfo=pytz.utc)
+        while created_at < timezone.datetime(2020, 6, 1).replace(tzinfo=pytz.utc):
             for user in User.objects.filter(district=district):
                 girls = Girl.objects.filter(Q(created_at__gte=created_at) &
                                             Q(created_at__lte=add_months(created_at, 1)

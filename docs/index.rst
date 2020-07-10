@@ -23,6 +23,10 @@ Resources
 https://medium.com/techkylabs/django-deployment-on-linux-ubuntu-16-04-with-postgresql-nginx-ssl-e6504a02f224
 https://www.humankode.com/ssl/how-to-set-up-free-ssl-certificates-from-lets-encrypt-using-docker-and-nginx
 
+* ODK certificate 
+
+https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04
+
 
 Links
 ============
@@ -216,3 +220,45 @@ Incase the code has changed in the repository
     git pull
     sudo systemctl restart gunicorn
     sudo service nginx restart
+
+
+ODK Central
+============
+
+Generate ssl certificate
+-------------------------
+
+Stop docker images
+
+.. code-block:: console
+
+    cd central
+    docker-compose stop nginx
+
+
+Update the certificates
+
+
+.. code-block:: console
+
+    sudo systemctl start nginx
+    sudo certbot --nginx -d odkcentral.getinmobile.org
+    sudo cp /etc/letsencrypt/live/odkcentral.getinmobile.org/fullchain.pem /home/ubuntu/central/files/local/customssl/fullchain.pem
+    sudo cp /etc/letsencrypt/live/odkcentral.getinmobile.org/privkey.pem /home/ubuntu/central/files/local/customssl/privkey.pem
+    cd central
+    sudo systemctl stop nginx
+    docker-compose build nginx
+    docker-compose up -d
+    OR Run the `update_certificate.sh` file
+
+
+.. note:: You may need to kill nginx manually. The system may also run out of space.
+
+
+.. code-block:: console
+
+    ps -ef |grep nginx
+    kill -9 pid
+
+
+.. warning:: The system may run out of space. FIRST MAKE SURE THE IMAGES ARE RUNNING using docker ps. Then run `sudo docker system prune`
