@@ -11,6 +11,7 @@ from app.models import District, County, SubCounty, Parish, Village, User, Girl
 from app.utils.utilities import add_months
 from openpyxl import Workbook, load_workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
+from app.utils.constants import *
 
 
 def extract_excel_data(location):
@@ -181,9 +182,12 @@ def extract_excel_user_data_from_sheet(location):
 
 def generate_system_user_stats():
     for district in District.objects.all():
-        created_at = timezone.datetime(2020, 4, 1).replace(tzinfo=pytz.utc)
-        while created_at < timezone.datetime(2020, 6, 1).replace(tzinfo=pytz.utc):
+        created_at = timezone.datetime(2020, 6, 1).replace(tzinfo=pytz.utc)
+        while created_at < timezone.datetime(2020, 7, 1).replace(tzinfo=pytz.utc):
             for user in User.objects.filter(district=district):
+                print(user.first_name)
+                if user.role in [USER_TYPE_DHO, USER_TYPE_AMBULANCE, USER_TYPE_DEVELOPER]:
+                    continue
                 girls = Girl.objects.filter(Q(created_at__gte=created_at) &
                                             Q(created_at__lte=add_months(created_at, 1)
                                               .replace(tzinfo=pytz.utc)) & Q(user=user)).count()
@@ -206,17 +210,12 @@ def extract_excel_user_data_for_airtime_dispatchment(location, amount):
     sheet.cell_value(0, 0)
     phone_numbers = []
 
-    try:
-        for row_number in range(0, sheet.utter_max_rows):
-            try:
-                row_data = sheet.row_values(row_number)
-            except Exception as e:
-                print(e)
-                break
-
+    for row_number in range(0, sheet.utter_max_rows):
+        try:
+            row_data = sheet.row_values(row_number)
             phone_numbers.append("+256" + str(int(row_data[0])))
-    except Exception as e:
-        print(e)
+        except Exception as e:
+            print(e)
 
     print(phone_numbers)
     print(len(phone_numbers))
