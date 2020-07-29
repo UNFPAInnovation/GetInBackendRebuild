@@ -109,7 +109,8 @@ DATABASES = {
     }
 }
 
-default_database = environ.get('DJANGO_DATABASE', 'main')
+# default_database = environ.get('DJANGO_DATABASE', 'main')
+default_database = 'main'
 DATABASES['default'] = DATABASES[default_database]
 
 
@@ -200,7 +201,7 @@ CRONJOBS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Nairobi'
 
 USE_I18N = True
 

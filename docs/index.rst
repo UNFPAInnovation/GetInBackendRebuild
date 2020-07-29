@@ -205,8 +205,10 @@ Create directories and request for certificate from lets encrypt
     sudo apt-get update
     sudo apt-get install python-certbot-nginx
     sudo certbot --nginx
+    IF IT FAILS RUN sudo apt install --only-upgrade certbot
     sudo nginx -t
     sudo service nginx restart
+
 
 Update of code and server
 --------------------------
