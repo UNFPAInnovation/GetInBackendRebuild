@@ -25,34 +25,31 @@ class VillageMSISerializer(serializers.Field):
         region = district.region
 
         data = {
-            "location": {
-                "village": {
-                    "id": village.id,
-                    "name": village.name
-                },
-                "parish": {
-                    "id": parish.id,
-                    "name": parish.name
-                },
-                "sub_county": {
-                    "id": sub_county.id,
-                    "name": sub_county.name
-                },
-                "county": {
-                    "id": county.id,
-                    "name": county.name
-                },
-                "district": {
-                    "id": district.id,
-                    "name": district.name
-                },
-                "region": {
-                    "id": region.id,
-                    "name": region.name
-                }
+            "village": {
+                "id": village.id,
+                "name": village.name
+            },
+            "parish": {
+                "id": parish.id,
+                "name": parish.name
+            },
+            "sub_county": {
+                "id": sub_county.id,
+                "name": sub_county.name
+            },
+            "county": {
+                "id": county.id,
+                "name": county.name
+            },
+            "district": {
+                "id": district.id,
+                "name": district.name
+            },
+            "region": {
+                "id": region.id,
+                "name": region.name
             }
         }
-
         return data
 
 
