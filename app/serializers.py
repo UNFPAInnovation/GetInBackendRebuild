@@ -160,7 +160,22 @@ class HealthFacilityGetSerializer(serializers.ModelSerializer):
 class GirlSerializer(serializers.ModelSerializer):
     village = VillageGetSerializer(many=False, read_only=True)
     village_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = Girl
+        # list all the fields since the age property is not picked up by __all__
+        fields = (
+            'id', 'first_name', 'last_name', 'village', 'village_id', 'phone_number', 'trimester',
+            'next_of_kin_phone_number', 'education_level', 'marital_status',
+            'last_menstruation_date', 'dob', 'user', 'odk_instance_id', 'age', 'completed_all_visits',
+            'pending_visits', 'missed_visits', 'created_at')
+
+
+class GirlMSISerializer(serializers.ModelSerializer):
+    village = VillageGetSerializer(many=False, read_only=True)
+    village_id = serializers.IntegerField(write_only=True)
     location = LocationMSISerializer(source='village', read_only=True)
+    user = UserGetSerializer(read_only=True)
 
     class Meta:
         model = Girl
