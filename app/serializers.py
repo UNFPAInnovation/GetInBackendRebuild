@@ -7,13 +7,50 @@ from rest_framework_jwt.utils import jwt_payload_handler
 
 from GetInBackendRebuild.settings import SECRET_KEY
 from app.models import User, District, County, SubCounty, Parish, Village, Girl, HealthFacility, FollowUp, Delivery, \
-    MappingEncounter, AppointmentEncounter, Appointment, SmsModel, Observation, FamilyPlanning
+    MappingEncounter, AppointmentEncounter, Appointment, SmsModel, Observation, FamilyPlanning, Region
 
 
 def create_token(user=None):
     payload = jwt_payload_handler(user)
     token = jwt.encode(payload, SECRET_KEY)
     return token.decode('unicode_escape')
+
+
+class LocationMSISerializer(serializers.Field):
+    def to_representation(self, village):
+        parish = village.parish
+        sub_county = parish.sub_county
+        county = sub_county.county
+        district = county.district
+        region = district.region
+
+        data = {
+            "village": {
+                "id": village.id,
+                "name": village.name
+            },
+            "parish": {
+                "id": parish.id,
+                "name": parish.name
+            },
+            "sub_county": {
+                "id": sub_county.id,
+                "name": sub_county.name
+            },
+            "county": {
+                "id": county.id,
+                "name": county.name
+            },
+            "district": {
+                "id": district.id,
+                "name": district.name
+            },
+            "region": {
+                "id": region.id,
+                "name": region.name
+            }
+        }
+        return data
 
 
 class UserPostSerializer(serializers.ModelSerializer):
@@ -129,6 +166,22 @@ class GirlSerializer(serializers.ModelSerializer):
         # list all the fields since the age property is not picked up by __all__
         fields = (
             'id', 'first_name', 'last_name', 'village', 'village_id', 'phone_number', 'trimester',
+            'next_of_kin_phone_number', 'education_level', 'marital_status',
+            'last_menstruation_date', 'dob', 'user', 'odk_instance_id', 'age', 'completed_all_visits',
+            'pending_visits', 'missed_visits', 'created_at')
+
+
+class GirlMSISerializer(serializers.ModelSerializer):
+    village = VillageGetSerializer(many=False, read_only=True)
+    village_id = serializers.IntegerField(write_only=True)
+    location = LocationMSISerializer(source='village', read_only=True)
+    user = UserGetSerializer(read_only=True)
+
+    class Meta:
+        model = Girl
+        # list all the fields since the age property is not picked up by __all__
+        fields = (
+            'id', 'first_name', 'last_name', 'village', 'village_id', 'location', 'phone_number', 'trimester',
             'next_of_kin_phone_number', 'education_level', 'marital_status',
             'last_menstruation_date', 'dob', 'user', 'odk_instance_id', 'age', 'completed_all_visits',
             'pending_visits', 'missed_visits', 'created_at')
