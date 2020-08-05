@@ -208,6 +208,15 @@ class FollowUpGetSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class FollowUpMSISerializer(serializers.ModelSerializer):
+    girl = GirlMSISerializer(read_only=True)
+    observation = ObservationSerializer(read_only=True)
+
+    class Meta:
+        model = FollowUp
+        fields = '__all__'
+
+
 class FollowUpPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = FollowUp
@@ -216,6 +225,16 @@ class FollowUpPostSerializer(serializers.ModelSerializer):
 
 class DeliveryGetSerializer(serializers.ModelSerializer):
     girl = GirlSerializer(read_only=True)
+    health_facility = HealthFacilityGetSerializer()
+    family_planning = FamilyPlanningSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = Delivery
+        fields = '__all__'
+
+
+class DeliveryMSISerializer(serializers.ModelSerializer):
+    girl = GirlMSISerializer(read_only=True)
     health_facility = HealthFacilityGetSerializer()
     family_planning = FamilyPlanningSerializer(read_only=True, many=True)
 
