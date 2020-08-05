@@ -7,7 +7,7 @@ from rest_framework_jwt.utils import jwt_payload_handler
 
 from GetInBackendRebuild.settings import SECRET_KEY
 from app.models import User, District, County, SubCounty, Parish, Village, Girl, HealthFacility, FollowUp, Delivery, \
-    MappingEncounter, AppointmentEncounter, Appointment, SmsModel, Observation, FamilyPlanning
+    MappingEncounter, AppointmentEncounter, Appointment, SmsModel, Observation, FamilyPlanning, Region
 
 
 def create_token(user=None):
@@ -90,30 +90,34 @@ class VillageMSISerializer(serializers.ModelSerializer):
         sub_county = parish.sub_county
         county = sub_county.county
         district = county.district
+        region = district.region
 
         data = {
             "location": {
                 "village": {
                     "id": instance.id,
-                    "name": instance.name,
+                    "name": instance.name
                 },
                 "parish": {
                     "id": parish.id,
-                    "name": parish.name,
+                    "name": parish.name
                 },
                 "sub_county": {
                     "id": sub_county.id,
-                    "name": sub_county.name,
+                    "name": sub_county.name
                 },
                 "county": {
                     "id": county.id,
-                    "name": county.name,
+                    "name": county.name
                 },
                 "district": {
                     "id": district.id,
-                    "name": district.name,
+                    "name": district.name
                 },
-                "region": "",
+                "region": {
+                    "id": region.id,
+                    "name": region.name
+                }
             }
         }
 
@@ -163,12 +167,13 @@ class HealthFacilityGetSerializer(serializers.ModelSerializer):
 class GirlSerializer(serializers.ModelSerializer):
     village = VillageGetSerializer(many=False, read_only=True)
     village_id = serializers.IntegerField(write_only=True)
+    location = VillageMSISerializer(many=False, read_only=True)
 
     class Meta:
         model = Girl
         # list all the fields since the age property is not picked up by __all__
         fields = (
-            'id', 'first_name', 'last_name', 'village', 'village_id', 'phone_number', 'trimester',
+            'id', 'first_name', 'last_name', 'village', 'village_id', 'location', 'phone_number', 'trimester',
             'next_of_kin_phone_number', 'education_level', 'marital_status',
             'last_menstruation_date', 'dob', 'user', 'odk_instance_id', 'age', 'completed_all_visits',
             'pending_visits', 'missed_visits', 'created_at')
