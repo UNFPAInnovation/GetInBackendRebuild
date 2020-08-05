@@ -16,7 +16,7 @@ def create_token(user=None):
     return token.decode('unicode_escape')
 
 
-class VillageMSISerializer(serializers.Field):
+class LocationMSISerializer(serializers.Field):
     def to_representation(self, village):
         parish = village.parish
         sub_county = parish.sub_county
@@ -72,13 +72,10 @@ class UserPostSerializer(serializers.ModelSerializer):
 
 
 class UserGetSerializer(serializers.ModelSerializer):
-    location = VillageMSISerializer(source='village', read_only=True)
-
     class Meta:
         model = User
         fields = (
-            'id', 'first_name', 'last_name', 'username', 'email', 'gender', 'village', 'number_plate', 'role', 'phone',
-            'location')
+            'id', 'first_name', 'last_name', 'username', 'email', 'gender', 'village', 'number_plate', 'role', 'phone')
 
 
 class DistrictGetSerializer(serializers.ModelSerializer):
@@ -163,7 +160,7 @@ class HealthFacilityGetSerializer(serializers.ModelSerializer):
 class GirlSerializer(serializers.ModelSerializer):
     village = VillageGetSerializer(many=False, read_only=True)
     village_id = serializers.IntegerField(write_only=True)
-    location = VillageMSISerializer(source='village', read_only=True)
+    location = LocationMSISerializer(source='village', read_only=True)
 
     class Meta:
         model = Girl
