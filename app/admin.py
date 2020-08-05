@@ -1,9 +1,10 @@
 from django.contrib import admin
 
 from app.models import User, District, County, SubCounty, Parish, Village, Girl, HealthFacility, FollowUp, Delivery, \
-    MappingEncounter, Appointment, AppointmentEncounter, Referral, FamilyPlanning, Observation, NotificationLog
+    MappingEncounter, Appointment, AppointmentEncounter, Referral, FamilyPlanning, Observation, NotificationLog, Region
 
 admin.site.register(User)
+admin.site.register(Region)
 admin.site.register(District)
 admin.site.register(County)
 admin.site.register(SubCounty)
