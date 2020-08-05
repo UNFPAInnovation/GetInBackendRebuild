@@ -16,6 +16,46 @@ def create_token(user=None):
     return token.decode('unicode_escape')
 
 
+class VillageMSISerializer(serializers.Field):
+    def to_representation(self, village):
+        parish = village.parish
+        sub_county = parish.sub_county
+        county = sub_county.county
+        district = county.district
+        region = district.region
+
+        data = {
+            "location": {
+                "village": {
+                    "id": village.id,
+                    "name": village.name
+                },
+                "parish": {
+                    "id": parish.id,
+                    "name": parish.name
+                },
+                "sub_county": {
+                    "id": sub_county.id,
+                    "name": sub_county.name
+                },
+                "county": {
+                    "id": county.id,
+                    "name": county.name
+                },
+                "district": {
+                    "id": district.id,
+                    "name": district.name
+                },
+                "region": {
+                    "id": region.id,
+                    "name": region.name
+                }
+            }
+        }
+
+        return data
+
+
 class UserPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -35,10 +75,13 @@ class UserPostSerializer(serializers.ModelSerializer):
 
 
 class UserGetSerializer(serializers.ModelSerializer):
+    location = VillageMSISerializer(source='village', read_only=True)
+
     class Meta:
         model = User
         fields = (
-            'id', 'first_name', 'last_name', 'username', 'email', 'gender', 'village', 'number_plate', 'role', 'phone')
+            'id', 'first_name', 'last_name', 'username', 'email', 'gender', 'village', 'number_plate', 'role', 'phone',
+            'location')
 
 
 class DistrictGetSerializer(serializers.ModelSerializer):
@@ -78,50 +121,6 @@ class VillageGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Village
         fields = '__all__'
-
-
-class VillageMSISerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Village
-        fields = ("",)
-
-    def to_representation(self, instance):
-        parish = instance.parish
-        sub_county = parish.sub_county
-        county = sub_county.county
-        district = county.district
-        region = district.region
-
-        data = {
-            "location": {
-                "village": {
-                    "id": instance.id,
-                    "name": instance.name
-                },
-                "parish": {
-                    "id": parish.id,
-                    "name": parish.name
-                },
-                "sub_county": {
-                    "id": sub_county.id,
-                    "name": sub_county.name
-                },
-                "county": {
-                    "id": county.id,
-                    "name": county.name
-                },
-                "district": {
-                    "id": district.id,
-                    "name": district.name
-                },
-                "region": {
-                    "id": region.id,
-                    "name": region.name
-                }
-            }
-        }
-
-        return data
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -167,7 +166,7 @@ class HealthFacilityGetSerializer(serializers.ModelSerializer):
 class GirlSerializer(serializers.ModelSerializer):
     village = VillageGetSerializer(many=False, read_only=True)
     village_id = serializers.IntegerField(write_only=True)
-    location = VillageMSISerializer(many=False, read_only=True)
+    location = VillageMSISerializer(source='village', read_only=True)
 
     class Meta:
         model = Girl
