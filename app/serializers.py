@@ -80,6 +80,46 @@ class VillageGetSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class VillageMSISerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Village
+        fields = ("",)
+
+    def to_representation(self, instance):
+        parish = instance.parish
+        sub_county = parish.sub_county
+        county = sub_county.county
+        district = county.district
+
+        data = {
+            "location": {
+                "village": {
+                    "id": instance.id,
+                    "name": instance.name,
+                },
+                "parish": {
+                    "id": parish.id,
+                    "name": parish.name,
+                },
+                "sub_county": {
+                    "id": sub_county.id,
+                    "name": sub_county.name,
+                },
+                "county": {
+                    "id": county.id,
+                    "name": county.name,
+                },
+                "district": {
+                    "id": district.id,
+                    "name": district.name,
+                },
+                "region": "",
+            }
+        }
+
+        return data
+
+
 class UserSerializer(serializers.ModelSerializer):
     village = VillageGetSerializer(many=False, read_only=True)
     midwife = UserGetSerializer(read_only=True)
