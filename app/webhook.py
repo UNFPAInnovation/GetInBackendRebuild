@@ -25,9 +25,10 @@ from app.utils.constants import FOLLOW_UP_FORM_CHEW_NAME, APPOINTMENT_FORM_CHEW_
 logger = logging.getLogger('testlogger')
 
 
-class MappingEncounterWebhook(APIView):
+class ODKWebhook(APIView):
     """
     Receives the mapping encounter data and then creates the Girl model and MappingEncounter model
+    Receives followup, delivery and appointments from the getin app and odk server
     """
 
     parser_classes = [JSONParser]
@@ -44,7 +45,11 @@ class MappingEncounterWebhook(APIView):
 
         form_meta_data = json_result["form_meta_data"]
         print(form_meta_data)
-        form_meta_data = json.loads(form_meta_data)
+
+        try:
+            form_meta_data = json.loads(form_meta_data)
+        except Exception as e:
+            print(e)
         try:
             girl_id = form_meta_data["GIRL_ID"]
         except KeyError:
@@ -174,7 +179,7 @@ class MappingEncounterWebhook(APIView):
             print('village')
 
             # incase the girl already exists with the same name,
-            # create a new girl and swap the new girl for the old one with udpated
+            # create a new girl and swap the new girl for the old one with updated data
             old_girl = Girl.objects.filter(Q(first_name__icontains=first_name) & Q(last_name__icontains=last_name))
             if old_girl:
                 edited_girl = Girl(first_name=first_name, last_name=last_name, village=village,
