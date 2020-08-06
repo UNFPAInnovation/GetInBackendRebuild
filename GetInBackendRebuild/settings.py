@@ -106,6 +106,10 @@ DATABASES = {
         'PASSWORD': 'Doppler25',
         'HOST': 'getindjangodbtest.chsjmdyi1oys.us-west-2.rds.amazonaws.com',
         'PORT': '5432'
+    },
+    'unittest': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
