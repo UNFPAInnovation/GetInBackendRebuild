@@ -1,5 +1,4 @@
 from django.urls import reverse
-from django.utils.crypto import get_random_string
 from rest_framework import status
 from rest_framework.test import APITestCase
 
