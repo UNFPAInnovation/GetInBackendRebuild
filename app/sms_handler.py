@@ -12,21 +12,19 @@ sms = africastalking.SMS
 def send_sms(message, sender, receiver_ids):
     server_response = []
     phone_numbers = ["+256" + User.objects.get(id=receiver_id).phone[1:] for receiver_id in receiver_ids]
-    # response = sms.send(message, phone_numbers)
-    # print(response)
+    response = sms.send(message, phone_numbers)
+    recipients_results = response['SMSMessageData']['Recipients']
 
-    # recipients_results = response['SMSMessageData']['Recipients']
-
-    # for recipient in recipients_results:
-    #     try:
-    #         sms_model = SmsModel(recipient=User.objects.get(phone__contains=recipient['number'][5:]),
-    #                              sender_id=sender.id,
-    #                              message=message, status=recipient['status'],
-    #                              message_id=recipient['messageId'])
-    #         sms_model.save()
-    #         server_response.append(SmsModelSerializer(sms_model).data)
-    #     except Exception as e:
-    #         print(e)
+    for recipient in recipients_results:
+        try:
+            sms_model = SmsModel(recipient=User.objects.get(phone__contains=recipient['number'][5:]),
+                                 sender_id=sender.id,
+                                 message=message, status=recipient['status'],
+                                 message_id=recipient['messageId'])
+            sms_model.save()
+            server_response.append(SmsModelSerializer(sms_model).data)
+        except Exception as e:
+            print(e)
     server_response = "success"
     return Response({'result': server_response})
 

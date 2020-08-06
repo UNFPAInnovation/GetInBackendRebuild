@@ -5,10 +5,10 @@ from app.tests.parenttest import ParentTest
 from django.utils.crypto import get_random_string
 
 
-class TestMapping(ParentTest):
+class TestMidwifeMapping(ParentTest):
     def test_mapping_encounter_by_midwife_no_previous_appointments(self):
         """
-        Test mapping girl who has
+        Test mapping girl who has no previous appointments. the midwife creates one appointment at the end of the process
         """
         request_data = {
             "GetInMapGirlBundibugyo16_midwife": {
@@ -128,21 +128,21 @@ class TestMapping(ParentTest):
             },
             "form_meta_data": {
                 "GIRL_ID": "0",
-                "USER_ID": self.chew.id
+                "USER_ID": self.midwife.id
             }
         }
+
         url = reverse("mapping_encounter_webhook")
         request = self.client.post(url, request_data, format='json')
         self.assertEqual(request.status_code, status.HTTP_200_OK)
+        self.assertEqual(Girl.objects.count(), 1)
+
         appointments = Appointment.objects.filter(girl__first_name__icontains="MukuluGirlTest")
         self.assertEqual(appointments.count(), 1)
-        # test that the appointment is within 2 weeks period
-        self.assertLess(appointments.first().date.replace(tzinfo=None),
-                        timezone.datetime(year=2020, month=6, day=14).replace(tzinfo=None))
 
     def test_mapping_encounter_by_midwife_with_previous_appointments(self):
         """
-        Test mapping girl who has
+        Test mapping girl's previous appointment recorded. the midwife creates one appointment at the end of the process
         """
         request_data = {
             "GetInMapGirlBundibugyo16_midwife": {
@@ -266,14 +266,14 @@ class TestMapping(ParentTest):
             },
             "form_meta_data": {
                 "GIRL_ID": "0",
-                "USER_ID": self.chew.id
+                "USER_ID": self.midwife.id
             }
         }
+
         url = reverse("mapping_encounter_webhook")
         request = self.client.post(url, request_data, format='json')
         self.assertEqual(request.status_code, status.HTTP_200_OK)
+        self.assertEqual(Girl.objects.count(), 1)
+
         appointments = Appointment.objects.filter(girl__first_name__icontains="MukuluGirlTest")
         self.assertEqual(appointments.count(), 2)
-        # test that the appointment is within 2 weeks period
-        self.assertLess(appointments.first().date.replace(tzinfo=None),
-                        timezone.datetime(year=2020, month=6, day=14).replace(tzinfo=None))

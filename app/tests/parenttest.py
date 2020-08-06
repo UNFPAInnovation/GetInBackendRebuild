@@ -21,5 +21,5 @@ class ParentTest(APITestCase):
                                            district=self.district, role=USER_TYPE_MIDWIFE, email="midwifetest@test.com")
         self.chew = User.objects.create(username="vhtuser", first_name="vht", last_name="user" + get_random_string(length=4),
                                         phone="075687834", password="075687834", gender=GENDER_FEMALE,
-                                        village=self.village, district=self.district, role=USER_TYPE_MIDWIFE,
-                                        midwife=self.midwife, email="midwifetest@test.com")
+                                        village=self.village, district=self.district, role=USER_TYPE_CHEW,
+                                        midwife=self.midwife, email="chewtest@test.com")

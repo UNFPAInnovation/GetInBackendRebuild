@@ -6,7 +6,9 @@ from app.utils.constants import EXPECTED, ATTENDED, MISSED
 
 
 def notifier_appointment_reminder_cron_job():
-    """Appointment reminder. Notifies the VHT, midwife and girl about expected and missed appointments"""
+    """
+    Appointment reminder. Notifies the VHT, midwife and girl about expected and missed appointments
+    """
     notifier = NotifierView()
     notifier.send_appointment_three_days_before_date()
     notifier.send_appointment_one_day_after_date()
@@ -14,7 +16,9 @@ def notifier_appointment_reminder_cron_job():
 
 
 def notifier_daily_usage_reminder_cron_job():
-    """Sends out daily FCM notification reminder to use the GetIn mobile app"""
+    """
+    Sends out daily FCM notification reminder to use the GetIn mobile app
+    """
     notifier = NotifierView()
     notifier.send_daily_usage_reminder()
 
