@@ -4,7 +4,8 @@ language: python # => 1
     services: # => 3
       - postgresql
     env: # => 4
-      -DJANGO=2.2.8 DB=postgresql
+      - DJANGO=2.2.8
+      - DJANGO_DATABASE=unittest
     install: # => 5
       - pip install -r requirements.txt
     before_script: # => 6
