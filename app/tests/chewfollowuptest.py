@@ -290,6 +290,7 @@ class TestChewFollowUp(ParentTest):
         self.assertEqual(followUps.count(), 1)
 
         self.assertEqual(Observation.objects.count(), 1)
+        self.assertEqual(FamilyPlanning.objects.count(), 1)
 
         delivery = Delivery.objects.filter(girl__last_name__icontains=last_name)
         self.assertEqual(delivery.count(), 1)

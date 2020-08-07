@@ -458,9 +458,14 @@ class ODKWebhook(APIView):
         if birth_place == "HealthFacility":
             birth_place = "Health facility"
         delivery_action_taken = replace_underscore(delivery_follow_up_group["action_taken"][0])
-        used_contraceptives = "offered family planning" in delivery_action_taken
-        contraceptive_group = follow_up_object["family_planning_group"][0]
-        postnatal_care = contraceptive_group["postnatal_received"][0] == "yes"
+        used_contraceptives = "family" in delivery_action_taken
+        try:
+            contraceptive_group = follow_up_object["family_planning_group"][0]
+            postnatal_care = contraceptive_group["postnatal_received"][0] == "yes"
+        except Exception as e:
+            print(e)
+            postnatal_care = False
+            contraceptive_group = []
 
         print('save delivery')
         delivery = Delivery(girl=girl, user=user, action_taken=delivery_action_taken,
