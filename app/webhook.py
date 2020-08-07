@@ -119,7 +119,7 @@ class ODKWebhook(APIView):
             mapping_encounter = MappingEncounter()
 
             try:
-                odk_instance_id = mapped_girl_object["meta"]["instanceID"]
+                odk_instance_id = mapped_girl_object["meta"][0]["instanceID"][0]
             except Exception as e:
                 print(e)
                 odk_instance_id = "abc123"
