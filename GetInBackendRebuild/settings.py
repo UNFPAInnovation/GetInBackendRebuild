@@ -106,6 +106,10 @@ DATABASES = {
         'PASSWORD': 'Doppler25',
         'HOST': 'getindjangodbtest.chsjmdyi1oys.us-west-2.rds.amazonaws.com',
         'PORT': '5432'
+    },
+    'unittest': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
@@ -190,9 +194,9 @@ CRONJOBS = [
     # run cron job at 10:05 every day
     # ('5 10 * * *', 'app.cron.notifier_appointment_reminder_cron_job'),
     # # run cron job at 11:05 every day
-    # ('5 11 * * *', 'app.cron.notifier_daily_usage_reminder_cron_job'),
+    ('5 11 * * *', 'app.cron.notifier_daily_usage_reminder_cron_job'),
     # # run cron job at 18:05 every day
-    # ('5 18 * * *', 'app.cron.transition_expected_appointments')
+    ('5 18 * * *', 'app.cron.transition_expected_appointments')
 ]
 
 # Internationalization

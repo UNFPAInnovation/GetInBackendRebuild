@@ -25,9 +25,10 @@ from app.utils.constants import FOLLOW_UP_FORM_CHEW_NAME, APPOINTMENT_FORM_CHEW_
 logger = logging.getLogger('testlogger')
 
 
-class MappingEncounterWebhook(APIView):
+class ODKWebhook(APIView):
     """
     Receives the mapping encounter data and then creates the Girl model and MappingEncounter model
+    Receives followup, delivery and appointments from the getin app and odk server
     """
 
     parser_classes = [JSONParser]
@@ -44,7 +45,11 @@ class MappingEncounterWebhook(APIView):
 
         form_meta_data = json_result["form_meta_data"]
         print(form_meta_data)
-        form_meta_data = json.loads(form_meta_data)
+
+        try:
+            form_meta_data = json.loads(form_meta_data)
+        except Exception as e:
+            print(e)
         try:
             girl_id = form_meta_data["GIRL_ID"]
         except KeyError:
@@ -114,7 +119,7 @@ class MappingEncounterWebhook(APIView):
             mapping_encounter = MappingEncounter()
 
             try:
-                odk_instance_id = mapped_girl_object["meta"]["instanceID"]
+                odk_instance_id = mapped_girl_object["meta"][0]["instanceID"][0]
             except Exception as e:
                 print(e)
                 odk_instance_id = "abc123"
@@ -174,7 +179,7 @@ class MappingEncounterWebhook(APIView):
             print('village')
 
             # incase the girl already exists with the same name,
-            # create a new girl and swap the new girl for the old one with udpated
+            # create a new girl and swap the new girl for the old one with updated data
             old_girl = Girl.objects.filter(Q(first_name__icontains=first_name) & Q(last_name__icontains=last_name))
             if old_girl:
                 edited_girl = Girl(first_name=first_name, last_name=last_name, village=village,
@@ -453,9 +458,14 @@ class MappingEncounterWebhook(APIView):
         if birth_place == "HealthFacility":
             birth_place = "Health facility"
         delivery_action_taken = replace_underscore(delivery_follow_up_group["action_taken"][0])
-        used_contraceptives = "offered family planning" in delivery_action_taken
-        contraceptive_group = follow_up_object["family_planning_group"][0]
-        postnatal_care = contraceptive_group["postnatal_received"][0] == "yes"
+        used_contraceptives = "family" in delivery_action_taken
+        try:
+            contraceptive_group = follow_up_object["family_planning_group"][0]
+            postnatal_care = contraceptive_group["postnatal_received"][0] == "yes"
+        except Exception as e:
+            print(e)
+            postnatal_care = False
+            contraceptive_group = []
 
         print('save delivery')
         delivery = Delivery(girl=girl, user=user, action_taken=delivery_action_taken,

@@ -36,9 +36,9 @@ class NotifierView(APIView):
         return Response({"result": "failure"}, 400)
 
     def get(self, request, format=None, **kwargs):
-        self.send_appointment_three_days_before_date()
-        self.send_appointment_one_day_after_date()
-        self.send_appointment_on_actual_day()
+        # self.send_appointment_three_days_before_date()
+        # self.send_appointment_one_day_after_date()
+        # self.send_appointment_on_actual_day()
         return Response({"result": "success"}, 200)
 
     def send_appointment_three_days_before_date(self):
@@ -70,11 +70,11 @@ class NotifierView(APIView):
                 send_firebase_notification(firebase_device_ids, message_title, message_body)
 
                 sender = User.objects.get(username__icontains="admin")
-                send_sms(message_body, sender, receiver_ids=health_worker_ids)
+                # send_sms(message_body, sender, receiver_ids=health_worker_ids)
 
                 NotificationLog(appointment=appointment, stage=BEFORE).save()
         girls_message_body = "GetIN. Please visit hospital for ANC visits in three days"
-        send_single_sms(girls_message_body, phone_number=girl_phone_numbers)
+        # send_single_sms(girls_message_body, phone_number=girl_phone_numbers)
 
 
     def send_appointment_one_day_after_date(self):
@@ -106,11 +106,11 @@ class NotifierView(APIView):
                 send_firebase_notification(firebase_device_ids, message_title, message_body)
 
                 sender = User.objects.get(username__icontains="admin")
-                send_sms(message_body, sender, receiver_ids=health_workers_ids)
+                # send_sms(message_body, sender, receiver_ids=health_workers_ids)
 
                 NotificationLog(appointment=appointment, stage=AFTER).save()
         girls_message_body = "GetIN. You have missed your ANC visit. Please visit health facility immediately"
-        send_single_sms(girls_message_body, phone_number=girl_phone_numbers)
+        # send_single_sms(girls_message_body, phone_number=girl_phone_numbers)
 
     def send_appointment_on_actual_day(self):
         girl_phone_numbers = []
@@ -141,11 +141,11 @@ class NotifierView(APIView):
                 send_firebase_notification(firebase_device_ids, message_title, message_body)
 
                 sender = User.objects.get(username__icontains="admin")
-                send_sms(message_body, sender, receiver_ids=health_workers_ids)
+                # send_sms(message_body, sender, receiver_ids=health_workers_ids)
                 NotificationLog(appointment=appointment, stage=CURRENT).save()
 
         girls_message_body = "GetIN. Please visit hospital today for your ANC visits"
-        send_single_sms(girls_message_body, phone_number=girl_phone_numbers)
+        # send_single_sms(girls_message_body, phone_number=girl_phone_numbers)
 
     def send_daily_usage_reminder(self):
         print('start sending daily usage reminders')
