@@ -8,10 +8,7 @@ from django.db import models
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
-from app.utils.constants import GENDER_FEMALE, GENDER_MALE, PRIMARY_LEVEL, O_LEVEL, A_LEVEL, \
-    TERTIARY_LEVEL, SINGLE, MARRIED, DIVORCED, HOME, HEALTH_FACILITY, USER_TYPE_DEVELOPER, USER_TYPE_DHO, \
-    USER_TYPE_CHEW, USER_TYPE_MIDWIFE, USER_TYPE_AMBULANCE, USER_TYPE_MANAGER, MISSED, ATTENDED, EXPECTED, PRE, POST, \
-    BEFORE, AFTER, CURRENT
+from app.utils.constants import *
 
 GENDER_CHOICES = (
     (GENDER_MALE, 'male'),
@@ -60,6 +57,15 @@ STAGE = (
 FAMILY_PLANNING_STATUS = (
     (PRE, 'Pre'),
     (POST, 'Post'),
+)
+
+MSI_OPTIONS = (
+    (ANC1, 'ANC1'),
+    (ANC2, 'ANC2'),
+    (ANC3, 'ANC3'),
+    (ANC4, 'ANC4'),
+    (DELIVERY, 'Delivery'),
+    (FAMILY_PLANNING, 'Family Planning'),
 )
 
 
@@ -229,6 +235,7 @@ class Girl(models.Model):
     missed_visits = models.IntegerField(default=0, validators=[MaxValueValidator(3), MinValueValidator(0)])
     completed_all_visits = models.BooleanField(default=False, blank=True, null=True)
     odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
+    voucher_card = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -612,3 +619,8 @@ class NotificationLog(models.Model):
     @staticmethod
     def has_object_write_permission(self, request):
         return True
+
+
+class MSIService(models.Model):
+    girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
+    option = models.CharField(choices=MSI_OPTIONS, default=ANC1, max_length=250)

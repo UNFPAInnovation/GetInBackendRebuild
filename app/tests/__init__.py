@@ -6,3 +6,4 @@ from app.tests.chewmappingtest import *
 from app.tests.chewfollowuptest import *
 from app.tests.midwifefollowuptest import *
 from app.tests.deliverytest import *
+from app.tests.modeltests import *
