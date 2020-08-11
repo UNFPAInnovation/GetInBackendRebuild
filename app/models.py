@@ -235,7 +235,7 @@ class Girl(models.Model):
     missed_visits = models.IntegerField(default=0, validators=[MaxValueValidator(3), MinValueValidator(0)])
     completed_all_visits = models.BooleanField(default=False, blank=True, null=True)
     odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
-    voucher_card = models.CharField(max_length=250, blank=True, null=True)
+    voucher_number = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

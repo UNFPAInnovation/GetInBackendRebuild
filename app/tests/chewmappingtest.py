@@ -138,6 +138,8 @@ class TestChewMapping(ParentTest):
         self.assertLess(appointments.first().date.replace(tzinfo=None),
                         timezone.now().replace(tzinfo=None) + timezone.timedelta(weeks=2))
 
+        self.assertIsNotNone(Girl.objects.first().voucher_number)
+
     def test_mapping_encounter_by_chew_with_previous_appointments(self):
         """
         Test mapping girl who has a previous appointments is recorded and the system autogenerates an appointment within a 2 weeks period
@@ -274,3 +276,5 @@ class TestChewMapping(ParentTest):
         # test that the appointment is within 2 weeks period
         self.assertLess(appointments.first().date.replace(tzinfo=None),
                         timezone.now().replace(tzinfo=None) + timezone.timedelta(weeks=2))
+
+        self.assertIsNotNone(Girl.objects.first().voucher_number)

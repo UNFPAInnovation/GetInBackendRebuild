@@ -4,15 +4,18 @@ import random
 import traceback
 
 import pytz
+import requests
 from django.db.models import Q
 from django.utils import timezone
+from rest_framework import status
 from rest_framework.parsers import JSONParser
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from app.models import Girl, Parish, Village, FollowUp, Delivery, MappingEncounter, \
     Appointment, AppointmentEncounter, Referral, FamilyPlanning, Observation
-from app.serializers import User
+from app.serializers import User, GirlMSISerializer
 
 import logging
 
@@ -20,9 +23,17 @@ from app.utils.constants import FOLLOW_UP_FORM_CHEW_NAME, APPOINTMENT_FORM_CHEW_
     MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME, APPOINTMENT_FORM_MIDWIFE_NAME, FOLLOW_UP_FORM_MIDWIFE_NAME, USER_TYPE_CHEW, \
     MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME, POSTNATAL_FORM_CHEW_NAME, POSTNATAL_FORM_MIDWIFE_NAME, ATTENDED, \
     PRE, POST, EXPECTED, MAP_GIRL_ARUA_CHEW_FORM_NAME, MAP_GIRL_ARUA_MIDWIFE_FORM_NAME, MAP_GIRL_KAMPALA_CHEW_FORM_NAME, \
-    MAP_GIRL_KAMPALA_MIDWIFE_FORM_NAME, DEFAULT_TAG
+    MAP_GIRL_KAMPALA_MIDWIFE_FORM_NAME, DEFAULT_TAG, MSI_BASE_URL
 
 logger = logging.getLogger('testlogger')
+
+
+def send_data_to_msi_webhook(girl):
+    serializer = GirlMSISerializer(girl)
+    actual_data = JSONRenderer().render(serializer.data)
+    print(actual_data)
+    headers = {'Authorization': 'Basic bWF0aGlhc191ZzptYXRoaWFzMDkxMV8='}
+    return requests.post(url=MSI_BASE_URL + "msi/api/generateMaternityVoucher", data=actual_data, headers=headers)
 
 
 class ODKWebhook(APIView):
@@ -248,10 +259,22 @@ class ODKWebhook(APIView):
             mapping_encounter.girl = girl
             mapping_encounter.save()
             self.save_family_planning_methods_in_mapping_encounter(mapped_girl_object, mapping_encounter)
-            return Response({'result': 'success'}, 200)
+            self.get_and_save_msi_voucher_to_girl(girl)
+            return Response({'result': 'success'}, status.HTTP_200_OK)
         except Exception:
             print(traceback.print_exc())
-        return Response({'result': 'failure'}, 400)
+        return Response({'result': 'failure'}, status.HTTP_400_BAD_REQUEST)
+
+    def get_and_save_msi_voucher_to_girl(self, girl):
+        try:
+            webhook_response = send_data_to_msi_webhook(girl)
+            webhook_response = webhook_response.json()
+            if webhook_response['successful']:
+                voucher_number = webhook_response['eVoucher']['code']
+                girl.voucher_number = voucher_number
+                girl.save(update_fields=['voucher_number'])
+        except Exception as e:
+            print(e)
 
     def save_family_planning_methods_in_mapping_encounter(self, mapped_girl_object, mapping_encounter):
         try:

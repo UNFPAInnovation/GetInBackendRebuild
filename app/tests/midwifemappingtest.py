@@ -140,6 +140,8 @@ class TestMidwifeMapping(ParentTest):
         appointments = Appointment.objects.filter(girl__first_name__icontains="MukuluGirlTest")
         self.assertEqual(appointments.count(), 1)
 
+        self.assertIsNotNone(Girl.objects.first().voucher_number)
+
     def test_mapping_encounter_by_midwife_with_previous_appointments(self):
         """
         Test mapping girl's previous appointment recorded. the midwife creates one appointment at the end of the process
@@ -277,3 +279,5 @@ class TestMidwifeMapping(ParentTest):
 
         appointments = Appointment.objects.filter(girl__first_name__icontains="MukuluGirlTest")
         self.assertEqual(appointments.count(), 2)
+
+        self.assertIsNotNone(Girl.objects.first().voucher_number)

@@ -176,6 +176,8 @@ class GirlMSISerializer(serializers.ModelSerializer):
     village_id = serializers.IntegerField(write_only=True)
     location = LocationMSISerializer(source='village', read_only=True)
     user = UserGetSerializer(read_only=True)
+    dob = serializers.DateTimeField(format="%Y-%m-%d", read_only=True)
+    last_menstruation_date = serializers.DateTimeField(format="%Y-%m-%d", read_only=True)
 
     class Meta:
         model = Girl
