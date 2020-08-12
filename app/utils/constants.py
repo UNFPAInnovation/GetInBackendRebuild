@@ -63,6 +63,7 @@ FOLLOW_UP_FORM_CHEW_NAME = "GetInFollowup20_chew"
 FOLLOW_UP_FORM_MIDWIFE_NAME = "GetInFollowup19_midwife"
 POSTNATAL_FORM_CHEW_NAME = "GetINPostnatalForm6_chew"
 POSTNATAL_FORM_MIDWIFE_NAME = "GetINPostnatalForm6_midwife"
+# NOTE: Some times the json object starts with data object param
 DEFAULT_TAG = "data"
 MSI_BASE_URL = "http://35.203.191.127/"
 

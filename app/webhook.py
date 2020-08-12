@@ -48,6 +48,7 @@ class ODKWebhook(APIView):
         print("post request called")
         json_result = request.data
         print(json_result)
+        json_result_string = str(request.data)
 
         try:
             webhooklog = open('webhook_log.txt', 'a')
@@ -80,17 +81,16 @@ class ODKWebhook(APIView):
         except KeyError:
             print(traceback.print_exc())
 
-        if MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME in json_result or MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME in json_result \
-                or MAP_GIRL_ARUA_CHEW_FORM_NAME in json_result or MAP_GIRL_ARUA_MIDWIFE_FORM_NAME in json_result \
-                or MAP_GIRL_KAMPALA_CHEW_FORM_NAME in json_result or MAP_GIRL_KAMPALA_MIDWIFE_FORM_NAME in json_result \
-                or DEFAULT_TAG in json_result:
+        if MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME in json_result_string or MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME in json_result_string \
+                or MAP_GIRL_ARUA_CHEW_FORM_NAME in json_result_string or MAP_GIRL_ARUA_MIDWIFE_FORM_NAME in json_result_string \
+                or MAP_GIRL_KAMPALA_CHEW_FORM_NAME in json_result_string or MAP_GIRL_KAMPALA_MIDWIFE_FORM_NAME in json_result_string:
             print("mapping forms matched")
             return self.process_mapping_encounter(json_result, user_id)
-        elif FOLLOW_UP_FORM_CHEW_NAME in json_result or FOLLOW_UP_FORM_MIDWIFE_NAME in json_result:
+        elif FOLLOW_UP_FORM_CHEW_NAME in json_result_string or FOLLOW_UP_FORM_MIDWIFE_NAME in json_result_string:
             return self.process_follow_up_and_delivery_encounter(girl_id, json_result, user_id)
-        elif APPOINTMENT_FORM_CHEW_NAME in json_result or APPOINTMENT_FORM_MIDWIFE_NAME in json_result:
+        elif APPOINTMENT_FORM_CHEW_NAME in json_result_string or APPOINTMENT_FORM_MIDWIFE_NAME in json_result_string:
             return self.process_appointment_encounter(girl_id, json_result, user_id)
-        elif POSTNATAL_FORM_CHEW_NAME in json_result or POSTNATAL_FORM_MIDWIFE_NAME in json_result:
+        elif POSTNATAL_FORM_CHEW_NAME in json_result_string or POSTNATAL_FORM_MIDWIFE_NAME in json_result_string:
             return self.postnatal_encounter(girl_id, json_result, user_id)
         return Response({'result': 'failure'}, 400)
 
@@ -392,7 +392,14 @@ class ODKWebhook(APIView):
                 follow_up_object = json_result[FOLLOW_UP_FORM_CHEW_NAME]
             except Exception:
                 print(traceback.print_exc())
+            try:
                 follow_up_object = json_result[FOLLOW_UP_FORM_MIDWIFE_NAME]
+            except Exception:
+                print(traceback.print_exc())
+            try:
+                follow_up_object = json_result[DEFAULT_TAG]
+            except KeyError:
+                print(traceback.print_exc())
             print(follow_up_object)
 
             fever = False
@@ -545,7 +552,14 @@ class ODKWebhook(APIView):
                 appointment_object = json_result[APPOINTMENT_FORM_CHEW_NAME]
             except Exception:
                 print(traceback.print_exc())
+            try:
                 appointment_object = json_result[APPOINTMENT_FORM_MIDWIFE_NAME]
+            except Exception:
+                print(traceback.print_exc())
+            try:
+                appointment_object = json_result[DEFAULT_TAG]
+            except KeyError:
+                print(traceback.print_exc())
 
             needed_ambulance = False
             used_ambulance = False
@@ -590,6 +604,8 @@ class ODKWebhook(APIView):
 
             action_taken_group = appointment_object["action_taken_group"][0]
             action_taken = replace_underscore(action_taken_group["action_taken_meeting_girl"][0])
+            if action_taken == 'other':
+                action_taken = replace_underscore(action_taken_group["action_taken_other"][0])
 
             schedule_appointment_group = appointment_object["schedule_appointment_group"][0]
             next_appointment_date = schedule_appointment_group["schedule_appointment"][0]
@@ -624,7 +640,15 @@ class ODKWebhook(APIView):
             postnatal_object = json_result[POSTNATAL_FORM_CHEW_NAME]
         except Exception:
             print(traceback.print_exc())
+        try:
             postnatal_object = json_result[POSTNATAL_FORM_MIDWIFE_NAME]
+        except Exception:
+            print(traceback.print_exc())
+        try:
+            postnatal_object = json_result[DEFAULT_TAG]
+        except Exception:
+            print(traceback.print_exc())
+
         print(postnatal_object)
 
         girl = Girl.objects.get(id=girl_id)
