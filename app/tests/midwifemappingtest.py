@@ -1,3 +1,5 @@
+import random
+
 from django.urls import reverse
 from rest_framework import status
 from app.models import *
@@ -21,7 +23,7 @@ class TestMidwifeMapping(ParentTest):
                             "Muwalatest"
                         ],
                         "GirlsPhoneNumber": [
-                            "0779281444"
+                            "0779281" + str(random.randint(100,999))
                         ],
                         "DOB": [
                             "2004-02-26"
