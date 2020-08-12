@@ -28,3 +28,5 @@ class ParentTest(APITestCase):
                                         phone=self.chew_phone_number, password=self.chew_phone_number, gender=GENDER_FEMALE,
                                         village=self.village, district=self.district, role=USER_TYPE_CHEW,
                                         midwife=self.midwife, email="chewtest@test.com")
+        self.user = User.objects.create(is_staff=True, is_superuser=True)
+        self.client.force_authenticate(user=self.user)
