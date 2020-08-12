@@ -49,6 +49,13 @@ class ODKWebhook(APIView):
         json_result = request.data
         print(json_result)
 
+        try:
+            webhooklog = open('webhook_log.txt', 'a')
+            webhooklog.write("\n\n" + str(timezone.now()) + "\n" + str(json_result))
+            webhooklog.close()
+        except Exception as e:
+            print(e)
+
         if type(json_result) != dict:
             print('not dict')
             json_result = str(json_result).replace('\'', "\"")
