@@ -47,7 +47,6 @@ class ODKWebhook(APIView):
     def post(self, request, *args, **kwargs):
         print("post request called")
         json_result = request.data
-        print(json_result)
         json_result_string = str(request.data)
 
         try:
@@ -58,12 +57,10 @@ class ODKWebhook(APIView):
             print(e)
 
         if type(json_result) != dict:
-            print('not dict')
             json_result = str(json_result).replace('\'', "\"")
             json_result = json.loads(json_result)
 
         form_meta_data = json_result["form_meta_data"]
-        print(form_meta_data)
 
         try:
             form_meta_data = json.loads(form_meta_data)
@@ -76,8 +73,6 @@ class ODKWebhook(APIView):
 
         try:
             user_id = form_meta_data["USER_ID"]
-            print('user id')
-            print(user_id)
         except KeyError:
             print(traceback.print_exc())
 
@@ -185,16 +180,12 @@ class ODKWebhook(APIView):
             except KeyError or IndexError:
                 print(traceback.print_exc())
 
-            print("save form data")
-
             user = User.objects.get(id=user_id)
             print(user)
 
             # incase the village does not exist use the health worker's village
             if not village:
                 village = user.village
-
-            print('village')
 
             # incase the girl already exists with the same name,
             # create a new girl and swap the new girl for the old one with updated data
@@ -236,7 +227,6 @@ class ODKWebhook(APIView):
                     # save that date and create an anc visit
                     anc_previous_group = mapped_girl_object["ANCAppointmentPreviousGroup"][0]
                     attended_anc_visit = anc_previous_group["AttendedANCVisit"][0] == "yes"
-                    print("attended anc visit " + str(attended_anc_visit))
 
                     if attended_anc_visit:
                         previous_appointment_date = anc_previous_group["ANCDatePrevious"][0]
@@ -326,9 +316,6 @@ class ODKWebhook(APIView):
             if previous_appointment_date:
                 # if girl has ever attended ANC
                 # Pick ANC date from card
-                print("has previous appointment")
-                print(previous_appointment_date)
-                print(type(previous_appointment_date))
                 # assume that a previous ANC appointment was attended
                 year, month, day = [int(x) for x in previous_appointment_date.split("-")]
                 previous_appointment_date = timezone.datetime(year, month, day)
@@ -340,13 +327,7 @@ class ODKWebhook(APIView):
 
             if user.role == USER_TYPE_CHEW:
                 # create auto appointment is the user is a chew
-                print("no previous appointment")
                 last_menstruation_date = girl.last_menstruation_date
-                print(last_menstruation_date)
-
-                print(current_date)
-                print(last_menstruation_date)
-                print(current_date - last_menstruation_date)
 
                 lmd_days = (current_date - last_menstruation_date).days
                 print("lmd_days " + str(lmd_days))
@@ -380,8 +361,6 @@ class ODKWebhook(APIView):
                     else:
                         appointment_date = current_date + timezone.timedelta(days=4)
 
-                print("create auto appointment")
-                print(appointment_date)
                 appointment = Appointment(girl=girl, user=user, date=appointment_date, status=EXPECTED)
                 appointment.save()
 
@@ -444,18 +423,13 @@ class ODKWebhook(APIView):
             user = User.objects.get(id=user_id)
 
             if action_taken_by_health_person == "appointment":
-                print("action taken appointment")
                 next_appointment = follow_up_object["schedule_appointment_group"][0]["schedule_appointment"][0]
                 appointment = Appointment(girl=girl, user=user, date=next_appointment)
                 appointment.save()
             elif action_taken_by_health_person == "delivery":
-                print("action taken delivery")
                 self.save_delivery(follow_up_object, girl, user)
             elif action_taken_by_health_person in ["referral", "referred"]:
-                referral = Referral(girl=girl, user=user, reason="critical")
-                referral.save()
-
-            print('save results')
+                Referral.objects.create(girl=girl, user=user, reason="critical")
 
             observation = Observation(blurred_vision=blurred_vision, bleeding_heavily=bleeding, fever=fever,
                                       swollen_feet=swollenfeet)
@@ -523,7 +497,6 @@ class ODKWebhook(APIView):
     def save_family_planning_methods_in_delivery(self, contraceptive_group, delivery):
         try:
             contraceptive_method = str(contraceptive_group["ContraceptiveMethod"][0])
-            print("contraceptive method " + contraceptive_method)
 
             # separate the contraceptive methods which are in a string 'IUD condoms pills'
             if " " in contraceptive_method:
@@ -636,8 +609,6 @@ class ODKWebhook(APIView):
             postnatal_object = json_result[DEFAULT_TAG]
         except Exception:
             print(traceback.print_exc())
-
-        print(postnatal_object)
 
         girl = Girl.objects.get(id=girl_id)
         user = User.objects.get(id=user_id)
