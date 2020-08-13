@@ -7,7 +7,7 @@ from rest_framework_jwt.utils import jwt_payload_handler
 
 from GetInBackendRebuild.settings import SECRET_KEY
 from app.models import User, District, County, SubCounty, Parish, Village, Girl, HealthFacility, FollowUp, Delivery, \
-    MappingEncounter, AppointmentEncounter, Appointment, SmsModel, Observation, FamilyPlanning, Region
+    MappingEncounter, AppointmentEncounter, Appointment, SmsModel, Observation, FamilyPlanning, Region, MSIService
 
 
 def create_token(user=None):
@@ -51,6 +51,12 @@ class LocationMSISerializer(serializers.Field):
             }
         }
         return data
+
+
+class MSIServicesSerializer(serializers.Field):
+    def to_representation(self, girl):
+        msi_services = MSIService.objects.filter(girl=girl)
+        return ",".join([service.option for service in msi_services])
 
 
 class UserPostSerializer(serializers.ModelSerializer):
@@ -160,6 +166,7 @@ class HealthFacilityGetSerializer(serializers.ModelSerializer):
 class GirlSerializer(serializers.ModelSerializer):
     village = VillageGetSerializer(many=False, read_only=True)
     village_id = serializers.IntegerField(write_only=True)
+    services_received = MSIServicesSerializer(source='*', read_only=True)
 
     class Meta:
         model = Girl
@@ -168,7 +175,7 @@ class GirlSerializer(serializers.ModelSerializer):
             'id', 'first_name', 'last_name', 'village', 'village_id', 'phone_number', 'trimester',
             'next_of_kin_phone_number', 'education_level', 'marital_status',
             'last_menstruation_date', 'dob', 'user', 'odk_instance_id', 'age', 'completed_all_visits', 'voucher_number',
-            'pending_visits', 'missed_visits', 'created_at')
+            'pending_visits', 'missed_visits', 'services_received', 'created_at')
 
 
 class GirlMSISerializer(serializers.ModelSerializer):

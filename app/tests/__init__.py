@@ -13,3 +13,4 @@ from app.tests.modeltests import *
 from app.tests.msitest import *
 from app.tests.locationtest import *
 from app.tests.midwifeappointmenttest import *
+from app.tests.serializertests import *

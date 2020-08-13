@@ -1,3 +1,5 @@
+import random
+
 from django.urls import reverse
 from rest_framework import status
 from app.models import *
@@ -96,8 +98,8 @@ class TestChewFollowUp(ParentTest):
         last_name = get_random_string(length=7)
         girl = Girl.objects.create(user=self.chew, first_name=get_random_string(length=7), marital_status=SINGLE,
                                    last_name=last_name, dob=timezone.datetime(2000, 3, 3), village=self.village,
-                                   last_menstruation_date=timezone.datetime(2020, 3, 3), phone_number="0756789543",
-                                   education_level=PRIMARY_LEVEL)
+                                   last_menstruation_date=timezone.datetime(2020, 3, 3),
+                                   phone_number="0756789" + str(random.randint(100,999)), education_level=PRIMARY_LEVEL)
         request_data = {
             "GetInFollowup20_chew": {
                 "$": {
