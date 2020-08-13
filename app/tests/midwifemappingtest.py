@@ -23,7 +23,7 @@ class TestMidwifeMapping(ParentTest):
                             "Muwalatest"
                         ],
                         "GirlsPhoneNumber": [
-                            "0779281" + str(random.randint(100,999))
+                            "0779281" + str(random.randint(100, 999))
                         ],
                         "DOB": [
                             "2004-02-26"
@@ -281,5 +281,155 @@ class TestMidwifeMapping(ParentTest):
 
         appointments = Appointment.objects.filter(girl__first_name__icontains="MukuluGirlTest")
         self.assertEqual(appointments.count(), 2)
+
+        self.assertIsNotNone(Girl.objects.first().voucher_number)
+
+    def test_mapping_encounter_by_midwife_with_previous_appointments_and_fp(self):
+        """
+        Test mapping girl's previous appointment recorded and has FP.
+        The midwife creates one appointment at the end of the process
+        """
+        request_data = {
+            "GetInMapGirlBundibugyo16_midwife": {
+                "$": {
+                    "id": "GetInMapGirlBundibugyo16_midwife",
+                    "xmlns:h": "http://www.w3.org/1999/xhtml",
+                    "xmlns:jr": "http://openrosa.org/javarosa",
+                    "xmlns:xsd": "http://www.w3.org/2001/XMLSchema",
+                    "xmlns:ev": "http://www.w3.org/2001/xml-events",
+                    "xmlns:orx": "http://openrosa.org/xforms",
+                    "xmlns:odk": "http://www.opendatakit.org/xforms"
+                },
+                "GirlDemographic": [
+                    {
+                        "FirstName": [
+                            "Firsttestgirl"
+                        ],
+                        "LastName": [
+                            "Lasttestgirl"
+                        ],
+                        "GirlsPhoneNumber": [
+                            "0756979485"
+                        ],
+                        "DOB": [
+                            "2006-03-09"
+                        ]
+                    }
+                ],
+                "GirlDemographic2": [
+                    {
+                        "NextOfKinNumber": [
+                            "0756745688"
+                        ]
+                    }
+                ],
+                "GirlLocation": [
+                    {
+                        "county": [
+                            "BWAMBA_COUNTY"
+                        ],
+                        "subcounty": [
+                            "BUSARU"
+                        ],
+                        "parish": [
+                            "KIRINDI"
+                        ],
+                        "village": [
+                            "MUKUNDUNGU"
+                        ]
+                    }
+                ],
+                "Observations3": [
+                    {
+                        "marital_status": [
+                            "married"
+                        ],
+                        "education_level": [
+                            "ALevel"
+                        ],
+                        "MenstruationDate": [
+                            "2020-06-13"
+                        ]
+                    }
+                ],
+                "Observations1": [
+                    {
+                        "bleeding": [
+                            "no"
+                        ],
+                        "fever": [
+                            "no"
+                        ]
+                    }
+                ],
+                "Observations2": [
+                    {
+                        "swollenfeet": [
+                            "no"
+                        ],
+                        "blurred_vision": [
+                            "yes"
+                        ]
+                    }
+                ],
+                "ANCAppointmentPreviousGroup": [
+                    {
+                        "AttendedANCVisit": [
+                            "yes"
+                        ],
+                        "ANCDatePrevious": [
+                            "2020-07-13"
+                        ]
+                    }
+                ],
+                "ContraceptiveGroup": [
+                    {
+                        "UsedContraceptives": [
+                            "yes"
+                        ],
+                        "ContraceptiveMethod": [
+                            "Pills Injectables Implant"
+                        ]
+                    }
+                ],
+                "ANCAppointmentGroup": [
+                    {
+                        "ANCDate": [
+                            "2020-09-13"
+                        ]
+                    }
+                ],
+                "VouncherCardGroup": [
+                    {
+                        "VoucherCard": [
+                            "no"
+                        ]
+                    }
+                ],
+                "meta": [
+                    {
+                        "instanceID": [
+                            "uuid:f35877e8-439c-475c-922f-2893411bbacb"
+                        ]
+                    }
+                ]
+            },
+            "form_meta_data": {
+                "GIRL_ID": "0",
+                "USER_ID": self.midwife.id
+            }
+        }
+
+        url = reverse("mapping_encounter_webhook")
+        request = self.client.post(url, request_data, format='json')
+        self.assertEqual(request.status_code, status.HTTP_200_OK)
+        self.assertEqual(Girl.objects.count(), 1)
+
+        appointments = Appointment.objects.filter(girl__first_name__icontains="Firsttestgirl")
+        self.assertEqual(appointments.count(), 2)
+
+        self.assertEqual(Observation.objects.count(), 1)
+        self.assertEqual(FamilyPlanning.objects.count(), 3)
+        self.assertEqual(FamilyPlanning.objects.last().method, "Pills")
 
         self.assertIsNotNone(Girl.objects.first().voucher_number)
