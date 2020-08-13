@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from app.models import Girl, Parish, Village, FollowUp, Delivery, MappingEncounter, \
-    Appointment, AppointmentEncounter, Referral, FamilyPlanning, Observation
+    Appointment, AppointmentEncounter, Referral, FamilyPlanning, Observation, MSIService
 from app.serializers import User, GirlMSISerializer
 
 import logging
@@ -88,7 +88,7 @@ class ODKWebhook(APIView):
             return self.process_mapping_encounter(json_result, user_id)
         elif FOLLOW_UP_FORM_CHEW_NAME in json_result_string or FOLLOW_UP_FORM_MIDWIFE_NAME in json_result_string:
             return self.process_follow_up_and_delivery_encounter(girl_id, json_result, user_id)
-        elif APPOINTMENT_FORM_CHEW_NAME in json_result_string or APPOINTMENT_FORM_MIDWIFE_NAME in json_result_string:
+        elif APPOINTMENT_FORM_MIDWIFE_NAME in json_result_string:
             return self.process_appointment_encounter(girl_id, json_result, user_id)
         elif POSTNATAL_FORM_CHEW_NAME in json_result_string or POSTNATAL_FORM_MIDWIFE_NAME in json_result_string:
             return self.postnatal_encounter(girl_id, json_result, user_id)
@@ -549,10 +549,6 @@ class ODKWebhook(APIView):
     def process_appointment_encounter(self, girl_id, json_result, user_id):
         try:
             try:
-                appointment_object = json_result[APPOINTMENT_FORM_CHEW_NAME]
-            except Exception:
-                print(traceback.print_exc())
-            try:
                 appointment_object = json_result[APPOINTMENT_FORM_MIDWIFE_NAME]
             except Exception:
                 print(traceback.print_exc())
@@ -571,7 +567,6 @@ class ODKWebhook(APIView):
             blurred_vision = False
 
             try:
-                # captured in midwife appointment
                 ambulance_group = appointment_object["ambulance_group"][0]
                 needed_ambulance = ambulance_group["needed_ambulance"][0] == "yes"
                 used_ambulance = ambulance_group["used_ambulance"][0] == "yes"
@@ -586,21 +581,6 @@ class ODKWebhook(APIView):
                 missed_anc_reason = missed_anc_before_group2["missed_anc_reason"][0]
                 if missed_anc_reason == "Other":
                     missed_anc_reason = missed_anc_before_group2["missed_anc_reason_other"][0]
-            else:
-                missed_anc_reason = appointment_object["appointment_soon_group"][0]
-                appointment_method = missed_anc_reason["appointment_method"][0]
-
-                try:
-                    # captured in chew appointment
-                    observations1 = appointment_object["observations1"][0]
-                    bleeding = observations1["bleeding"][0] == "yes"
-                    fever = observations1["fever"][0] == "yes"
-
-                    observations2 = appointment_object["observations2"][0]
-                    swollenfeet = observations2["swollenfeet"][0] == "yes"
-                    blurred_vision = observations2["blurred_vision"][0] == "yes"
-                except Exception:
-                    print(traceback.print_exc())
 
             action_taken_group = appointment_object["action_taken_group"][0]
             action_taken = replace_underscore(action_taken_group["action_taken_meeting_girl"][0])
@@ -612,6 +592,14 @@ class ODKWebhook(APIView):
 
             girl = Girl.objects.get(id=girl_id)
             user = User.objects.get(id=user_id)
+
+            try:
+                has_voucher = appointment_object["voucher_received_group"][0]["has_voucher"][0] == "yes"
+                if has_voucher:
+                    msi_service = appointment_object["voucher_redeem_group"][0]["voucher_services"][0]
+                    MSIService.objects.create(girl=girl, option=msi_service)
+            except Exception as e:
+                print(e)
 
             observation = Observation(blurred_vision=blurred_vision, bleeding_heavily=bleeding, fever=fever,
                                       swollen_feet=swollenfeet)

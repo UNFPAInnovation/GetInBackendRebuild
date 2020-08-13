@@ -245,7 +245,7 @@ class TestAppointment(ParentTest):
                 ],
                 "voucher_validate_group": [
                     {
-                        "ex_printer_widget": [
+                        "voucher_validate": [
                             ""
                         ]
                     }
@@ -255,7 +255,7 @@ class TestAppointment(ParentTest):
                         "voucher_services": [
                             "ANC3"
                         ],
-                        "ex_printer_widget": [
+                        "voucher_redeem": [
                             ""
                         ]
                     }
@@ -326,3 +326,7 @@ class TestAppointment(ParentTest):
         self.assertEqual(appointments.count(), 1)
         self.assertEqual(appointment_encounters.count(), 1)
         self.assertEqual(appointment_encounters.first().action_taken, 'Offered family planning')
+
+        services = MSIService.objects.all()
+        self.assertEqual(services.count(), 1)
+        self.assertEqual(services.first().option, "ANC3")
