@@ -31,7 +31,9 @@ from app.utils.utilities import add_months
 # disabled the markdown manually
 # https://www.reddit.com/r/django/comments/d5ob15/help_drf_markdown_is_optional_but_my_project/
 from rest_framework import compat
+
 compat.md_filter_add_syntax_highlight = lambda md: False
+
 
 class UserCreateView(ListCreateAPIView):
     """
@@ -172,7 +174,7 @@ class DeliveriesView(ListCreateAPIView):
             users = User.objects.filter(midwife=user)
             model = Delivery.objects.filter(Q(user_id__in=[user.id for user in users]) | Q(user__id=user.id)).order_by(
                 '-created_at')
-        elif user.role  == USER_TYPE_CHEW:
+        elif user.role == USER_TYPE_CHEW:
             model = Delivery.objects.filter(user=user).order_by('-created_at')
         elif user.role == USER_TYPE_DHO:
             model = Delivery.objects.filter(user__district=user.district).order_by('-created_at')
@@ -241,40 +243,25 @@ class AppointmentView(ListCreateAPIView):
 
 
 class DashboardStatsView(APIView):
-    ''' View that handles dashboard data'''
-
     def get(self, request, format=None, **kwargs):
-        ''' Get date params from request '''
         get_params = dict(zip(request.GET.keys(), request.GET.values()))
-        created_at_from_param = get_params['from']
-        created_at_to_param = get_params['to']
+        date_format = '%Y-%m-%d'
 
-        ''' Extract year, month and day from requests '''
-        year_from, month_from, day_from = [int(x) for x in created_at_from_param.split("-")]
-        year_to, month_to, day_to = [int(x) for x in created_at_to_param.split("-")]
-        day_to += 1
-
-        ''' So we can manipulate the date object, we convert it here '''
-        created_at_from = timezone.datetime(year_from, month_from, day_from).replace(tzinfo=pytz.utc)
-        created_at_to_limit = timezone.datetime(year_to, month_to, day_to).replace(tzinfo=pytz.utc)
-
-        # Set number of months we are going to poll data for. We add + 1 to include the current month
-        number_of_months = (month_to - month_from) + 1
+        created_at_from = datetime.datetime.strptime(get_params['from'], date_format).replace(tzinfo=pytz.utc)
+        created_at_to_limit = datetime.datetime.strptime(get_params['to'], date_format).replace(tzinfo=pytz.utc) \
+                              + timezone.timedelta(days=1)
 
         all_months_range_data = []
-
+        first_date_range = True
         subcounty = request.user.village.parish.sub_county
         district = subcounty.county.district
         sub_counties = SubCounty.objects.filter(county__district=district)
 
         while created_at_from <= created_at_to_limit:
             '''We loop through all months for the data querried.
-            we do some ugly mutation on the dates so as to group the data in months '''
-            created_at_to = add_months(created_at_from, 1).replace(tzinfo=pytz.utc)
+            we do some mutation on the dates so as to group the data in months '''
+            created_at_to = self.generate_date_range(created_at_from, created_at_to_limit, first_date_range)
 
-            print("--------------------------------------------------------------------------------------------")
-            print("Month is " + created_at_from.strftime("%B"))
-            print("created_at_from is: " + str(created_at_from) + " and created_at_to is: " + str(created_at_to))
             all_subcounties = []
 
             if request.path == '/api/v1/mapping_encounters_stats':
@@ -286,12 +273,10 @@ class DashboardStatsView(APIView):
 
                 for subcounty in sub_counties:
                     total_girls_in_subcounty = Girl.objects.filter(Q(village__parish__sub_county=subcounty) &
-                                                Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to)).count()
+                                                                   Q(created_at__gte=created_at_from) & Q(
+                        created_at__lte=created_at_to)).count()
                     response["totalNumberOfGirlsMappedFrom" + subcounty.name] = total_girls_in_subcounty
-                    print('total girls in subcounty ' + str(total_girls_in_subcounty))
                     total_girls_in_all_subcounties += total_girls_in_subcounty
-
-                print('total girls in all subcounties ' + str(total_girls_in_all_subcounties))
 
                 girls = Girl.objects.filter(Q(age__gte=12) & Q(age__lte=15) & Q(user__district=district) &
                                             Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to))
@@ -333,7 +318,7 @@ class DashboardStatsView(APIView):
                     Q(girl__created_at__gte=created_at_from) & Q(girl__created_at__lte=created_at_to))
 
                 all_subcounties += [delivery.girl.village.parish.sub_county for delivery in deliveries
-                                    if delivery.girl.village.parish.sub_county.county.district == district]
+                                    if delivery.user.district == district]
 
                 # remove duplicate subcounties
                 all_subcounties = list(set(all_subcounties))
@@ -354,77 +339,22 @@ class DashboardStatsView(APIView):
             else:
                 print('-----Followups stats instead ----------')
 
-            created_at_from = add_months(created_at_from, 1).replace(tzinfo=pytz.utc)
-            print('end looping ... ' + str(created_at_from))
+            created_at_from = created_at_to + timezone.timedelta(days=1)
+            first_date_range = False
 
         return Response(all_months_range_data, 200)
 
-
-class DeliveriesStatsView(APIView):
-    """
-    Provides statistical data for deliveries statistics
-    Client query params
-    dashboard_stats?from=2019-10-01&to=2019-11-05
-
-    Server response
-    {
-      count: 0,
-      district: "Arua",
-      month: "November",
-      year: "2019",
-      subcounties: ["Subcounty1", "Subcounty2", "etc"],
-      deliveriesFromSubcounty1: 3,
-      deliveriesFromSubcounty2: 4,
-      etc: 10
-    }
-    """
-
-    def get(self, request, format=None, **kwargs):
-        print("get request")
-
-        get_params = dict(zip(request.GET.keys(), request.GET.values()))
-
-        created_at_from_param = get_params['from']
-        created_at_to_param = get_params['to']
-
-        year, month, day = [int(x) for x in created_at_from_param.split("-")]
-        created_at_from = timezone.datetime(year, month, day)
-
-        year, month, day = [int(x) for x in created_at_to_param.split("-")]
-        created_at_to = timezone.datetime(year, month, day)
-        print(created_at_from)
-
-        response = dict()
-        subcounty = request.user.village.parish.sub_county
-        district = subcounty.county.district
-
-        response["district"] = district.name
-        response["year"] = created_at_from.year
-        response["month"] = created_at_from.strftime("%B")
-
-        all_subcounties = []
-
-        deliveries = Delivery.objects.filter(
-            Q(girl__created_at__gte=created_at_from) & Q(girl__created_at__lte=created_at_to))
-
-        all_subcounties += [delivery.girl.village.parish.sub_county for delivery in deliveries
-                            if delivery.girl.village.parish.sub_county.county.district == district]
-
-        # remove duplicate subcounties
-        all_subcounties = list(set(all_subcounties))
-
-        response["subcounties"] = [subcounty.name for subcounty in all_subcounties]
-
-        all_deliveries_total = 0
-
-        for subcounty in all_subcounties:
-            delivery_total = Delivery.objects.filter(
-                girl__village__parish_id__in=[parish.id for parish in subcounty.parish_set.all()]).count()
-            response["deliveriesFromSubcounty" + subcounty.name] = delivery_total
-            all_deliveries_total += delivery_total
-
-        response["count"] = all_deliveries_total
-        return Response({"results": response}, 200)
+    def generate_date_range(self, created_at_from, created_at_to_limit, first_date_range):
+        if first_date_range:
+            created_at_to = created_at_from.replace(day=calendar.monthrange(created_at_from.year,
+                                                                            created_at_from.month)[1]) \
+                .replace(tzinfo=pytz.utc)
+        else:
+            if add_months(created_at_from, 1).replace(tzinfo=pytz.utc) > created_at_to_limit:
+                created_at_to = created_at_from.replace(day=created_at_to_limit.day).replace(tzinfo=pytz.utc)
+            else:
+                created_at_to = add_months(created_at_from, 1).replace(tzinfo=pytz.utc)
+        return created_at_to
 
 
 class SmsView(ListCreateAPIView):
@@ -474,6 +404,7 @@ class AirtimeDispatchView(APIView):
     Json body(example)
     {numbers": ["+25675XXXXXXX", "+25678XXXXXXX"], "amount": 500}
     """
+
     def post(self, request, format=None):
         airtime_module = AirtimeModule()
         airtime_module.send_airtime(request.data["numbers"], request.data["amount"])

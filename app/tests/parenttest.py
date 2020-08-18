@@ -29,4 +29,5 @@ class ParentTest(APITestCase):
                                         village=self.village, district=self.district, role=USER_TYPE_CHEW,
                                         midwife=self.midwife, email="chewtest@test.com")
         self.user = User.objects.create(is_staff=True, is_superuser=True)
-        self.client.force_authenticate(user=self.user)
+        self.client.force_authenticate(user=self.chew)
+        self.current_date = timezone.now()

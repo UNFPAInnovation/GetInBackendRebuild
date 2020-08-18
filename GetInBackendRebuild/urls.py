@@ -21,7 +21,7 @@ from rest_framework_swagger.views import get_swagger_view
 from app.notifier import NotifierView
 from app.views import GirlView, GirlDetailsView, UserCreateView, DistrictView, \
     CountyView, SubCountyView, ParishView, VillageView, HealthFacilityView, FollowUpView, \
-    DeliveriesView, MappingEncounterView, AppointmentView, DashboardStatsView, DeliveriesStatsView, SmsView, \
+    DeliveriesView, MappingEncounterView, AppointmentView, DashboardStatsView, SmsView, \
     ExtractView, AirtimeDispatchView
 from django.views.decorators.csrf import csrf_exempt
 

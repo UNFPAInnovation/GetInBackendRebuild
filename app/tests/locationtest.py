@@ -14,6 +14,7 @@ class TestLocation(ParentTest):
         self.assertEqual(Village.objects.count(), 1)
 
     def test_location_endpoints(self):
+        self.client.force_authenticate(user=self.user)
         url = reverse("districts")
         request = self.client.get(url)
         self.assertEqual(request.status_code, status.HTTP_200_OK)
