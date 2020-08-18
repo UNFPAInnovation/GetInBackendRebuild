@@ -193,3 +193,36 @@ class TestDashboardStats(ParentTest):
         response = self.client.get(url, kwargs)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json(), response_data)
+
+    def test_delivery_stats(self):
+        months = [
+            random.randint(1, self.current_date.month),
+            random.randint(1, self.current_date.month),
+        ]
+        for month in months:
+            last_name = get_random_string(length=7)
+            girl = Girl.objects.create(user=self.chew, first_name=get_random_string(length=7), marital_status=SINGLE,
+                                       last_name=last_name, dob=timezone.datetime(2000, 3, 3), village=self.village,
+                                       last_menstruation_date=timezone.datetime(2020, 3, 3),
+                                       phone_number="0756789" + str(random.randint(100, 999)),
+                                       education_level=PRIMARY_LEVEL)
+
+            Delivery.objects.create(girl=girl, user=self.chew, action_taken="Referred",
+                                    baby_birth_date=timezone.datetime(self.current_date.year, month, 1))
+
+        self.assertEqual(Girl.objects.count(), 2)
+        self.assertEqual(Delivery.objects.count(), 2)
+
+        from_date = timezone.now() - timezone.timedelta(weeks=8)
+        to_date = timezone.now() + timezone.timedelta(weeks=4)
+        to_date = timezone.datetime(to_date.year, to_date.month, from_date.day)
+
+        response_data = [{'subcounties': [], 'count': 0}, {'subcounties': [], 'count': 0},
+                         {'subcounties': ['BUBANDI'], 'deliveriesFromSubcountyBUBANDI': 2, 'count': 2},
+                         {'subcounties': [], 'count': 0}]
+        kwargs = {"from": "{0}-{1}-{2}".format(from_date.year, from_date.month, from_date.day),
+                  "to": "{0}-{1}-{2}".format(to_date.year, to_date.month, to_date.day)}
+        url = reverse("deliveries-stats")
+        response = self.client.get(url, kwargs)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json(), response_data)

@@ -296,23 +296,6 @@ class DashboardStatsView(APIView):
 
                 all_months_range_data.append(response)
             elif request.path == '/api/v1/deliveries_stats':
-                """
-                Provides statistical data for deliveries statistics
-                Client query params
-                dashboard_stats?from=2019-10-01&to=2019-11-05
-
-                Server response
-                {
-                count: 0,
-                district: "Arua",
-                month: "November",
-                year: "2019",
-                subcounties: ["Subcounty1", "Subcounty2", "etc"],
-                deliveriesFromSubcounty1: 3,
-                deliveriesFromSubcounty2: 4,
-                etc: 10
-                }
-                """
                 response = dict()
                 deliveries = Delivery.objects.filter(
                     Q(girl__created_at__gte=created_at_from) & Q(girl__created_at__lte=created_at_to))
