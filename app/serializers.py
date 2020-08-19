@@ -157,10 +157,12 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class HealthFacilityGetSerializer(serializers.ModelSerializer):
+    sub_county_id = serializers.IntegerField(write_only=True)
+
     class Meta:
         model = HealthFacility
         fields = (
-            'id', 'sub_county', 'name')
+            'id', 'sub_county', 'name', 'sub_county_id')
 
 
 class GirlSerializer(serializers.ModelSerializer):

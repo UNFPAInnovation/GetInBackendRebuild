@@ -45,15 +45,6 @@ class UserCreateView(ListCreateAPIView):
     filter_class = UserFilter
 
 
-class GirlCreateView(CreateAPIView):
-    """
-    Allows creation of user.
-    """
-    permission_classes = [IsAuthenticated, DRYPermissions]
-    serializer_class = GirlSerializer
-    queryset = Girl.objects.all()
-
-
 class GirlView(ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
@@ -132,13 +123,13 @@ class VillageView(ListCreateAPIView):
 class HealthFacilityView(ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
-        if user.role in [USER_TYPE_DHO, USER_TYPE_CHEW, USER_TYPE_MIDWIFE]:
-            model = HealthFacility.objects.filter(user__district=user.district)
+
+        if user.role in [USER_TYPE_DHO]:
+            model = HealthFacility.objects.filter(sub_county__county__district=user.district)
         else:
             model = HealthFacility.objects.all()
         return model
 
-    queryset = HealthFacility.objects.all()
     serializer_class = HealthFacilityGetSerializer
     permission_classes = (IsAdminUser, IsAuthenticated)
 
