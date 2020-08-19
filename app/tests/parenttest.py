@@ -36,6 +36,12 @@ class ParentTest(APITestCase):
                                            phone="0756677888", password="0756677888",
                                            gender=GENDER_FEMALE, village=self.village,
                                            district=self.district, role=USER_TYPE_MIDWIFE, email="midwifetest2@test.com")
+        self.midwife3 = User.objects.create(username="midwife43", first_name="mid",
+                                            last_name="wife43" + get_random_string(length=4),
+                                            phone="0756677883", password="0756677883",
+                                            gender=GENDER_MALE, village=self.village2,
+                                            district=self.district2, role=USER_TYPE_MIDWIFE,
+                                            email="midwifetest3@test.com")
         self.chew_phone_number = "075687" + str(random.randint(1000, 9999))
         self.chew = User.objects.create(username="vhtuservht", first_name="vht", last_name="uservht",
                                         phone=self.chew_phone_number, password=self.chew_phone_number, gender=GENDER_FEMALE,

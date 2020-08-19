@@ -285,9 +285,6 @@ class DashboardStatsView(APIView):
                 response["count"] = all_deliveries_total
 
                 all_months_range_data.append(response)
-            else:
-                print('-----Followups stats instead ----------')
-
             created_at_from = created_at_to + timezone.timedelta(days=1)
             first_date_range = False
 
@@ -307,7 +304,7 @@ class DashboardStatsView(APIView):
 
 
 class SmsView(ListCreateAPIView):
-    permission_classes = (DRYPermissions, IsAuthenticated)
+    permission_classes = (IsAdminUser, IsAuthenticated)
     serializer_class = SmsModelSerializer
 
     def get_queryset(self):
