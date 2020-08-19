@@ -286,7 +286,7 @@ class CustomTokenSerializer(TokenSerializer):
 
 
 class SmsModelSerializer(serializers.ModelSerializer):
-    recipient = UserGetSerializer()
+    recipient = UserGetSerializer(read_only=True)
 
     class Meta:
         model = SmsModel

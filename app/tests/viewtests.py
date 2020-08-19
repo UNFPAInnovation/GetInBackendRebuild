@@ -211,3 +211,32 @@ class TestViews(ParentTest):
         request = self.client.get(url)
         self.assertEqual(request.status_code, status.HTTP_200_OK)
         self.assertEqual(request.json()['count'], 5)
+
+    def test_sms_view(self):
+        """
+        Test sending and viewing of sent sms.
+        Midwife and CHEW are restricted from using this feature
+        DHO, Admin and Developer are the only users allowed
+        """
+        SmsModel.objects.create(recipient=self.chew, message="test", message_id="abc234", status="received", sender_id=self.dho.id)
+        SmsModel.objects.create(recipient=self.midwife, message="test", message_id="abc235", status="received", sender_id=self.dho.id)
+
+        url = reverse("sms")
+        self.client.force_authenticate(user=self.dho)
+
+        request = self.client.get(url)
+        self.assertEqual(request.status_code, status.HTTP_200_OK)
+        self.assertEqual(request.json()['count'], 2)
+
+        self.client.force_authenticate(user=self.chew)
+        request = self.client.get(url)
+        self.assertEqual(request.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.force_authenticate(user=self.midwife)
+        request = self.client.get(url)
+        self.assertEqual(request.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.force_authenticate(user=self.user)
+        request = self.client.get(url)
+        self.assertEqual(request.status_code, status.HTTP_200_OK)
+        self.assertEqual(request.json()['count'], 2)
