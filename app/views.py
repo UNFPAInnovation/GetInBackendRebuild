@@ -18,12 +18,12 @@ from app.extractor import extract_excel_data, extract_excel_user_data_from_sheet
 from app.filters import GirlFilter, FollowUpFilter, MappingEncounterFilter, DeliveryFilter, AppointmentFilter, \
     UserFilter
 from app.models import Girl, District, County, SubCounty, Parish, Village, \
-    HealthFacility, FollowUp, Delivery, MappingEncounter, AppointmentEncounter, Appointment, SmsModel
+    HealthFacility, FollowUp, Delivery, MappingEncounter, Appointment, SmsModel
 from app.permissions import IsPostOrIsAuthenticated
 from app.serializers import UserSerializer, User, GirlSerializer, DistrictGetSerializer, \
     CountyGetSerializer, SubCountyGetSerializer, ParishGetSerializer, VillageGetSerializer, HealthFacilityGetSerializer, \
     FollowUpGetSerializer, FollowUpPostSerializer, DeliveryPostSerializer, DeliveryGetSerializer, \
-    MappingEncounterSerializer, AppointmentEncounterSerializer, AppointmentSerializer, SmsModelSerializer
+    MappingEncounterSerializer, AppointmentSerializer, SmsModelSerializer
 
 from app.utils.constants import USER_TYPE_MIDWIFE, USER_TYPE_CHEW, USER_TYPE_DHO
 from app.utils.utilities import add_months
@@ -190,29 +190,6 @@ class DeliveriesView(ListCreateAPIView):
             return DeliveryPostSerializer
         else:
             return DeliveryGetSerializer
-
-
-class AppointmentEncounterView(ListCreateAPIView):
-    def get_queryset(self):
-        # todo reactivate after matching midwife and vht
-        # user = self.request.user
-        # if user.role == USER_TYPE_MIDWIFE:
-        #     users = User.objects.filter(midwife=user)
-        #     model = AppointmentEncounter.objects.filter(
-        #         Q(user_id__in=[user.id for user in users]) | Q(user__id=user.id)).order_by('-created_at')
-        # elif user.role in [USER_TYPE_CHEW]:
-        #     model = AppointmentEncounter.objects.filter(user=user).order_by('-created_at')
-        # elif user.role in [USER_TYPE_DHO]:
-        #     model = AppointmentEncounter.objects.filter(user__district=user.district).order_by('-created_at')
-        # else:
-        #     model = AppointmentEncounter.objects.all().order_by('-created_at')
-        model = AppointmentEncounter.objects.all().order_by('-created_at')
-        return model
-
-    queryset = AppointmentEncounter.objects.all()
-    permission_classes = (IsAuthenticated, DRYPermissions)
-    filter_class = DeliveryFilter
-    serializer_class = AppointmentEncounterSerializer
 
 
 class AppointmentView(ListCreateAPIView):
