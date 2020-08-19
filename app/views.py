@@ -233,10 +233,8 @@ class AppointmentView(ListCreateAPIView):
         else:
             # return everything for super users and developers
             appointments = Appointment.objects.all().order_by('-created_at')
-        # appointments = Appointment.objects.all().order_by('-created_at')
         return appointments
 
-    queryset = Appointment.objects.all()
     permission_classes = (IsAuthenticated, DRYPermissions)
     filter_class = AppointmentFilter
     serializer_class = AppointmentSerializer

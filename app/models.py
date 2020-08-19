@@ -160,7 +160,7 @@ class User(AbstractUser):
     midwife = models.ForeignKey('User', on_delete=models.DO_NOTHING, blank=True, null=True)
     firebase_device_id = models.CharField(max_length=300, blank=True, null=True, default="")
     health_facility = models.ForeignKey(HealthFacility, on_delete=models.CASCADE, blank=True, null=True)
-    # allows use to access these fields in /auth/me
+    # allows user to access these fields in /auth/me
     REQUIRED_FIELDS = ["phone", "role", "email"]
 
     class Meta:

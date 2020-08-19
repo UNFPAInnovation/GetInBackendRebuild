@@ -23,11 +23,21 @@ class ParentTest(APITestCase):
         self.midwife = User.objects.create(username="midwife40", first_name="mid", last_name="wife40" + get_random_string(length=4),
                                            phone=self.midwife_phone_number, password=self.midwife_phone_number, gender=GENDER_FEMALE, village=self.village,
                                            district=self.district, role=USER_TYPE_MIDWIFE, email="midwifetest@test.com")
+        self.midwife2 = User.objects.create(username="midwife41", first_name="mid",
+                                           last_name="wife41" + get_random_string(length=4),
+                                           phone="0756677888", password="0756677888",
+                                           gender=GENDER_FEMALE, village=self.village,
+                                           district=self.district, role=USER_TYPE_MIDWIFE, email="midwifetest2@test.com")
         self.chew_phone_number = "075687" + str(random.randint(1000, 9999))
         self.chew = User.objects.create(username="vhtuservht", first_name="vht", last_name="uservht",
                                         phone=self.chew_phone_number, password=self.chew_phone_number, gender=GENDER_FEMALE,
                                         village=self.village, district=self.district, role=USER_TYPE_CHEW,
                                         midwife=self.midwife, email="chewtest@test.com")
+        self.dho = User.objects.create(username="dhodho", first_name="dho", last_name="dho",
+                                       phone="0756879444", password="0756879444",
+                                       gender=GENDER_FEMALE,
+                                       village=self.village, district=self.district, role=USER_TYPE_DHO,
+                                       midwife=self.midwife, email="dhodho@test.com")
         self.user = User.objects.create(is_staff=True, is_superuser=True)
         self.client.force_authenticate(user=self.chew)
         self.current_date = timezone.now()
