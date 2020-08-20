@@ -114,10 +114,5 @@ class TestMSI(ParentTest):
                                    phone_number="0756789543",
                                    education_level=PRIMARY_LEVEL, next_of_kin_phone_number="0756789542")
         response = send_data_to_msi_webhook(girl)
-        print(response.json())
-        print(response.status_code)
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.json()['successful'])
-        # todo stub the response
-        # self.assertEqual(response.json(), expected_data)
