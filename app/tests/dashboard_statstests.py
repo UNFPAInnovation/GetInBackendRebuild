@@ -151,40 +151,33 @@ class TestDashboardStats(ParentTest):
 
         second_date = add_months(from_date, 1)
         third_date = add_months(second_date, 1)
-        forth_date = add_months(third_date, 1)
 
         response_data = [
             {
                 'district': 'BUNDIBUGYO',
                 'year': 2020, 'month': from_date.strftime("%B"),
-                'totalNumberOfGirlsMappedFromBUBANDI': 0,
+                'totalNumberOfGirlsMappedFromBUBANDI': 1,
                 'mappedGirlsInAgeGroup12_15': 0, 'mappedGirlsInAgeGroup16_19': 0,
-                'mappedGirlsInAgeGroup20_24': 0,
-                'count': 0, 'subcounties': ['BUBANDI']
+                'mappedGirlsInAgeGroup20_24': 1,
+                'count': 1, 'subcounties': ['BUBANDI']
             },
             {
                 'district': 'BUNDIBUGYO',
                 'year': second_date.year,
                 'month': second_date.strftime("%B"),
-                'totalNumberOfGirlsMappedFromBUBANDI': 1,
-                'mappedGirlsInAgeGroup12_15': 0,
-                'mappedGirlsInAgeGroup16_19': 0,
-                'mappedGirlsInAgeGroup20_24': 1,
-                'count': 1, 'subcounties': ['BUBANDI']},
-            {
-                'district': 'BUNDIBUGYO', 'year': third_date.year,
-                'month': third_date.strftime("%B"),
                 'totalNumberOfGirlsMappedFromBUBANDI': 5,
-                'mappedGirlsInAgeGroup12_15': 2, 'mappedGirlsInAgeGroup16_19': 2,
+                'mappedGirlsInAgeGroup12_15': 2,
+                'mappedGirlsInAgeGroup16_19': 2,
                 'mappedGirlsInAgeGroup20_24': 1,
                 'count': 5, 'subcounties': ['BUBANDI']},
             {
-                'district': 'BUNDIBUGYO', 'year': forth_date.year, 'month': forth_date.strftime("%B"),
+                'district': 'BUNDIBUGYO', 'year': third_date.year,
+                'month': third_date.strftime("%B"),
                 'totalNumberOfGirlsMappedFromBUBANDI': 0,
-                'mappedGirlsInAgeGroup12_15': 0, 'mappedGirlsInAgeGroup16_19': 0,
+                'mappedGirlsInAgeGroup12_15': 0,
+                'mappedGirlsInAgeGroup16_19': 0,
                 'mappedGirlsInAgeGroup20_24': 0,
-                'count': 0, 'subcounties': ['BUBANDI']
-            }
+                'count': 0, 'subcounties': ['BUBANDI']}
         ]
 
         kwargs = {"from": "{0}-{1}-{2}".format(from_date.year, from_date.month, from_date.day),
@@ -217,7 +210,7 @@ class TestDashboardStats(ParentTest):
         to_date = timezone.now() + timezone.timedelta(weeks=4)
         to_date = timezone.datetime(to_date.year, to_date.month, from_date.day)
 
-        response_data = [{'subcounties': [], 'count': 0}, {'subcounties': [], 'count': 0},
+        response_data = [{'subcounties': [], 'count': 0},
                          {'subcounties': ['BUBANDI'], 'deliveriesFromSubcountyBUBANDI': 2, 'count': 2},
                          {'subcounties': [], 'count': 0}]
         kwargs = {"from": "{0}-{1}-{2}".format(from_date.year, from_date.month, from_date.day),
