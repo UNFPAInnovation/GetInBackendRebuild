@@ -4,15 +4,18 @@ import random
 import traceback
 
 import pytz
+import requests
 from django.db.models import Q
 from django.utils import timezone
+from rest_framework import status
 from rest_framework.parsers import JSONParser
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from app.models import Girl, Parish, Village, FollowUp, Delivery, MappingEncounter, \
-    Appointment, AppointmentEncounter, Referral, FamilyPlanning, Observation
-from app.serializers import User
+    Appointment, AppointmentEncounter, Referral, FamilyPlanning, Observation, MSIService
+from app.serializers import User, GirlMSISerializer, GirlMSIDateFormattedSerializer
 
 import logging
 
@@ -20,9 +23,21 @@ from app.utils.constants import FOLLOW_UP_FORM_CHEW_NAME, APPOINTMENT_FORM_CHEW_
     MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME, APPOINTMENT_FORM_MIDWIFE_NAME, FOLLOW_UP_FORM_MIDWIFE_NAME, USER_TYPE_CHEW, \
     MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME, POSTNATAL_FORM_CHEW_NAME, POSTNATAL_FORM_MIDWIFE_NAME, ATTENDED, \
     PRE, POST, EXPECTED, MAP_GIRL_ARUA_CHEW_FORM_NAME, MAP_GIRL_ARUA_MIDWIFE_FORM_NAME, MAP_GIRL_KAMPALA_CHEW_FORM_NAME, \
-    MAP_GIRL_KAMPALA_MIDWIFE_FORM_NAME, DEFAULT_TAG
+    MAP_GIRL_KAMPALA_MIDWIFE_FORM_NAME, DEFAULT_TAG, MSI_BASE_URL
 
 logger = logging.getLogger('testlogger')
+
+
+def send_data_to_msi_webhook(girl):
+    try:
+        serializer = GirlMSISerializer(girl)
+        actual_data = JSONRenderer().render(serializer.data)
+    except Exception as e:
+        print(e)
+        serializer = GirlMSIDateFormattedSerializer(girl)
+        actual_data = JSONRenderer().render(serializer.data)
+    headers = {'Authorization': 'Basic bWF0aGlhc191ZzptYXRoaWFzMDkxMV8='}
+    return requests.post(url=MSI_BASE_URL + "msi/api/generateMaternityVoucher", data=actual_data, headers=headers)
 
 
 class ODKWebhook(APIView):
@@ -36,15 +51,20 @@ class ODKWebhook(APIView):
     def post(self, request, *args, **kwargs):
         print("post request called")
         json_result = request.data
-        print(json_result)
+        json_result_string = str(request.data)
+
+        try:
+            webhooklog = open('webhook_log.txt', 'a')
+            webhooklog.write("\n\n" + str(timezone.now()) + "\n" + str(json_result))
+            webhooklog.close()
+        except Exception as e:
+            print(e)
 
         if type(json_result) != dict:
-            print('not dict')
             json_result = str(json_result).replace('\'', "\"")
             json_result = json.loads(json_result)
 
         form_meta_data = json_result["form_meta_data"]
-        print(form_meta_data)
 
         try:
             form_meta_data = json.loads(form_meta_data)
@@ -57,22 +77,19 @@ class ODKWebhook(APIView):
 
         try:
             user_id = form_meta_data["USER_ID"]
-            print('user id')
-            print(user_id)
         except KeyError:
             print(traceback.print_exc())
 
-        if MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME in json_result or MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME in json_result \
-                or MAP_GIRL_ARUA_CHEW_FORM_NAME in json_result or MAP_GIRL_ARUA_MIDWIFE_FORM_NAME in json_result \
-                or MAP_GIRL_KAMPALA_CHEW_FORM_NAME in json_result or MAP_GIRL_KAMPALA_MIDWIFE_FORM_NAME in json_result \
-                or DEFAULT_TAG in json_result:
+        if MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME in json_result_string or MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME in json_result_string \
+                or MAP_GIRL_ARUA_CHEW_FORM_NAME in json_result_string or MAP_GIRL_ARUA_MIDWIFE_FORM_NAME in json_result_string \
+                or MAP_GIRL_KAMPALA_CHEW_FORM_NAME in json_result_string or MAP_GIRL_KAMPALA_MIDWIFE_FORM_NAME in json_result_string:
             print("mapping forms matched")
             return self.process_mapping_encounter(json_result, user_id)
-        elif FOLLOW_UP_FORM_CHEW_NAME in json_result or FOLLOW_UP_FORM_MIDWIFE_NAME in json_result:
+        elif FOLLOW_UP_FORM_CHEW_NAME in json_result_string or FOLLOW_UP_FORM_MIDWIFE_NAME in json_result_string:
             return self.process_follow_up_and_delivery_encounter(girl_id, json_result, user_id)
-        elif APPOINTMENT_FORM_CHEW_NAME in json_result or APPOINTMENT_FORM_MIDWIFE_NAME in json_result:
+        elif APPOINTMENT_FORM_MIDWIFE_NAME in json_result_string:
             return self.process_appointment_encounter(girl_id, json_result, user_id)
-        elif POSTNATAL_FORM_CHEW_NAME in json_result or POSTNATAL_FORM_MIDWIFE_NAME in json_result:
+        elif POSTNATAL_FORM_CHEW_NAME in json_result_string or POSTNATAL_FORM_MIDWIFE_NAME in json_result_string:
             return self.postnatal_encounter(girl_id, json_result, user_id)
         return Response({'result': 'failure'}, 400)
 
@@ -167,16 +184,12 @@ class ODKWebhook(APIView):
             except KeyError or IndexError:
                 print(traceback.print_exc())
 
-            print("save form data")
-
             user = User.objects.get(id=user_id)
             print(user)
 
             # incase the village does not exist use the health worker's village
             if not village:
                 village = user.village
-
-            print('village')
 
             # incase the girl already exists with the same name,
             # create a new girl and swap the new girl for the old one with updated data
@@ -218,7 +231,6 @@ class ODKWebhook(APIView):
                     # save that date and create an anc visit
                     anc_previous_group = mapped_girl_object["ANCAppointmentPreviousGroup"][0]
                     attended_anc_visit = anc_previous_group["AttendedANCVisit"][0] == "yes"
-                    print("attended anc visit " + str(attended_anc_visit))
 
                     if attended_anc_visit:
                         previous_appointment_date = anc_previous_group["ANCDatePrevious"][0]
@@ -248,10 +260,22 @@ class ODKWebhook(APIView):
             mapping_encounter.girl = girl
             mapping_encounter.save()
             self.save_family_planning_methods_in_mapping_encounter(mapped_girl_object, mapping_encounter)
-            return Response({'result': 'success'}, 200)
+            self.get_and_save_msi_voucher_to_girl(girl)
+            return Response({'result': 'success'}, status.HTTP_200_OK)
         except Exception:
             print(traceback.print_exc())
-        return Response({'result': 'failure'}, 400)
+        return Response({'result': 'failure'}, status.HTTP_400_BAD_REQUEST)
+
+    def get_and_save_msi_voucher_to_girl(self, girl):
+        try:
+            webhook_response = send_data_to_msi_webhook(girl)
+            webhook_response = webhook_response.json()
+            if webhook_response['successful']:
+                voucher_number = webhook_response['eVoucher']['code']
+                girl.voucher_number = voucher_number
+                girl.save(update_fields=['voucher_number'])
+        except Exception as e:
+            print(e)
 
     def save_family_planning_methods_in_mapping_encounter(self, mapped_girl_object, mapping_encounter):
         try:
@@ -296,9 +320,6 @@ class ODKWebhook(APIView):
             if previous_appointment_date:
                 # if girl has ever attended ANC
                 # Pick ANC date from card
-                print("has previous appointment")
-                print(previous_appointment_date)
-                print(type(previous_appointment_date))
                 # assume that a previous ANC appointment was attended
                 year, month, day = [int(x) for x in previous_appointment_date.split("-")]
                 previous_appointment_date = timezone.datetime(year, month, day)
@@ -310,13 +331,7 @@ class ODKWebhook(APIView):
 
             if user.role == USER_TYPE_CHEW:
                 # create auto appointment is the user is a chew
-                print("no previous appointment")
                 last_menstruation_date = girl.last_menstruation_date
-                print(last_menstruation_date)
-
-                print(current_date)
-                print(last_menstruation_date)
-                print(current_date - last_menstruation_date)
 
                 lmd_days = (current_date - last_menstruation_date).days
                 print("lmd_days " + str(lmd_days))
@@ -350,8 +365,6 @@ class ODKWebhook(APIView):
                     else:
                         appointment_date = current_date + timezone.timedelta(days=4)
 
-                print("create auto appointment")
-                print(appointment_date)
                 appointment = Appointment(girl=girl, user=user, date=appointment_date, status=EXPECTED)
                 appointment.save()
 
@@ -362,7 +375,14 @@ class ODKWebhook(APIView):
                 follow_up_object = json_result[FOLLOW_UP_FORM_CHEW_NAME]
             except Exception:
                 print(traceback.print_exc())
+            try:
                 follow_up_object = json_result[FOLLOW_UP_FORM_MIDWIFE_NAME]
+            except Exception:
+                print(traceback.print_exc())
+            try:
+                follow_up_object = json_result[DEFAULT_TAG]
+            except KeyError:
+                print(traceback.print_exc())
             print(follow_up_object)
 
             fever = False
@@ -407,18 +427,13 @@ class ODKWebhook(APIView):
             user = User.objects.get(id=user_id)
 
             if action_taken_by_health_person == "appointment":
-                print("action taken appointment")
                 next_appointment = follow_up_object["schedule_appointment_group"][0]["schedule_appointment"][0]
                 appointment = Appointment(girl=girl, user=user, date=next_appointment)
                 appointment.save()
             elif action_taken_by_health_person == "delivery":
-                print("action taken delivery")
                 self.save_delivery(follow_up_object, girl, user)
             elif action_taken_by_health_person in ["referral", "referred"]:
-                referral = Referral(girl=girl, user=user, reason="critical")
-                referral.save()
-
-            print('save results')
+                Referral.objects.create(girl=girl, user=user, reason="critical")
 
             observation = Observation(blurred_vision=blurred_vision, bleeding_heavily=bleeding, fever=fever,
                                       swollen_feet=swollenfeet)
@@ -486,7 +501,6 @@ class ODKWebhook(APIView):
     def save_family_planning_methods_in_delivery(self, contraceptive_group, delivery):
         try:
             contraceptive_method = str(contraceptive_group["ContraceptiveMethod"][0])
-            print("contraceptive method " + contraceptive_method)
 
             # separate the contraceptive methods which are in a string 'IUD condoms pills'
             if " " in contraceptive_method:
@@ -512,10 +526,13 @@ class ODKWebhook(APIView):
     def process_appointment_encounter(self, girl_id, json_result, user_id):
         try:
             try:
-                appointment_object = json_result[APPOINTMENT_FORM_CHEW_NAME]
+                appointment_object = json_result[APPOINTMENT_FORM_MIDWIFE_NAME]
             except Exception:
                 print(traceback.print_exc())
-                appointment_object = json_result[APPOINTMENT_FORM_MIDWIFE_NAME]
+            try:
+                appointment_object = json_result[DEFAULT_TAG]
+            except KeyError:
+                print(traceback.print_exc())
 
             needed_ambulance = False
             used_ambulance = False
@@ -527,7 +544,6 @@ class ODKWebhook(APIView):
             blurred_vision = False
 
             try:
-                # captured in midwife appointment
                 ambulance_group = appointment_object["ambulance_group"][0]
                 needed_ambulance = ambulance_group["needed_ambulance"][0] == "yes"
                 used_ambulance = ambulance_group["used_ambulance"][0] == "yes"
@@ -542,30 +558,25 @@ class ODKWebhook(APIView):
                 missed_anc_reason = missed_anc_before_group2["missed_anc_reason"][0]
                 if missed_anc_reason == "Other":
                     missed_anc_reason = missed_anc_before_group2["missed_anc_reason_other"][0]
-            else:
-                missed_anc_reason = appointment_object["appointment_soon_group"][0]
-                appointment_method = missed_anc_reason["appointment_method"][0]
-
-                try:
-                    # captured in chew appointment
-                    observations1 = appointment_object["observations1"][0]
-                    bleeding = observations1["bleeding"][0] == "yes"
-                    fever = observations1["fever"][0] == "yes"
-
-                    observations2 = appointment_object["observations2"][0]
-                    swollenfeet = observations2["swollenfeet"][0] == "yes"
-                    blurred_vision = observations2["blurred_vision"][0] == "yes"
-                except Exception:
-                    print(traceback.print_exc())
 
             action_taken_group = appointment_object["action_taken_group"][0]
             action_taken = replace_underscore(action_taken_group["action_taken_meeting_girl"][0])
+            if action_taken == 'other':
+                action_taken = replace_underscore(action_taken_group["action_taken_other"][0])
 
             schedule_appointment_group = appointment_object["schedule_appointment_group"][0]
             next_appointment_date = schedule_appointment_group["schedule_appointment"][0]
 
             girl = Girl.objects.get(id=girl_id)
             user = User.objects.get(id=user_id)
+
+            try:
+                has_voucher = appointment_object["voucher_received_group"][0]["has_voucher"][0] == "yes"
+                if has_voucher:
+                    msi_service = appointment_object["voucher_redeem_group"][0]["voucher_services"][0]
+                    MSIService.objects.create(girl=girl, option=msi_service)
+            except Exception as e:
+                print(e)
 
             observation = Observation(blurred_vision=blurred_vision, bleeding_heavily=bleeding, fever=fever,
                                       swollen_feet=swollenfeet)
@@ -594,8 +605,14 @@ class ODKWebhook(APIView):
             postnatal_object = json_result[POSTNATAL_FORM_CHEW_NAME]
         except Exception:
             print(traceback.print_exc())
+        try:
             postnatal_object = json_result[POSTNATAL_FORM_MIDWIFE_NAME]
-        print(postnatal_object)
+        except Exception:
+            print(traceback.print_exc())
+        try:
+            postnatal_object = json_result[DEFAULT_TAG]
+        except Exception:
+            print(traceback.print_exc())
 
         girl = Girl.objects.get(id=girl_id)
         user = User.objects.get(id=user_id)

@@ -11,4 +11,5 @@ install: # => 5
 before_script: # => 6
   - psql -c 'create database travis_ci_test;' -U postgres
 script: # => 7
-  - yes yes | python manage.py test
+  - yes yes | coverage run --source='.' manage.py test
+  - coverage report --omit 'venv/*','app/migrations/*','app/tests/*','GetInBackendRebuild/wsgi.py','app/__init__.py','app/utils/__init__.py'

@@ -7,7 +7,7 @@ from rest_framework_jwt.utils import jwt_payload_handler
 
 from GetInBackendRebuild.settings import SECRET_KEY
 from app.models import User, District, County, SubCounty, Parish, Village, Girl, HealthFacility, FollowUp, Delivery, \
-    MappingEncounter, AppointmentEncounter, Appointment, SmsModel, Observation, FamilyPlanning, Region
+    MappingEncounter, AppointmentEncounter, Appointment, SmsModel, Observation, FamilyPlanning, Region, MSIService
 
 
 def create_token(user=None):
@@ -51,6 +51,12 @@ class LocationMSISerializer(serializers.Field):
             }
         }
         return data
+
+
+class MSIServicesSerializer(serializers.Field):
+    def to_representation(self, girl):
+        msi_services = MSIService.objects.filter(girl=girl)
+        return ",".join([service.option for service in msi_services])
 
 
 class UserPostSerializer(serializers.ModelSerializer):
@@ -151,15 +157,18 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class HealthFacilityGetSerializer(serializers.ModelSerializer):
+    sub_county_id = serializers.IntegerField(write_only=True)
+
     class Meta:
         model = HealthFacility
         fields = (
-            'id', 'sub_county', 'name')
+            'id', 'sub_county', 'name', 'sub_county_id')
 
 
 class GirlSerializer(serializers.ModelSerializer):
     village = VillageGetSerializer(many=False, read_only=True)
     village_id = serializers.IntegerField(write_only=True)
+    services_received = MSIServicesSerializer(source='*', read_only=True)
 
     class Meta:
         model = Girl
@@ -167,10 +176,29 @@ class GirlSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'first_name', 'last_name', 'village', 'village_id', 'phone_number', 'trimester',
             'next_of_kin_phone_number', 'education_level', 'marital_status',
+            'last_menstruation_date', 'dob', 'user', 'odk_instance_id', 'age', 'completed_all_visits', 'voucher_number',
+            'pending_visits', 'missed_visits', 'services_received', 'created_at')
+
+
+class GirlMSIDateFormattedSerializer(serializers.ModelSerializer):
+    village = VillageGetSerializer(many=False, read_only=True)
+    village_id = serializers.IntegerField(write_only=True)
+    location = LocationMSISerializer(source='village', read_only=True)
+    user = UserGetSerializer(read_only=True)
+    dob = serializers.DateTimeField(format="%Y-%m-%d", read_only=True)
+    last_menstruation_date = serializers.DateTimeField(format="%Y-%m-%d", read_only=True)
+
+    class Meta:
+        model = Girl
+        # list all the fields since the age property is not picked up by __all__
+        fields = (
+            'id', 'first_name', 'last_name', 'village', 'village_id', 'location', 'phone_number', 'trimester',
+            'next_of_kin_phone_number', 'education_level', 'marital_status',
             'last_menstruation_date', 'dob', 'user', 'odk_instance_id', 'age', 'completed_all_visits',
             'pending_visits', 'missed_visits', 'created_at')
 
 
+# This is a preventive measure to make tests work. Some depend on Date and others on DateTime
 class GirlMSISerializer(serializers.ModelSerializer):
     village = VillageGetSerializer(many=False, read_only=True)
     village_id = serializers.IntegerField(write_only=True)
@@ -275,7 +303,7 @@ class CustomTokenSerializer(TokenSerializer):
 
 
 class SmsModelSerializer(serializers.ModelSerializer):
-    recipient = UserGetSerializer()
+    recipient = UserGetSerializer(read_only=True)
 
     class Meta:
         model = SmsModel

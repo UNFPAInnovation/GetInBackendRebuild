@@ -160,7 +160,7 @@ class User(AbstractUser):
     midwife = models.ForeignKey('User', on_delete=models.DO_NOTHING, blank=True, null=True)
     firebase_device_id = models.CharField(max_length=300, blank=True, null=True, default="")
     health_facility = models.ForeignKey(HealthFacility, on_delete=models.CASCADE, blank=True, null=True)
-    # allows use to access these fields in /auth/me
+    # allows user to access these fields in /auth/me
     REQUIRED_FIELDS = ["phone", "role", "email"]
 
     class Meta:
@@ -235,7 +235,7 @@ class Girl(models.Model):
     missed_visits = models.IntegerField(default=0, validators=[MaxValueValidator(3), MinValueValidator(0)])
     completed_all_visits = models.BooleanField(default=False, blank=True, null=True)
     odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
-    voucher_card = models.CharField(max_length=250, blank=True, null=True)
+    voucher_number = models.CharField(max_length=250, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

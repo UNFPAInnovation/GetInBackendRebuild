@@ -18,12 +18,12 @@ from app.extractor import extract_excel_data, extract_excel_user_data_from_sheet
 from app.filters import GirlFilter, FollowUpFilter, MappingEncounterFilter, DeliveryFilter, AppointmentFilter, \
     UserFilter
 from app.models import Girl, District, County, SubCounty, Parish, Village, \
-    HealthFacility, FollowUp, Delivery, MappingEncounter, AppointmentEncounter, Appointment, SmsModel
+    HealthFacility, FollowUp, Delivery, MappingEncounter, Appointment, SmsModel
 from app.permissions import IsPostOrIsAuthenticated
 from app.serializers import UserSerializer, User, GirlSerializer, DistrictGetSerializer, \
     CountyGetSerializer, SubCountyGetSerializer, ParishGetSerializer, VillageGetSerializer, HealthFacilityGetSerializer, \
     FollowUpGetSerializer, FollowUpPostSerializer, DeliveryPostSerializer, DeliveryGetSerializer, \
-    MappingEncounterSerializer, AppointmentEncounterSerializer, AppointmentSerializer, SmsModelSerializer
+    MappingEncounterSerializer, AppointmentSerializer, SmsModelSerializer
 
 from app.utils.constants import USER_TYPE_MIDWIFE, USER_TYPE_CHEW, USER_TYPE_DHO
 from app.utils.utilities import add_months
@@ -31,7 +31,9 @@ from app.utils.utilities import add_months
 # disabled the markdown manually
 # https://www.reddit.com/r/django/comments/d5ob15/help_drf_markdown_is_optional_but_my_project/
 from rest_framework import compat
+
 compat.md_filter_add_syntax_highlight = lambda md: False
+
 
 class UserCreateView(ListCreateAPIView):
     """
@@ -41,15 +43,6 @@ class UserCreateView(ListCreateAPIView):
     serializer_class = UserSerializer
     queryset = User.objects.all()
     filter_class = UserFilter
-
-
-class GirlCreateView(CreateAPIView):
-    """
-    Allows creation of user.
-    """
-    permission_classes = [IsAuthenticated, DRYPermissions]
-    serializer_class = GirlSerializer
-    queryset = Girl.objects.all()
 
 
 class GirlView(ListCreateAPIView):
@@ -130,13 +123,13 @@ class VillageView(ListCreateAPIView):
 class HealthFacilityView(ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
-        if user.role in [USER_TYPE_DHO, USER_TYPE_CHEW, USER_TYPE_MIDWIFE]:
-            model = HealthFacility.objects.filter(user__district=user.district)
+
+        if user.role in [USER_TYPE_DHO]:
+            model = HealthFacility.objects.filter(sub_county__county__district=user.district)
         else:
             model = HealthFacility.objects.all()
         return model
 
-    queryset = HealthFacility.objects.all()
     serializer_class = HealthFacilityGetSerializer
     permission_classes = (IsAdminUser, IsAuthenticated)
 
@@ -172,7 +165,7 @@ class DeliveriesView(ListCreateAPIView):
             users = User.objects.filter(midwife=user)
             model = Delivery.objects.filter(Q(user_id__in=[user.id for user in users]) | Q(user__id=user.id)).order_by(
                 '-created_at')
-        elif user.role  == USER_TYPE_CHEW:
+        elif user.role == USER_TYPE_CHEW:
             model = Delivery.objects.filter(user=user).order_by('-created_at')
         elif user.role == USER_TYPE_DHO:
             model = Delivery.objects.filter(user__district=user.district).order_by('-created_at')
@@ -188,29 +181,6 @@ class DeliveriesView(ListCreateAPIView):
             return DeliveryPostSerializer
         else:
             return DeliveryGetSerializer
-
-
-class AppointmentEncounterView(ListCreateAPIView):
-    def get_queryset(self):
-        # todo reactivate after matching midwife and vht
-        # user = self.request.user
-        # if user.role == USER_TYPE_MIDWIFE:
-        #     users = User.objects.filter(midwife=user)
-        #     model = AppointmentEncounter.objects.filter(
-        #         Q(user_id__in=[user.id for user in users]) | Q(user__id=user.id)).order_by('-created_at')
-        # elif user.role in [USER_TYPE_CHEW]:
-        #     model = AppointmentEncounter.objects.filter(user=user).order_by('-created_at')
-        # elif user.role in [USER_TYPE_DHO]:
-        #     model = AppointmentEncounter.objects.filter(user__district=user.district).order_by('-created_at')
-        # else:
-        #     model = AppointmentEncounter.objects.all().order_by('-created_at')
-        model = AppointmentEncounter.objects.all().order_by('-created_at')
-        return model
-
-    queryset = AppointmentEncounter.objects.all()
-    permission_classes = (IsAuthenticated, DRYPermissions)
-    filter_class = DeliveryFilter
-    serializer_class = AppointmentEncounterSerializer
 
 
 class AppointmentView(ListCreateAPIView):
@@ -231,50 +201,33 @@ class AppointmentView(ListCreateAPIView):
         else:
             # return everything for super users and developers
             appointments = Appointment.objects.all().order_by('-created_at')
-        # appointments = Appointment.objects.all().order_by('-created_at')
         return appointments
 
-    queryset = Appointment.objects.all()
     permission_classes = (IsAuthenticated, DRYPermissions)
     filter_class = AppointmentFilter
     serializer_class = AppointmentSerializer
 
 
 class DashboardStatsView(APIView):
-    ''' View that handles dashboard data'''
-
     def get(self, request, format=None, **kwargs):
-        ''' Get date params from request '''
         get_params = dict(zip(request.GET.keys(), request.GET.values()))
-        created_at_from_param = get_params['from']
-        created_at_to_param = get_params['to']
+        date_format = '%Y-%m-%d'
 
-        ''' Extract year, month and day from requests '''
-        year_from, month_from, day_from = [int(x) for x in created_at_from_param.split("-")]
-        year_to, month_to, day_to = [int(x) for x in created_at_to_param.split("-")]
-        day_to += 1
-
-        ''' So we can manipulate the date object, we convert it here '''
-        created_at_from = timezone.datetime(year_from, month_from, day_from).replace(tzinfo=pytz.utc)
-        created_at_to_limit = timezone.datetime(year_to, month_to, day_to).replace(tzinfo=pytz.utc)
-
-        # Set number of months we are going to poll data for. We add + 1 to include the current month
-        number_of_months = (month_to - month_from) + 1
+        created_at_from = datetime.datetime.strptime(get_params['from'], date_format).replace(tzinfo=pytz.utc)
+        created_at_to_limit = datetime.datetime.strptime(get_params['to'], date_format).replace(tzinfo=pytz.utc) \
+                              + timezone.timedelta(days=1)
 
         all_months_range_data = []
-
+        first_date_range = True
         subcounty = request.user.village.parish.sub_county
         district = subcounty.county.district
         sub_counties = SubCounty.objects.filter(county__district=district)
 
         while created_at_from <= created_at_to_limit:
             '''We loop through all months for the data querried.
-            we do some ugly mutation on the dates so as to group the data in months '''
-            created_at_to = add_months(created_at_from, 1).replace(tzinfo=pytz.utc)
+            we do some mutation on the dates so as to group the data in months '''
+            created_at_to = self.generate_date_range(created_at_from, created_at_to_limit, first_date_range)
 
-            print("--------------------------------------------------------------------------------------------")
-            print("Month is " + created_at_from.strftime("%B"))
-            print("created_at_from is: " + str(created_at_from) + " and created_at_to is: " + str(created_at_to))
             all_subcounties = []
 
             if request.path == '/api/v1/mapping_encounters_stats':
@@ -286,12 +239,10 @@ class DashboardStatsView(APIView):
 
                 for subcounty in sub_counties:
                     total_girls_in_subcounty = Girl.objects.filter(Q(village__parish__sub_county=subcounty) &
-                                                Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to)).count()
+                                                                   Q(created_at__gte=created_at_from) & Q(
+                        created_at__lte=created_at_to)).count()
                     response["totalNumberOfGirlsMappedFrom" + subcounty.name] = total_girls_in_subcounty
-                    print('total girls in subcounty ' + str(total_girls_in_subcounty))
                     total_girls_in_all_subcounties += total_girls_in_subcounty
-
-                print('total girls in all subcounties ' + str(total_girls_in_all_subcounties))
 
                 girls = Girl.objects.filter(Q(age__gte=12) & Q(age__lte=15) & Q(user__district=district) &
                                             Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to))
@@ -311,29 +262,12 @@ class DashboardStatsView(APIView):
 
                 all_months_range_data.append(response)
             elif request.path == '/api/v1/deliveries_stats':
-                """
-                Provides statistical data for deliveries statistics
-                Client query params
-                dashboard_stats?from=2019-10-01&to=2019-11-05
-
-                Server response
-                {
-                count: 0,
-                district: "Arua",
-                month: "November",
-                year: "2019",
-                subcounties: ["Subcounty1", "Subcounty2", "etc"],
-                deliveriesFromSubcounty1: 3,
-                deliveriesFromSubcounty2: 4,
-                etc: 10
-                }
-                """
                 response = dict()
                 deliveries = Delivery.objects.filter(
                     Q(girl__created_at__gte=created_at_from) & Q(girl__created_at__lte=created_at_to))
 
                 all_subcounties += [delivery.girl.village.parish.sub_county for delivery in deliveries
-                                    if delivery.girl.village.parish.sub_county.county.district == district]
+                                    if delivery.user.district == district]
 
                 # remove duplicate subcounties
                 all_subcounties = list(set(all_subcounties))
@@ -351,84 +285,26 @@ class DashboardStatsView(APIView):
                 response["count"] = all_deliveries_total
 
                 all_months_range_data.append(response)
-            else:
-                print('-----Followups stats instead ----------')
-
-            created_at_from = add_months(created_at_from, 1).replace(tzinfo=pytz.utc)
-            print('end looping ... ' + str(created_at_from))
+            created_at_from = created_at_to + timezone.timedelta(days=1)
+            first_date_range = False
 
         return Response(all_months_range_data, 200)
 
-
-class DeliveriesStatsView(APIView):
-    """
-    Provides statistical data for deliveries statistics
-    Client query params
-    dashboard_stats?from=2019-10-01&to=2019-11-05
-
-    Server response
-    {
-      count: 0,
-      district: "Arua",
-      month: "November",
-      year: "2019",
-      subcounties: ["Subcounty1", "Subcounty2", "etc"],
-      deliveriesFromSubcounty1: 3,
-      deliveriesFromSubcounty2: 4,
-      etc: 10
-    }
-    """
-
-    def get(self, request, format=None, **kwargs):
-        print("get request")
-
-        get_params = dict(zip(request.GET.keys(), request.GET.values()))
-
-        created_at_from_param = get_params['from']
-        created_at_to_param = get_params['to']
-
-        year, month, day = [int(x) for x in created_at_from_param.split("-")]
-        created_at_from = timezone.datetime(year, month, day)
-
-        year, month, day = [int(x) for x in created_at_to_param.split("-")]
-        created_at_to = timezone.datetime(year, month, day)
-        print(created_at_from)
-
-        response = dict()
-        subcounty = request.user.village.parish.sub_county
-        district = subcounty.county.district
-
-        response["district"] = district.name
-        response["year"] = created_at_from.year
-        response["month"] = created_at_from.strftime("%B")
-
-        all_subcounties = []
-
-        deliveries = Delivery.objects.filter(
-            Q(girl__created_at__gte=created_at_from) & Q(girl__created_at__lte=created_at_to))
-
-        all_subcounties += [delivery.girl.village.parish.sub_county for delivery in deliveries
-                            if delivery.girl.village.parish.sub_county.county.district == district]
-
-        # remove duplicate subcounties
-        all_subcounties = list(set(all_subcounties))
-
-        response["subcounties"] = [subcounty.name for subcounty in all_subcounties]
-
-        all_deliveries_total = 0
-
-        for subcounty in all_subcounties:
-            delivery_total = Delivery.objects.filter(
-                girl__village__parish_id__in=[parish.id for parish in subcounty.parish_set.all()]).count()
-            response["deliveriesFromSubcounty" + subcounty.name] = delivery_total
-            all_deliveries_total += delivery_total
-
-        response["count"] = all_deliveries_total
-        return Response({"results": response}, 200)
+    def generate_date_range(self, created_at_from, created_at_to_limit, first_date_range):
+        if first_date_range:
+            created_at_to = created_at_from.replace(day=calendar.monthrange(created_at_from.year,
+                                                                            created_at_from.month)[1]) \
+                .replace(tzinfo=pytz.utc)
+        else:
+            if add_months(created_at_from, 1).replace(tzinfo=pytz.utc) > created_at_to_limit:
+                created_at_to = created_at_from.replace(day=created_at_to_limit.day).replace(tzinfo=pytz.utc)
+            else:
+                created_at_to = add_months(created_at_from, 1).replace(tzinfo=pytz.utc)
+        return created_at_to
 
 
 class SmsView(ListCreateAPIView):
-    permission_classes = (DRYPermissions, IsAuthenticated)
+    permission_classes = (IsAdminUser, IsAuthenticated)
     serializer_class = SmsModelSerializer
 
     def get_queryset(self):
@@ -474,6 +350,7 @@ class AirtimeDispatchView(APIView):
     Json body(example)
     {numbers": ["+25675XXXXXXX", "+25678XXXXXXX"], "amount": 500}
     """
+
     def post(self, request, format=None):
         airtime_module = AirtimeModule()
         airtime_module.send_airtime(request.data["numbers"], request.data["amount"])
