@@ -15,7 +15,7 @@ from rest_framework.views import APIView
 
 from app.models import Girl, Parish, Village, FollowUp, Delivery, MappingEncounter, \
     Appointment, AppointmentEncounter, Referral, FamilyPlanning, Observation, MSIService
-from app.serializers import User, GirlMSISerializer
+from app.serializers import User, GirlMSISerializer, GirlMSIDateFormattedSerializer
 
 import logging
 
@@ -29,9 +29,13 @@ logger = logging.getLogger('testlogger')
 
 
 def send_data_to_msi_webhook(girl):
-    serializer = GirlMSISerializer(girl)
-    actual_data = JSONRenderer().render(serializer.data)
-    print(actual_data)
+    try:
+        serializer = GirlMSISerializer(girl)
+        actual_data = JSONRenderer().render(serializer.data)
+    except Exception as e:
+        print(e)
+        serializer = GirlMSIDateFormattedSerializer(girl)
+        actual_data = JSONRenderer().render(serializer.data)
     headers = {'Authorization': 'Basic bWF0aGlhc191ZzptYXRoaWFzMDkxMV8='}
     return requests.post(url=MSI_BASE_URL + "msi/api/generateMaternityVoucher", data=actual_data, headers=headers)
 
