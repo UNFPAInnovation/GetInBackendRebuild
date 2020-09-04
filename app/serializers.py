@@ -177,7 +177,7 @@ class GirlSerializer(serializers.ModelSerializer):
             'id', 'first_name', 'last_name', 'village', 'village_id', 'phone_number', 'trimester',
             'next_of_kin_phone_number', 'education_level', 'marital_status',
             'last_menstruation_date', 'dob', 'user', 'odk_instance_id', 'age', 'completed_all_visits', 'voucher_number',
-            'pending_visits', 'missed_visits', 'services_received', 'created_at')
+            'pending_visits', 'missed_visits', 'services_received', 'nationality', 'disabled', 'created_at')
 
 
 class GirlMSIDateFormattedSerializer(serializers.ModelSerializer):
@@ -195,7 +195,7 @@ class GirlMSIDateFormattedSerializer(serializers.ModelSerializer):
             'id', 'first_name', 'last_name', 'village', 'village_id', 'location', 'phone_number', 'trimester',
             'next_of_kin_phone_number', 'education_level', 'marital_status',
             'last_menstruation_date', 'dob', 'user', 'odk_instance_id', 'age', 'completed_all_visits',
-            'pending_visits', 'missed_visits', 'created_at')
+            'pending_visits', 'missed_visits', 'nationality', 'disabled', 'created_at')
 
 
 # This is a preventive measure to make tests work. Some depend on Date and others on DateTime
@@ -212,7 +212,7 @@ class GirlMSISerializer(serializers.ModelSerializer):
             'id', 'first_name', 'last_name', 'village', 'village_id', 'location', 'phone_number', 'trimester',
             'next_of_kin_phone_number', 'education_level', 'marital_status',
             'last_menstruation_date', 'dob', 'user', 'odk_instance_id', 'age', 'completed_all_visits',
-            'pending_visits', 'missed_visits', 'created_at')
+            'pending_visits', 'missed_visits', 'nationality', 'disabled', 'created_at')
 
 
 class ObservationSerializer(serializers.ModelSerializer):

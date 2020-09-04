@@ -236,6 +236,8 @@ class Girl(models.Model):
     completed_all_visits = models.BooleanField(default=False, blank=True, null=True)
     odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
     voucher_number = models.CharField(max_length=250, blank=True, null=True)
+    nationality = models.CharField(max_length=100, default="Ugandan", blank=True, null=True)
+    disabled = models.BooleanField(default=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
