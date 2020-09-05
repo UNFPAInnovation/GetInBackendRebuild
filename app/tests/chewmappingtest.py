@@ -140,7 +140,7 @@ class TestChewMapping(ParentTest):
         self.assertLess(appointments.first().date.replace(tzinfo=None),
                         timezone.now().replace(tzinfo=None) + timezone.timedelta(weeks=2))
 
-        self.assertIsNotNone(Girl.objects.first().voucher_number)
+        self.assertIsNone(Girl.objects.first().voucher_number)
 
     def test_mapping_encounter_by_chew_girl_below_84(self):
         """
@@ -277,7 +277,7 @@ class TestChewMapping(ParentTest):
         self.assertLess(appointments.first().date.replace(tzinfo=None),
                         timezone.now().replace(tzinfo=None) + timezone.timedelta(weeks=12))
 
-        self.assertIsNotNone(Girl.objects.first().voucher_number)
+        self.assertIsNone(Girl.objects.first().voucher_number)
 
         url = reverse("mapping-encounters")
         request = self.client.get(url)
@@ -422,7 +422,7 @@ class TestChewMapping(ParentTest):
         self.assertLess(appointments.first().date.replace(tzinfo=None),
                         timezone.now().replace(tzinfo=None) + timezone.timedelta(weeks=2))
 
-        self.assertIsNotNone(Girl.objects.first().voucher_number)
+        self.assertIsNone(Girl.objects.first().voucher_number)
 
         url = reverse("mapping-encounters")
         request = self.client.get(url)
