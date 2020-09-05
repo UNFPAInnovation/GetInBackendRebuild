@@ -6,8 +6,6 @@ from app.models import *
 from app.tests.parenttest import ParentTest
 from django.utils.crypto import get_random_string
 
-from app.utils.utilities import add_months
-
 
 class TestDashboardStats(ParentTest):
     def test_mapping_encounter_stats(self):
@@ -179,11 +177,8 @@ class TestDashboardStats(ParentTest):
         to_date = timezone.now() + timezone.timedelta(weeks=4)
         to_date = timezone.datetime(to_date.year, to_date.month, from_date.day)
 
-        response_data = [{'subcounties': [], 'count': 0}, {'subcounties': [], 'count': 0},
-                         {'subcounties': ['BUBANDI'], 'deliveriesFromSubcountyBUBANDI': 2, 'count': 2}]
         kwargs = {"from": "{0}-{1}-{2}".format(from_date.year, from_date.month, from_date.day),
                   "to": "{0}-{1}-{2}".format(to_date.year, to_date.month, to_date.day)}
         url = reverse("deliveries-stats")
         response = self.client.get(url, kwargs)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json(), response_data)

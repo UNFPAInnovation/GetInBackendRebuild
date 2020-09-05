@@ -1,6 +1,5 @@
 import json
 
-from django.urls import reverse
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer
 
@@ -20,7 +19,8 @@ class TestMSI(ParentTest):
         last_name = "MukuluGirlTest" + get_random_string(length=3)
         girl = Girl.objects.create(user=self.chew, first_name="Ttest", marital_status=SINGLE,
                                    last_name=last_name, dob=timezone.datetime(2000, 3, 3).date(), village=self.village,
-                                   last_menstruation_date=timezone.datetime(2020, 3, 3).date(), phone_number="0756789543",
+                                   last_menstruation_date=timezone.datetime(2020, 3, 3).date(),
+                                   phone_number="0756789543",
                                    education_level=PRIMARY_LEVEL, next_of_kin_phone_number="0756789542")
         request_data = {
             "id": str(girl.id),
@@ -97,6 +97,8 @@ class TestMSI(ParentTest):
             "completed_all_visits": False,
             "pending_visits": 30,
             "missed_visits": 0,
+            "nationality": "Ugandan",
+            "disabled": False,
             "created_at": str(girl.created_at.astimezone().isoformat())
         }
 

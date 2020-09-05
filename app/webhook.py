@@ -127,7 +127,7 @@ class ODKWebhook(APIView):
                 print(traceback.print_exc())
 
             next_of_kin_number = None
-            voucher_number = 0
+            voucher_number = ""
             attended_anc_visit = False
             bleeding = False
             fever = False
@@ -195,7 +195,7 @@ class ODKWebhook(APIView):
                 voucher_card_group = mapped_girl_object["VouncherCardGroup"][0]
                 has_voucher_card = voucher_card_group["VoucherCard"][0] == "yes"
                 if has_voucher_card:
-                    voucher_number = int(voucher_card_group["VoucherNumber"][0])
+                    voucher_number = voucher_card_group["VoucherNumber"][0]
                 else:
                     voucher_number_creation = voucher_card_group["VoucherNumberCreation"][0] == "yes"
             except KeyError or IndexError:
@@ -212,8 +212,10 @@ class ODKWebhook(APIView):
             # create a new girl and swap the new girl for the old one with updated data
             old_girl = Girl.objects.filter(Q(first_name__icontains=first_name) & Q(last_name__icontains=last_name))
             if old_girl:
+                if len(voucher_number) == 0:
+                    voucher_number = old_girl.first().voucher_number
                 edited_girl = Girl(first_name=first_name, last_name=last_name, village=village,
-                                   phone_number=girls_phone_number, user=user, disabled=disabled,
+                                   phone_number=girls_phone_number, user=user, disabled=disabled, voucher_number=voucher_number,
                                    next_of_kin_phone_number=next_of_kin_number, nationality=nationality,
                                    education_level=education_level, dob=dob, marital_status=marital_status,
                                    last_menstruation_date=last_menstruation_date, odk_instance_id=odk_instance_id)
@@ -239,7 +241,7 @@ class ODKWebhook(APIView):
                             phone_number=girls_phone_number, user=user, nationality=nationality, disabled=disabled,
                             next_of_kin_phone_number=next_of_kin_number, education_level=education_level, dob=dob,
                             marital_status=marital_status, last_menstruation_date=last_menstruation_date,
-                            odk_instance_id=odk_instance_id)
+                            voucher_number=voucher_number, odk_instance_id=odk_instance_id)
                 girl = new_girl
 
                 try:
