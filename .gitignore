@@ -3,3 +3,5 @@
 .vscode/
 docker-compose.yml
 webhook_log.txt
+.env
+.envtest
