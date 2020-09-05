@@ -23,7 +23,7 @@ from app.utils.constants import FOLLOW_UP_FORM_CHEW_NAME, APPOINTMENT_FORM_CHEW_
     MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME, APPOINTMENT_FORM_MIDWIFE_NAME, FOLLOW_UP_FORM_MIDWIFE_NAME, USER_TYPE_CHEW, \
     MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME, POSTNATAL_FORM_CHEW_NAME, POSTNATAL_FORM_MIDWIFE_NAME, ATTENDED, \
     PRE, POST, EXPECTED, MAP_GIRL_ARUA_CHEW_FORM_NAME, MAP_GIRL_ARUA_MIDWIFE_FORM_NAME, MAP_GIRL_KAMPALA_CHEW_FORM_NAME, \
-    MAP_GIRL_KAMPALA_MIDWIFE_FORM_NAME, DEFAULT_TAG, MSI_BASE_URL
+    MAP_GIRL_KAMPALA_MIDWIFE_FORM_NAME, DEFAULT_TAG, MSI_BASE_URL, MSI_TOKEN
 
 logger = logging.getLogger('testlogger')
 
@@ -36,8 +36,8 @@ def send_data_to_msi_webhook(girl):
         print(e)
         serializer = GirlMSIDateFormattedSerializer(girl)
         actual_data = JSONRenderer().render(serializer.data)
-    headers = {'Authorization': 'Basic bWF0aGlhc191ZzptYXRoaWFzMDkxMV8='}
-    return requests.post(url=MSI_BASE_URL + "msi/api/generateMaternityVoucher", data=actual_data, headers=headers)
+    headers = {'Authorization': 'Basic ' + MSI_TOKEN}
+    return requests.post(url=MSI_BASE_URL + "/msi/api/generateMaternityVoucher", data=actual_data, headers=headers)
 
 
 class ODKWebhook(APIView):

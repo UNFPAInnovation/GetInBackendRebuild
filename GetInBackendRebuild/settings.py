@@ -11,17 +11,23 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 import datetime
 import os
-from os import environ
+import environ
 
+env = environ.Env(
+    # set casting, default value
+    DEBUG=(bool, True),
+    default_database=(str, 'unittest')
+)
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+env.read_env(os.environ.get("ENV_PATH", BASE_DIR + '/GetInBackendRebuild/.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '^72dg#r^-$q!e+8odncb$(!l6z+8j9f!7#s&qw4wdr21^m-gcc'
+SECRET_KEY = env('SECRET_KEY')
 
 # todo restrict hosts on launch
 ALLOWED_HOSTS = ['*']
@@ -30,7 +36,7 @@ ALLOWED_HOSTS = ['*']
 CORS_ORIGIN_ALLOW_ALL = True
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG', default=True)
 
 # Application definition
 
@@ -58,7 +64,6 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -91,20 +96,18 @@ WSGI_APPLICATION = 'GetInBackendRebuild.wsgi.application'
 DATABASES = {
     'main': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'getInApp',
-        'USER': 'postgres',
-        # 'PASSWORD': environ.get('PASSWORD', ''),
-        'PASSWORD': 'Doppler25',
-        'HOST': 'getindjangodb.chsjmdyi1oys.us-west-2.rds.amazonaws.com',
+        'NAME': env('DATABASE_NAME'),
+        'USER': env('DATABASE_USER'),
+        'PASSWORD': env('DATABASE_PASSWORD'),
+        'HOST': env('DATABASE_HOST'),
         'PORT': '5432'
     },
     'test': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'getInApp',
-        'USER': 'postgres',
-        # 'PASSWORD': environ.get('PASSWORD', ''),
-        'PASSWORD': 'Doppler25',
-        'HOST': 'getindjangodbtest.chsjmdyi1oys.us-west-2.rds.amazonaws.com',
+        'NAME': env('DATABASE_NAME'),
+        'USER': env('DATABASE_USER'),
+        'PASSWORD': env('DATABASE_PASSWORD'),
+        'HOST': env('DATABASE_HOST'),
         'PORT': '5432'
     },
     'unittest': {
@@ -113,8 +116,7 @@ DATABASES = {
     }
 }
 
-default_database = environ.get('DJANGO_DATABASE', 'unittest')
-# default_database = 'unittest'
+default_database = env('DJANGO_DATABASE', default='unittest')
 DATABASES['default'] = DATABASES[default_database]
 
 
@@ -139,10 +141,6 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTH_USER_MODEL = "app.User"
 
 REST_FRAMEWORK = {
-    # todo activate on launch
-    # 'DEFAULT_RENDERER_CLASSES': (
-    #     'rest_framework.renderers.JSONRenderer',
-    # ),
     'DEFAULT_PARSER_CLASSES': (
         'rest_framework.parsers.JSONParser',
     ),
@@ -169,10 +167,9 @@ JWT_AUTH = {
     'JWT_VERIFY': True,
     'JWT_VERIFY_EXPIRATION': False,
     'JWT_LEEWAY': 0,
-    # user is logged in for 6 hour before token expires
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(hours=6),
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(days=3000),
     'JWT_ALLOW_REFRESH': True,
-    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
+    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=2000),
 }
 
 DJOSER = {

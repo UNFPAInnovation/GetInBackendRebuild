@@ -1,5 +1,4 @@
-# user's gender
-from os import environ
+from GetInBackendRebuild.settings import env
 
 GENDER_MALE = "male"
 GENDER_FEMALE = "female"
@@ -65,14 +64,10 @@ POSTNATAL_FORM_CHEW_NAME = "GetINPostnatalForm6_chew"
 POSTNATAL_FORM_MIDWIFE_NAME = "GetINPostnatalForm6_midwife"
 # NOTE: Some times the json object starts with data object param
 DEFAULT_TAG = "data"
-MSI_BASE_URL = environ.get('MSI_BASE_URL', 'http://35.203.191.127/')
 
-FIREBASE_TOKEN = "AAAAI8T7WsI:APA91bEfmZYjDWdaiI24hqCP3LGzg0s9c-hviHs4gC4RV_qW3J2xlshhK5coizTf4FmQaMOY10fkjyd49howXFkGPpB3VSLq_MXdnsgKKDzBTWh6ZSc69Gis6FnZEJsf8Yl7gBeqtG4d"
+MSI_BASE_URL = env('MSI_BASE_URL')
+MSI_TOKEN = env('MSI_TOKEN')
 
-africa_env = environ.get('AFRICAS_TALKING_ENV', 'test')
-if africa_env == 'production':
-    username = "getinapp"
-    api_key = "9e8c2ca8d8a1897248036f1a9bf25fb1f9ba5898635044a96558e1323fd1c16b"
-else:
-    username = "sandbox"
-    api_key = "969fb96582f9639b086879f64a8d4b7411af1523c0b0ee1f16a0eac6f4882a22"
+FIREBASE_TOKEN = env('FIREBASE_TOKEN')
+username = env('AFRICAS_TALKING_USERNAME')
+api_key = env('AFRICAS_TALKING_PASSWORD')
