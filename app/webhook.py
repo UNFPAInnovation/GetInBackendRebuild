@@ -19,11 +19,7 @@ from app.serializers import User, GirlMSISerializer, GirlMSIDateFormattedSeriali
 
 import logging
 
-from app.utils.constants import FOLLOW_UP_FORM_CHEW_NAME, APPOINTMENT_FORM_CHEW_NAME, \
-    MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME, APPOINTMENT_FORM_MIDWIFE_NAME, FOLLOW_UP_FORM_MIDWIFE_NAME, USER_TYPE_CHEW, \
-    MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME, POSTNATAL_FORM_CHEW_NAME, POSTNATAL_FORM_MIDWIFE_NAME, ATTENDED, \
-    PRE, POST, EXPECTED, MAP_GIRL_ARUA_CHEW_FORM_NAME, MAP_GIRL_ARUA_MIDWIFE_FORM_NAME, MAP_GIRL_KAMPALA_CHEW_FORM_NAME, \
-    MAP_GIRL_KAMPALA_MIDWIFE_FORM_NAME, DEFAULT_TAG, MSI_BASE_URL, MSI_TOKEN
+from app.utils.constants import *
 
 logger = logging.getLogger('testlogger')
 
@@ -82,6 +78,9 @@ class ODKWebhook(APIView):
 
         if MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME in json_result_string or MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME in json_result_string \
                 or MAP_GIRL_ARUA_CHEW_FORM_NAME in json_result_string or MAP_GIRL_ARUA_MIDWIFE_FORM_NAME in json_result_string \
+                or MAP_GIRL_MOYO_CHEW_FORM_NAME in json_result_string or MAP_GIRL_MOYO_MIDWIFE_FORM_NAME in json_result_string \
+                or MAP_GIRL_ADJUMANI_CHEW_FORM_NAME in json_result_string or MAP_GIRL_ADJUMANI_MIDWIFE_FORM_NAME in json_result_string \
+                or MAP_GIRL_YUMBE_CHEW_FORM_NAME in json_result_string or MAP_GIRL_YUMBE_MIDWIFE_FORM_NAME in json_result_string \
                 or MAP_GIRL_KAMPALA_CHEW_FORM_NAME in json_result_string or MAP_GIRL_KAMPALA_MIDWIFE_FORM_NAME in json_result_string:
             print("mapping forms matched")
             return self.process_mapping_encounter(json_result, user_id)
