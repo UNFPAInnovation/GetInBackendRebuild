@@ -264,3 +264,17 @@ Update the certificates
 
 
 .. warning:: The system may run out of space. FIRST MAKE SURE THE IMAGES ARE RUNNING using docker ps. Then run `sudo docker system prune`
+
+
+Adding org units
+==================
+
+https://infoinspired.com/google-docs/spreadsheet/filter-unique-values-using-the-filter-menu/
+- Clean up data
+- Rearrage columns if needed
+- Use this formula in google sheets to filter unique parishes, subcounties and counties. 
+=COUNTIF(D2:D,D2:D)=1
+- insert the values into the odk sheet(xlsx)
+- upload the file to https://getodk.org/xlsform/
+- download the xml file
+- upload the xml file to https://testcentral.getinmobile.org/
