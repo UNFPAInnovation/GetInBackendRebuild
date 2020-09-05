@@ -19,11 +19,7 @@ from app.serializers import User, GirlMSISerializer, GirlMSIDateFormattedSeriali
 
 import logging
 
-from app.utils.constants import FOLLOW_UP_FORM_CHEW_NAME, APPOINTMENT_FORM_CHEW_NAME, \
-    MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME, APPOINTMENT_FORM_MIDWIFE_NAME, FOLLOW_UP_FORM_MIDWIFE_NAME, USER_TYPE_CHEW, \
-    MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME, POSTNATAL_FORM_CHEW_NAME, POSTNATAL_FORM_MIDWIFE_NAME, ATTENDED, \
-    PRE, POST, EXPECTED, MAP_GIRL_ARUA_CHEW_FORM_NAME, MAP_GIRL_ARUA_MIDWIFE_FORM_NAME, MAP_GIRL_KAMPALA_CHEW_FORM_NAME, \
-    MAP_GIRL_KAMPALA_MIDWIFE_FORM_NAME, DEFAULT_TAG, MSI_BASE_URL, MSI_TOKEN
+from app.utils.constants import *
 
 logger = logging.getLogger('testlogger')
 
@@ -51,7 +47,7 @@ class ODKWebhook(APIView):
     def post(self, request, *args, **kwargs):
         print("post request called")
         json_result = request.data
-        json_result_string = str(request.data)
+        self.json_result_string = str(request.data)
 
         try:
             webhooklog = open('webhook_log.txt', 'a')
@@ -80,16 +76,14 @@ class ODKWebhook(APIView):
         except KeyError:
             print(traceback.print_exc())
 
-        if MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME in json_result_string or MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME in json_result_string \
-                or MAP_GIRL_ARUA_CHEW_FORM_NAME in json_result_string or MAP_GIRL_ARUA_MIDWIFE_FORM_NAME in json_result_string \
-                or MAP_GIRL_KAMPALA_CHEW_FORM_NAME in json_result_string or MAP_GIRL_KAMPALA_MIDWIFE_FORM_NAME in json_result_string:
-            print("mapping forms matched")
+        is_mapping_form = any(form_id in self.json_result_string for form_id in MAPPING_FORMS)
+        if is_mapping_form:
             return self.process_mapping_encounter(json_result, user_id)
-        elif FOLLOW_UP_FORM_CHEW_NAME in json_result_string or FOLLOW_UP_FORM_MIDWIFE_NAME in json_result_string:
+        elif FOLLOW_UP_FORM_CHEW_NAME in self.json_result_string or FOLLOW_UP_FORM_MIDWIFE_NAME in self.json_result_string:
             return self.process_follow_up_and_delivery_encounter(girl_id, json_result, user_id)
-        elif APPOINTMENT_FORM_MIDWIFE_NAME in json_result_string:
+        elif APPOINTMENT_FORM_MIDWIFE_NAME in self.json_result_string:
             return self.process_appointment_encounter(girl_id, json_result, user_id)
-        elif POSTNATAL_FORM_CHEW_NAME in json_result_string or POSTNATAL_FORM_MIDWIFE_NAME in json_result_string:
+        elif POSTNATAL_FORM_CHEW_NAME in self.json_result_string or POSTNATAL_FORM_MIDWIFE_NAME in self.json_result_string:
             return self.postnatal_encounter(girl_id, json_result, user_id)
         return Response({'result': 'failure'}, 400)
 
@@ -97,35 +91,7 @@ class ODKWebhook(APIView):
         print("process mapping encounter")
 
         try:
-            try:
-                mapped_girl_object = json_result[MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME]
-            except KeyError:
-                print(traceback.print_exc())
-            try:
-                mapped_girl_object = json_result[MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME]
-            except KeyError:
-                print(traceback.print_exc())
-            try:
-                mapped_girl_object = json_result[MAP_GIRL_ARUA_CHEW_FORM_NAME]
-            except KeyError:
-                print(traceback.print_exc())
-            try:
-                mapped_girl_object = json_result[MAP_GIRL_ARUA_MIDWIFE_FORM_NAME]
-            except KeyError:
-                print(traceback.print_exc())
-            try:
-                mapped_girl_object = json_result[MAP_GIRL_KAMPALA_CHEW_FORM_NAME]
-            except KeyError:
-                print(traceback.print_exc())
-            try:
-                mapped_girl_object = json_result[MAP_GIRL_KAMPALA_MIDWIFE_FORM_NAME]
-            except KeyError:
-                print(traceback.print_exc())
-            try:
-                mapped_girl_object = json_result[DEFAULT_TAG]
-            except KeyError:
-                print(traceback.print_exc())
-
+            mapped_girl_object = self.get_form_id_and_extract_json_object(json_result)
             next_of_kin_number = None
             voucher_number = ""
             attended_anc_visit = False
@@ -285,6 +251,15 @@ class ODKWebhook(APIView):
         except Exception:
             print(traceback.print_exc())
         return Response({'result': 'failure'}, status.HTTP_400_BAD_REQUEST)
+
+    def get_form_id_and_extract_json_object(self, json_result):
+        try:
+            form_id = [form_id for form_id in MAPPING_FORMS if form_id in self.json_result_string][0]
+            mapped_girl_object = json_result[form_id]
+        except Exception as e:
+            print(e)
+            mapped_girl_object = json_result[DEFAULT_TAG]
+        return mapped_girl_object
 
     def get_and_save_msi_voucher_to_girl(self, girl):
         try:
