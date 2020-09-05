@@ -10,19 +10,14 @@ from app.airtime_dispatcher import AirtimeModule
 from app.models import District, County, SubCounty, Parish, Village, User, Girl
 from app.utils.utilities import add_months
 from openpyxl import Workbook, load_workbook
-from openpyxl.utils.dataframe import dataframe_to_rows
 from app.utils.constants import *
 
 
-def extract_excel_data(location):
+def extract_excel_org_unit_data(location):
     wb = xlrd.open_workbook(location)
     sheet = wb.sheet_by_index(0)
 
     sheet.cell_value(0, 0)
-
-    print(sheet.row_values(10))
-    print(sheet.row_values(10)[0])
-    print(sheet.utter_max_rows)
 
     for row_number in range(0, 1000):
         try:
@@ -37,46 +32,17 @@ def extract_excel_data(location):
         sub_county_value = row_data[2]
         parish_value = row_data[3]
         village_value = row_data[4]
-        print(district_value + county_value + sub_county_value + parish_value + village_value)
-        print(row_number)
 
         if not district_value:
             break
 
-        try:
-            district = District.objects.get(name=district_value)
-        except Exception as e:
-            print(e)
-            district = District(name=district_value)
-            district.save()
-
-        try:
-            county = County.objects.get(name=county_value)
-        except Exception as e:
-            print(e)
-            county = County(name=county_value, district=district)
-            county.save()
-
-        try:
-            sub_county = SubCounty.objects.get(name=sub_county_value)
-        except Exception as e:
-            print(e)
-            sub_county = SubCounty(name=sub_county_value, county=county)
-            sub_county.save()
-
-        try:
-            parish = Parish.objects.get(name=parish_value)
-        except Exception as e:
-            print(e)
-            parish = Parish(name=parish_value, sub_county=sub_county)
-            parish.save()
-
-        try:
-            village = Village.objects.get(name=village_value)
-        except Exception as e:
-            print(e)
-            village = Village(name=village_value, parish=parish)
-            village.save()
+        if str(district_value).lower() == 'district':
+            continue
+        district = District.objects.get_or_create(name=district_value)
+        county = County.objects.get_or_create(name=county_value, district=district[0])
+        sub_county = SubCounty.objects.get_or_create(name=sub_county_value, county=county[0])
+        parish = Parish.objects.get_or_create(name=parish_value, sub_county=sub_county[0])
+        village = Village.objects.get_or_create(name=village_value, parish=parish[0])
 
 
 def extract_excel_user_data(location):
