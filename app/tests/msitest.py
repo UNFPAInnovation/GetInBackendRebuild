@@ -1,4 +1,5 @@
 import json
+import random
 
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer
@@ -113,8 +114,8 @@ class TestMSI(ParentTest):
         girl = Girl.objects.create(user=self.chew, first_name="Ttest2", marital_status=SINGLE,
                                    last_name=last_name, dob=timezone.datetime(2000, 3, 3).date(), village=self.village,
                                    last_menstruation_date=timezone.datetime(2020, 3, 3).date(),
-                                   phone_number="0756789543",
-                                   education_level=PRIMARY_LEVEL, next_of_kin_phone_number="0756789542")
+                                   phone_number="0756789" + str(random.randint(100, 999)),
+                                   education_level=PRIMARY_LEVEL, next_of_kin_phone_number="0756789" + str(random.randint(100, 999)))
         response = send_data_to_msi_webhook(girl)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.json()['successful'])
