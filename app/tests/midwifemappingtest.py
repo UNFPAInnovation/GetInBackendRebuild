@@ -142,7 +142,7 @@ class TestMidwifeMapping(ParentTest):
         appointments = Appointment.objects.filter(girl__first_name__icontains="MukuluGirlTest")
         self.assertEqual(appointments.count(), 1)
 
-        self.assertIsNotNone(Girl.objects.first().voucher_number)
+        self.assertEqual(Girl.objects.first().voucher_number, '')
 
     def test_mapping_encounter_by_midwife_with_previous_appointments(self):
         """
@@ -282,7 +282,7 @@ class TestMidwifeMapping(ParentTest):
         appointments = Appointment.objects.filter(girl__first_name__icontains="MukuluGirlTest")
         self.assertEqual(appointments.count(), 2)
 
-        self.assertIsNotNone(Girl.objects.first().voucher_number)
+        self.assertEqual(Girl.objects.first().voucher_number, '')
 
     def test_mapping_encounter_by_midwife_with_previous_appointments_and_fp(self):
         """
@@ -431,5 +431,344 @@ class TestMidwifeMapping(ParentTest):
         self.assertEqual(Observation.objects.count(), 1)
         self.assertEqual(FamilyPlanning.objects.count(), 3)
         self.assertEqual(FamilyPlanning.objects.last().method, "Pills")
+        self.assertEqual(Girl.objects.first().voucher_number, '')
 
-        self.assertIsNotNone(Girl.objects.first().voucher_number)
+    def test_mapping_girl_without_voucher_and_nationality_field(self):
+        """
+        Test mapping girl's without voucher and nationality fields
+        The midwife chooses  yes option to create voucher, girl should have voucher
+        The midwife creates one appointment
+        """
+        request_data = {
+            "data": {
+                "$": {
+                    "id": "GetInMapGirlBundibugyo16_midwife",
+                    "xmlns:ev": "http://www.w3.org/2001/xml-events",
+                    "xmlns:orx": "http://openrosa.org/xforms",
+                    "xmlns:odk": "http://www.opendatakit.org/xforms",
+                    "xmlns:h": "http://www.w3.org/1999/xhtml",
+                    "xmlns:jr": "http://openrosa.org/javarosa",
+                    "xmlns:xsd": "http://www.w3.org/2001/XMLSchema"
+                },
+                "GirlDemographic": [
+                    {
+                        "FirstName": [
+                            "Jennifer"
+                        ],
+                        "LastName": [
+                            "Lususu"
+                        ],
+                        "GirlsPhoneNumber": [
+                            "0779281" + str(random.randint(100, 999))
+                        ],
+                        "DOB": [
+                            "2009-09-04"
+                        ]
+                    }
+                ],
+                "GirlDemographic2": [
+                    {
+                        "NextOfKinNumber": [
+                            "0779281" + str(random.randint(100, 999))
+                        ]
+                    }
+                ],
+                "NationalityGroup": [
+                    {
+                        "Nationality": [
+                            "Refugee"
+                        ]
+                    }
+                ],
+                "GirlLocation": [
+                    {
+                        "county": [
+                            "BWAMBA_COUNTY"
+                        ],
+                        "subcounty": [
+                            "BUBUKWANGA"
+                        ],
+                        "parish": [
+                            "HUMYA"
+                        ],
+                        "village": [
+                            "MAMPONGURO"
+                        ]
+                    }
+                ],
+                "DisabilityGroup": [
+                    {
+                        "Disability": [
+                            "yes"
+                        ]
+                    }
+                ],
+                "Observations3": [
+                    {
+                        "marital_status": [
+                            "married"
+                        ],
+                        "education_level": [
+                            "OLevel"
+                        ],
+                        "MenstruationDate": [
+                            "2020-07-04"
+                        ]
+                    }
+                ],
+                "Observations1": [
+                    {
+                        "bleeding": [
+                            "no"
+                        ],
+                        "fever": [
+                            "yes"
+                        ]
+                    }
+                ],
+                "Observations2": [
+                    {
+                        "swollenfeet": [
+                            "no"
+                        ],
+                        "blurred_vision": [
+                            "yes"
+                        ]
+                    }
+                ],
+                "ANCAppointmentPreviousGroup": [
+                    {
+                        "AttendedANCVisit": [
+                            "no"
+                        ]
+                    }
+                ],
+                "ContraceptiveGroup": [
+                    {
+                        "UsedContraceptives": [
+                            "yes"
+                        ],
+                        "ContraceptiveMethod": [
+                            "Implant Injectables"
+                        ]
+                    }
+                ],
+                "ANCAppointmentGroup": [
+                    {
+                        "ANCDate": [
+                            "2020-11-04"
+                        ]
+                    }
+                ],
+                "VouncherCardGroup": [
+                    {
+                        "VoucherCard": [
+                            "no"
+                        ],
+                        "VoucherNumberCreation": [
+                            "yes"
+                        ]
+                    }
+                ],
+                "meta": [
+                    {
+                        "instanceID": [
+                            "uuid:f176b2ac-f02d-45cf-b76d-917ed81db80d"
+                        ]
+                    }
+                ]
+            },
+            "form_meta_data": {
+                "GIRL_ID": "0",
+                "USER_ID": self.midwife.id
+            }
+        }
+
+        url = reverse("mapping_encounter_webhook")
+        request = self.client.post(url, request_data, format='json')
+        self.assertEqual(request.status_code, status.HTTP_200_OK)
+        self.assertEqual(Girl.objects.count(), 1)
+
+        appointments = Appointment.objects.filter(girl__first_name__icontains="Jennifer")
+        self.assertEqual(appointments.count(), 1)
+
+        self.assertEqual(Observation.objects.count(), 1)
+        self.assertEqual(FamilyPlanning.objects.count(), 2)
+        self.assertEqual(FamilyPlanning.objects.first().method, "Injectables")
+
+        girl = Girl.objects.first()
+        self.assertIsNotNone(girl.voucher_number)
+        self.assertEqual(girl.nationality, "Refugee")
+        self.assertEqual(girl.disabled, True)
+
+    def test_mapping_girl_with_voucher_and_nationality_field(self):
+        """
+        Test mapping girl's with voucher and nationality fields
+        The User inserts the voucher number in the mapping form.
+        In this case a voucher is not created from MSI
+        The midwife creates one appointment at the end of the process
+        """
+        request_data = {
+            "data": {
+                "$": {
+                    "id": "GetInMapGirlBundibugyo16_midwife",
+                    "xmlns:ev": "http://www.w3.org/2001/xml-events",
+                    "xmlns:orx": "http://openrosa.org/xforms",
+                    "xmlns:odk": "http://www.opendatakit.org/xforms",
+                    "xmlns:h": "http://www.w3.org/1999/xhtml",
+                    "xmlns:jr": "http://openrosa.org/javarosa",
+                    "xmlns:xsd": "http://www.w3.org/2001/XMLSchema"
+                },
+                "GirlDemographic": [
+                    {
+                        "FirstName": [
+                            "Dhdjdjdd"
+                        ],
+                        "LastName": [
+                            "Dudhd"
+                        ],
+                        "GirlsPhoneNumber": [
+                            "0779281" + str(random.randint(100, 999))
+                        ],
+                        "DOB": [
+                            "2007-08-27"
+                        ]
+                    }
+                ],
+                "GirlDemographic2": [
+                    {
+                        "NextOfKinNumber": [
+                            "0779281" + str(random.randint(100, 999))
+                        ]
+                    }
+                ],
+                "NationalityGroup": [
+                    {
+                        "Nationality": [
+                            "Ugandan"
+                        ]
+                    }
+                ],
+                "GirlLocation": [
+                    {
+                        "county": [
+                            "BWAMBA_COUNTY"
+                        ],
+                        "subcounty": [
+                            "BUSARU"
+                        ],
+                        "parish": [
+                            "KIRINDI"
+                        ],
+                        "village": [
+                            "BUNDIKAHUKA_I"
+                        ]
+                    }
+                ],
+                "DisabilityGroup": [
+                    {
+                        "Disability": [
+                            "no"
+                        ]
+                    }
+                ],
+                "Observations3": [
+                    {
+                        "marital_status": [
+                            "married"
+                        ],
+                        "education_level": [
+                            "ALevel"
+                        ],
+                        "MenstruationDate": [
+                            "2020-06-05"
+                        ]
+                    }
+                ],
+                "Observations1": [
+                    {
+                        "bleeding": [
+                            "no"
+                        ],
+                        "fever": [
+                            "yes"
+                        ]
+                    }
+                ],
+                "Observations2": [
+                    {
+                        "swollenfeet": [
+                            "no"
+                        ],
+                        "blurred_vision": [
+                            "yes"
+                        ]
+                    }
+                ],
+                "ANCAppointmentPreviousGroup": [
+                    {
+                        "AttendedANCVisit": [
+                            "no"
+                        ]
+                    }
+                ],
+                "ContraceptiveGroup": [
+                    {
+                        "UsedContraceptives": [
+                            "yes"
+                        ],
+                        "ContraceptiveMethod": [
+                            "Implant Condoms Others"
+                        ],
+                        "other_contraceptive_method": [
+                            "Withdrawal"
+                        ]
+                    }
+                ],
+                "ANCAppointmentGroup": [
+                    {
+                        "ANCDate": [
+                            "2020-11-05"
+                        ]
+                    }
+                ],
+                "VouncherCardGroup": [
+                    {
+                        "VoucherCard": [
+                            "yes"
+                        ],
+                        "VoucherNumber": [
+                            "223-acd"
+                        ]
+                    }
+                ],
+                "meta": [
+                    {
+                        "instanceID": [
+                            "uuid:b1e2609a-7eaa-489d-9743-c318658c607b"
+                        ]
+                    }
+                ]
+            },
+            "form_meta_data": {
+                "GIRL_ID": "0",
+                "USER_ID": self.midwife.id
+            }
+        }
+        url = reverse("mapping_encounter_webhook")
+        request = self.client.post(url, request_data, format='json')
+        self.assertEqual(request.status_code, status.HTTP_200_OK)
+        self.assertEqual(Girl.objects.count(), 1)
+
+        appointments = Appointment.objects.filter(girl__first_name__icontains="Dhdjdjdd")
+        self.assertEqual(appointments.count(), 1)
+
+        self.assertEqual(Observation.objects.count(), 1)
+        self.assertEqual(FamilyPlanning.objects.count(), 3)
+        self.assertEqual(FamilyPlanning.objects.first().method, "Withdrawal")
+
+        girl = Girl.objects.first()
+        self.assertIsNotNone(girl.voucher_number)
+        self.assertEqual(girl.voucher_number, "223-acd")
+        self.assertEqual(girl.nationality, "Ugandan")
+        self.assertEqual(girl.disabled, False)

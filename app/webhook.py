@@ -127,12 +127,15 @@ class ODKWebhook(APIView):
                 print(traceback.print_exc())
 
             next_of_kin_number = None
-            voucher_number = 0
+            voucher_number = ""
             attended_anc_visit = False
             bleeding = False
             fever = False
             swollenfeet = False
             blurred_vision = False
+            voucher_number_creation = False
+            nationality = "Ugandan"
+            disabled = False
             mapping_encounter = MappingEncounter()
 
             try:
@@ -153,12 +156,24 @@ class ODKWebhook(APIView):
             except Exception as e:
                 print(e)
 
+            try:
+                nationality_group = mapped_girl_object["NationalityGroup"][0]
+                nationality = nationality_group['Nationality'][0]
+            except KeyError or IndexError as e:
+                print(e)
+
             girl_location = mapped_girl_object["GirlLocation"][0]
 
             # use filter and get first because there are so some duplicate locations
             parish = Parish.objects.filter(name__icontains=replace_underscore(girl_location["parish"][0])).first()
             village = Village.objects.filter(
                 Q(name__icontains=replace_underscore(girl_location["village"][0])) & Q(parish=parish)).first()
+
+            try:
+                disability_group = mapped_girl_object["DisabilityGroup"][0]
+                disabled = disability_group['Disability'][0] == "yes"
+            except KeyError or IndexError as e:
+                print(e)
 
             observations3 = mapped_girl_object["Observations3"][0]
             marital_status = observations3["marital_status"][0]
@@ -180,7 +195,9 @@ class ODKWebhook(APIView):
                 voucher_card_group = mapped_girl_object["VouncherCardGroup"][0]
                 has_voucher_card = voucher_card_group["VoucherCard"][0] == "yes"
                 if has_voucher_card:
-                    voucher_number = int(voucher_card_group["VoucherNumber"][0])
+                    voucher_number = voucher_card_group["VoucherNumber"][0]
+                else:
+                    voucher_number_creation = voucher_card_group["VoucherNumberCreation"][0] == "yes"
             except KeyError or IndexError:
                 print(traceback.print_exc())
 
@@ -195,9 +212,11 @@ class ODKWebhook(APIView):
             # create a new girl and swap the new girl for the old one with updated data
             old_girl = Girl.objects.filter(Q(first_name__icontains=first_name) & Q(last_name__icontains=last_name))
             if old_girl:
+                if len(voucher_number) == 0:
+                    voucher_number = old_girl.first().voucher_number
                 edited_girl = Girl(first_name=first_name, last_name=last_name, village=village,
-                                   phone_number=girls_phone_number, user=user,
-                                   next_of_kin_phone_number=next_of_kin_number,
+                                   phone_number=girls_phone_number, user=user, disabled=disabled, voucher_number=voucher_number,
+                                   next_of_kin_phone_number=next_of_kin_number, nationality=nationality,
                                    education_level=education_level, dob=dob, marital_status=marital_status,
                                    last_menstruation_date=last_menstruation_date, odk_instance_id=odk_instance_id)
                 edited_girl.save()
@@ -218,12 +237,11 @@ class ODKWebhook(APIView):
                 # lastly delete the old girl
                 old_girl.delete()
             else:
-                new_girl = Girl(first_name=first_name, last_name=last_name, village=village,
-                            phone_number=girls_phone_number, user=user,
+                new_girl = Girl.objects.create(first_name=first_name, last_name=last_name, village=village,
+                            phone_number=girls_phone_number, user=user, nationality=nationality, disabled=disabled,
                             next_of_kin_phone_number=next_of_kin_number, education_level=education_level, dob=dob,
                             marital_status=marital_status, last_menstruation_date=last_menstruation_date,
-                            odk_instance_id=odk_instance_id)
-                new_girl.save()
+                            voucher_number=voucher_number, odk_instance_id=odk_instance_id)
                 girl = new_girl
 
                 try:
@@ -260,7 +278,9 @@ class ODKWebhook(APIView):
             mapping_encounter.girl = girl
             mapping_encounter.save()
             self.save_family_planning_methods_in_mapping_encounter(mapped_girl_object, mapping_encounter)
-            self.get_and_save_msi_voucher_to_girl(girl)
+
+            if voucher_number_creation:
+                self.get_and_save_msi_voucher_to_girl(girl)
             return Response({'result': 'success'}, status.HTTP_200_OK)
         except Exception:
             print(traceback.print_exc())
@@ -547,6 +567,12 @@ class ODKWebhook(APIView):
                 ambulance_group = appointment_object["ambulance_group"][0]
                 needed_ambulance = ambulance_group["needed_ambulance"][0] == "yes"
                 used_ambulance = ambulance_group["used_ambulance"][0] == "yes"
+            except Exception:
+                print(traceback.print_exc())
+
+            try:
+                appointment_soon_group = appointment_object["appointment_soon_group"][0]
+                appointment_method = replace_underscore(appointment_soon_group["appointment_method"][0])
             except Exception:
                 print(traceback.print_exc())
 

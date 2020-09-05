@@ -253,7 +253,7 @@ class TestAppointment(ParentTest):
                 "voucher_redeem_group": [
                     {
                         "voucher_services": [
-                            "ANC3"
+                            "AN3"
                         ],
                         "voucher_redeem": [
                             ""
@@ -321,7 +321,7 @@ class TestAppointment(ParentTest):
         self.assertEqual(Girl.objects.count(), 1)
 
         appointments = Appointment.objects.filter(girl__last_name__icontains=last_name)
-        appointment_encounters = AppointmentEncounter.objects.filter(appointment=appointments.first())
+        appointment_encounters = AppointmentEncounter.objects.all()
 
         self.assertEqual(appointments.count(), 1)
         self.assertEqual(appointment_encounters.count(), 1)
@@ -329,4 +329,84 @@ class TestAppointment(ParentTest):
 
         services = MSIService.objects.all()
         self.assertEqual(services.count(), 1)
-        self.assertEqual(services.first().option, "ANC3")
+        self.assertEqual(services.first().option, "AN3")
+
+        request_data = {
+            "data": {
+                "$": {
+                    "id": "GetINAppointment10_midwife",
+                    "xmlns:ev": "http://www.w3.org/2001/xml-events",
+                    "xmlns:orx": "http://openrosa.org/xforms",
+                    "xmlns:odk": "http://www.opendatakit.org/xforms",
+                    "xmlns:h": "http://www.w3.org/1999/xhtml",
+                    "xmlns:jr": "http://openrosa.org/javarosa",
+                    "xmlns:xsd": "http://www.w3.org/2001/XMLSchema"
+                },
+                "voucher_received_group": [
+                    {
+                        "has_voucher": [
+                            "no"
+                        ]
+                    }
+                ],
+                "missed_anc_before_group": [
+                    {
+                        "missed_anc_before": [
+                            "no"
+                        ]
+                    }
+                ],
+                "missed_anc_before_group2": [
+                    ""
+                ],
+                "ambulance_group": [
+                    {
+                        "needed_ambulance": [
+                            "no"
+                        ]
+                    }
+                ],
+                "appointment_soon_group": [
+                    {
+                        "appointment_method": [
+                            "physical_visit"
+                        ]
+                    }
+                ],
+                "action_taken_group": [
+                    {
+                        "action_taken_meeting_girl": [
+                            "set_an_appointment"
+                        ]
+                    }
+                ],
+                "schedule_appointment_group": [
+                    {
+                        "schedule_appointment": [
+                            "2020-12-07"
+                        ]
+                    }
+                ],
+                "meta": [
+                    {
+                        "instanceID": [
+                            "uuid:dcb3467f-754f-4494-a21e-90b3234d69f8"
+                        ]
+                    }
+                ]
+            },
+            "form_meta_data": {"GIRL_ID": girl.id, "USER_ID": self.midwife.id}
+        }
+
+        request = self.client.post(url, request_data, format='json')
+        self.assertEqual(request.status_code, status.HTTP_200_OK)
+        self.assertEqual(Girl.objects.count(), 1)
+
+        appointments = Appointment.objects.filter(girl__last_name__icontains=last_name)
+        appointment_encounters = AppointmentEncounter.objects.all()
+
+        self.assertEqual(appointments.count(), 2)
+        self.assertEqual(appointment_encounters.count(), 2)
+
+        appointment_encounter = AppointmentEncounter.objects.first()
+        self.assertEqual(appointment_encounter.appointment_method, "physical visit")

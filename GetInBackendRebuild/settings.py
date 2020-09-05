@@ -113,7 +113,7 @@ DATABASES = {
     }
 }
 
-default_database = environ.get('DJANGO_DATABASE', 'test')
+default_database = environ.get('DJANGO_DATABASE', 'unittest')
 # default_database = 'unittest'
 DATABASES['default'] = DATABASES[default_database]
 

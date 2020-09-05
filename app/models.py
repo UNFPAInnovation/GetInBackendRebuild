@@ -60,10 +60,10 @@ FAMILY_PLANNING_STATUS = (
 )
 
 MSI_OPTIONS = (
-    (ANC1, 'ANC1'),
-    (ANC2, 'ANC2'),
-    (ANC3, 'ANC3'),
-    (ANC4, 'ANC4'),
+    (ANC1, 'AN1'),
+    (ANC2, 'AN2'),
+    (ANC3, 'AN3'),
+    (ANC4, 'AN4'),
     (DELIVERY, 'Delivery'),
     (FAMILY_PLANNING, 'Family Planning'),
 )
@@ -236,6 +236,8 @@ class Girl(models.Model):
     completed_all_visits = models.BooleanField(default=False, blank=True, null=True)
     odk_instance_id = models.CharField(max_length=250, blank=True, null=True)
     voucher_number = models.CharField(max_length=250, blank=True, null=True)
+    nationality = models.CharField(max_length=100, default="Ugandan", blank=True, null=True)
+    disabled = models.BooleanField(default=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

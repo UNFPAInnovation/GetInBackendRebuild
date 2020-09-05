@@ -56,6 +56,8 @@ class TestSerializer(ParentTest):
             "pending_visits": girl.pending_visits,
             "missed_visits": 0,
             "services_received": "ANC1,ANC2",
+            "nationality": "Ugandan",
+            "disabled": False,
             "created_at": str(girl.created_at.astimezone().isoformat())
         }
 
