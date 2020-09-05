@@ -60,10 +60,10 @@ FAMILY_PLANNING_STATUS = (
 )
 
 MSI_OPTIONS = (
-    (ANC1, 'ANC1'),
-    (ANC2, 'ANC2'),
-    (ANC3, 'ANC3'),
-    (ANC4, 'ANC4'),
+    (ANC1, 'AN1'),
+    (ANC2, 'AN2'),
+    (ANC3, 'AN3'),
+    (ANC4, 'AN4'),
     (DELIVERY, 'Delivery'),
     (FAMILY_PLANNING, 'Family Planning'),
 )

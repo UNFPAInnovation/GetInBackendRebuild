@@ -550,6 +550,12 @@ class ODKWebhook(APIView):
             except Exception:
                 print(traceback.print_exc())
 
+            try:
+                appointment_soon_group = appointment_object["appointment_soon_group"][0]
+                appointment_method = replace_underscore(appointment_soon_group["appointment_method"][0])
+            except Exception:
+                print(traceback.print_exc())
+
             missed_anc_before_group = appointment_object["missed_anc_before_group"][0]
             missed_anc_before = missed_anc_before_group["missed_anc_before"][0] == "yes"
 
