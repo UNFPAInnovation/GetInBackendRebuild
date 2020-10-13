@@ -246,6 +246,7 @@ class ODKWebhook(APIView):
             mapping_encounter.save()
             self.save_family_planning_methods_in_mapping_encounter(mapped_girl_object, mapping_encounter)
 
+            # MSI voucher are not provided to bundibugyo users
             if voucher_number_creation and user.district.name.lower() != "bundibugyo":
                 self.get_and_save_msi_voucher_to_girl(girl)
             return Response({'result': 'success'}, status.HTTP_200_OK)
