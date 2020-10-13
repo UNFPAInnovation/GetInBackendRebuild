@@ -75,7 +75,7 @@ class TestMSI(ParentTest):
                 }
             },
             "phone_number": "0756789543",
-            "trimester": 2,
+            "trimester": girl.trimester,
             "next_of_kin_phone_number": "0756789542",
             "education_level": PRIMARY_LEVEL,
             "marital_status": "Single",

@@ -597,7 +597,7 @@ class TestMidwifeMapping(ParentTest):
         self.assertEqual(FamilyPlanning.objects.first().method, "Injectables")
 
         girl = Girl.objects.first()
-        self.assertIsNotNone(girl.voucher_number)
+        self.assertEqual(girl.voucher_number, "")
         self.assertEqual(girl.nationality, "Refugee")
         self.assertEqual(girl.disabled, True)
 
@@ -768,7 +768,6 @@ class TestMidwifeMapping(ParentTest):
         self.assertEqual(FamilyPlanning.objects.first().method, "Withdrawal")
 
         girl = Girl.objects.first()
-        self.assertIsNotNone(girl.voucher_number)
-        self.assertEqual(girl.voucher_number, "223-acd")
+        self.assertEqual(girl.voucher_number, "")
         self.assertEqual(girl.nationality, "Ugandan")
         self.assertEqual(girl.disabled, False)
