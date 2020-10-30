@@ -14,7 +14,6 @@ Tools
 #. Swagger
 
 
-
 Resources
 ============
 
@@ -29,6 +28,9 @@ https://simpleisbetterthancomplex.com/tutorial/2016/10/14/how-to-deploy-to-digit
 * ODK certificate 
 
 https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-18-04
+
+* ODK central
+https://docs.getodk.org/central-install-digital-ocean/
 
 
 Links
@@ -81,12 +83,21 @@ SSH  into the Server, Install dependencies & setup postgreSql
 #. ssh -i GetInWebServer.pem ubuntu@public_ip_address 
 #. OR (GCP password is the one ssh key phrase you entered earlier) ``gcloud compute ssh <instance-id>`` if this fails then use ``gcloud beta compute ssh --zone "europe-west3-c" "test-backend-django" --project "getin-293809"``
 #. Set user password ``sudo passwd <username>``
-#. sudo apt-get update && apt-get upgrade -y (this may require root ``sudo bash``)
+#. sudo apt-get update && sudo apt-get upgrade -y (this may require root ``sudo bash``)
 #. sudo apt-get install libpq-dev postgresql postgresql-contrib nginx git
 #. sudo apt-get install python3-venv
+#. create `log` folder for logs files in location `/home/username/logs`
 #. source venv/bin/activate(or install without env)
 #. git clone https://github.com/UNFPAInnovation/GetInServerRebuild.git
 #. pip install -r requirements.txt
+
+
+Setup environment variables
+----------------------------
+#. Move into the ~/GetInBackendRebuild/GetInBackendRebuild folder ``cd GetInBackendRebuild/GetInBackendRebuild``
+#. cat `.env.example` to see the variables required
+#. Acquire variables from the person incharge of project
+#. Create a file name `.env` and add those variables
 
 
 Create postgres db credentials
@@ -173,24 +184,46 @@ Finally, we’ll add an [Install] section. This will tell systemd what to link t
 Configure Nginx to Proxy Pass to Gunicorn
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Create file rename GetInServerRebuild to GetInBackendRebuild
-sudo vim /etc/nginx/sites-available/GetInBackendRebuild
+Create file rename GetInBackendRebuild in sites-available
+``sudo vim /etc/nginx/sites-available/GetInBackendRebuild``
 
 Insert the following commands
 
 .. code-block:: python
 
+    upstream app_server {
+        server unix:/home/codephillip/GetInBackendRebuild/GetInBackendRebuild.sock fail_timeout=0;
+    }
+
     server {
         listen 80;
-        server_name 34.89.133.201 backend.getinmobile.org;
-    location = /favicon.ico { access_log off; log_not_found off; }
-        
+
+        # add here the ip address of your server
+        # or a domain pointing to that ip (like example.com or www.example.com)
+        server_name 34.221.109.93 testbackend.getinmobile.org;
+
+        keepalive_timeout 5;
+        client_max_body_size 4G;
+
+        # MAKE SURE YOU CREATE A FOLDER CALLED logs in the user root directory
+        access_log /home/codephillip/logs/nginx-access.log;
+        error_log /home/codephillip/logs/nginx-error.log;
+
+        # collect static using command ./manage.py collectstatic
         location /static/ {
-            root /home/codephillip/GetInBackendRebuild;
+            alias /home/codephillip/GetInBackendRebuild/static/;
         }
-    location / {
-            include proxy_params;
-            proxy_pass http://unix:/home/codephillip/GetInBackendRebuild/GetInBackendRebuild.sock;
+
+        # checks for static file, if not found proxy to app
+        location / {
+            try_files $uri @proxy_to_app;
+        }
+
+        location @proxy_to_app {
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header Host $http_host;
+          proxy_redirect off;
+          proxy_pass http://app_server;
         }
     }
 
@@ -200,7 +233,7 @@ Enable the file by linking it to the sites-enabled directory
 
 .. code-block:: console
 
-    sudo ln -s /etc/nginx/sites-available//etc/nginx/sites-available/GetInBackendRebuild /etc/nginx/sites-enabled
+    sudo ln -s /etc/nginx/sites-available/GetInBackendRebuild /etc/nginx/sites-enabled
 
 Generate ssl certificate
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -223,8 +256,9 @@ Create directories and request for certificate from lets encrypt
     sudo apt-get install software-properties-common
     sudo add-apt-repository ppa:certbot/certbot
     sudo apt-get update
-    sudo apt-get install python-certbot-nginx
-    sudo certbot --nginx
+    sudo apt  install certbot
+    sudo apt-get install python3-certbot-nginx
+    sudo certbot --nginx -d testbackend.getinmobile.org
     IF IT FAILS RUN sudo apt install --only-upgrade certbot
     sudo nginx -t
     sudo service nginx restart
@@ -309,3 +343,45 @@ Database backup
 #. Go to new server and create database. ``sudo -u postgres psql postgres`` then ``CREATE DATABASE <dbname>;``
 #. Logout of postgres. Import database into new sql db ``sudo -u postgres psql <dbname> < <exampledump.sql>``
 #. Connect to the database in the app.
+
+
+ODK central setup
+======================
+
+Installation guide
+-------------------
+Use the installation guide on odk central website
+https://docs.getodk.org/central-install-digital-ocean/
+
+Install docker(supplement to odk installation guide)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#. Install docker using. ``sudo apt install docker.io`` then ``sudo apt install docker-compose``
+#. Create the docker group. ``$ sudo groupadd docker``
+#. Add your user to the docker group. ``$ sudo usermod -aG docker $USER``
+#. Log out and log back in so that your group membership is re-evaluated.
+
+ODK database backup
+--------------------
+
+Export old db
+~~~~~~~~~~~~~~~
+#. Export odk central db ``docker exec central_postgres_1 pg_dump odk -U odk -f <filename>.sql``
+#. Extract the sql file from docker container `central_postgres_1` to the vm ``docker cp central_postgres_1:/<filename>.sql <filename>.sql``
+#. Export sql file to local machine from EC2 instance(Google compute will require Google storage). Use your local machine for this operation ``scp -i "GetInWebServer.pem" ubuntu@18.237.225.123:/home/ubuntu/'<filename>.sql' /home/codephillip/Downloads/'<filename>.sql'``
+
+Import new db
+~~~~~~~~~~~~~~~
+#. Import sql file into GCE instance ``gcloud compute scp <local-file-path> <instance-name>`` or Use the gcloud browser shell
+#. Delete all tables in database(MAKE SURE THIS IS A MIGRATION FROM ONE SERVER TO ANOTHER).
+
+.. code-block:: console
+
+    docker exec -it central_postgres_1 /bin/bash
+    psql -U odk
+    \c odk
+    DROP SCHEMA public CASCADE;
+    CREATE SCHEMA public;
+    CTRL + d
+
+#. Copy sql file into docker image ``docker cp '<filename>.sql' central_postgres_1:/'<filename>.sql'``
+#. Update odk database. ``docker exec central_postgres_1 psql -d odk -U odk -f <filename>.sql``
