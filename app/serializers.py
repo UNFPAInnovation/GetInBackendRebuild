@@ -129,7 +129,7 @@ class HealthFacilityGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = HealthFacility
         fields = (
-            'id', 'sub_county', 'name', 'sub_county_id')
+            'id', 'sub_county', 'name', 'sub_county_id', 'facility_level')
 
 
 class UserSerializer(serializers.ModelSerializer):

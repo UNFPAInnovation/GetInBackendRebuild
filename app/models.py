@@ -122,6 +122,7 @@ class Village(models.Model):
 class HealthFacility(models.Model):
     sub_county = models.ForeignKey(SubCounty, on_delete=models.CASCADE, blank=True, null=True)
     name = models.CharField(max_length=50)
+    facility_level = models.CharField(max_length=9, blank=True, null=True)
 
     def __str__(self):
         return self.name
