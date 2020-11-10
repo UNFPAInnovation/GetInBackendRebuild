@@ -123,16 +123,26 @@ class VillageGetSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class HealthFacilityGetSerializer(serializers.ModelSerializer):
+    sub_county_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = HealthFacility
+        fields = (
+            'id', 'sub_county', 'name', 'sub_county_id')
+
+
 class UserSerializer(serializers.ModelSerializer):
     village = VillageGetSerializer(many=False, read_only=True)
     midwife = UserGetSerializer(read_only=True)
+    health_facility = HealthFacilityGetSerializer(read_only=True)
 
     class Meta:
         model = User
         fields = (
             'id', 'first_name', 'last_name', 'username', 'email', 'phone', 'password', 'gender', 'village',
             'number_plate',
-            'role', 'midwife', 'user_permissions', 'created_at')
+            'role', 'midwife', 'user_permissions', 'created_at', 'health_facility')
         # extra_kwargs = {"password": {"write_only": True}}
 
     def validate_phone(self, value):
@@ -153,16 +163,6 @@ class UserSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['phone'])
         user.save()
         return user
-
-
-class HealthFacilityGetSerializer(serializers.ModelSerializer):
-    sub_county_id = serializers.IntegerField(write_only=True)
-
-    class Meta:
-        model = HealthFacility
-        fields = (
-            'id', 'sub_county', 'name', 'sub_county_id')
-
 
 class GirlSerializer(serializers.ModelSerializer):
     village = VillageGetSerializer(many=False, read_only=True)
