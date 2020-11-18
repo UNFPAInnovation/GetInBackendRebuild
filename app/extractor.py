@@ -7,10 +7,12 @@ from django.utils import timezone
 
 from GetInBackendRebuild.settings import SHEET_FILES_FOLDER
 from app.airtime_dispatcher import AirtimeModule
-from app.models import District, County, SubCounty, Parish, Village, User, Girl
+from app.models import District, County, SubCounty, Parish, Village, User, Girl, Appointment, FollowUp, HealthFacility
 from app.utils.utilities import add_months
 from openpyxl import Workbook, load_workbook
 from app.utils.constants import *
+from django.db.models.expressions import F, Q, ExpressionWrapper
+from django.db.models import Sum, Case, Value, When, Avg, FloatField, IntegerField, Count
 
 
 def extract_excel_org_unit_data(location):
@@ -94,10 +96,7 @@ def extract_excel_user_data(location):
 def extract_excel_user_data_from_sheet(location):
     wb = xlrd.open_workbook(location)
     sheet = wb.sheet_by_index(0)
-
     sheet.cell_value(0, 0)
-
-    print(sheet.utter_max_rows)
 
     for row_number in range(0, 1000):
         try:
@@ -116,10 +115,9 @@ def extract_excel_user_data_from_sheet(location):
         getin_number_value = int(row_data[3])
         role = row_data[4]
         sub_county = row_data[5]
-        username = row_data[6]
+        district = row_data[6]
+        facility = row_data[7]
         print(first_name_value + last_name_value + str(personal_number) + str(getin_number_value) + role)
-
-        print(row_number)
 
         if not first_name_value:
             break
@@ -129,16 +127,17 @@ def extract_excel_user_data_from_sheet(location):
             village = subcounty.parish_set.first().village_set.first()
         except Exception as e:
             print(e)
-            village = Village.objects.get(id=144)
+            village = District.objects.get(name=district).county_set.first().subcounty_set.first() \
+                .parish_set.first().village_set.first()
 
         try:
             role = str(role).lower()
             getin_number_value = "0" + str(int(getin_number_value))
-            print(getin_number_value)
-            print(first_name_value)
-            print(last_name_value)
+            facility, _ = HealthFacility.objects.get_or_create(name=facility, facility_level=decode_roman_numeral(
+                facility.split()[-1]), sub_county=village.parish.sub_county)
             user = User(first_name=first_name_value, village=village, last_name=last_name_value,
-                        username=str(username).lower(),
+                        username=str(first_name_value[0] + last_name_value.split()[0]).lower(),
+                        health_facility=facility,
                         email=username + "@getinmobile.org", phone=getin_number_value, role=str(role).lower())
             user.set_password(getin_number_value)
             user.save()
@@ -146,10 +145,26 @@ def extract_excel_user_data_from_sheet(location):
             print(traceback.print_exc())
 
 
-def generate_system_user_stats():
+def decode_roman_numeral(roman):
+    """
+    Calculate the numeric value of a Roman numeral
+    """
+    try:
+        trans = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}
+        values = [trans[r] for r in roman.upper()]
+        return sum(
+            val if val >= next_val else -val
+            for val, next_val in zip(values[:-1], values[1:])
+        ) + values[-1]
+    except KeyError as e:
+        print(e)
+        return 0
+
+
+def generate_monthly_system_stats():
     for district in District.objects.all():
-        created_at = timezone.datetime(2020, 6, 1).replace(tzinfo=pytz.utc)
-        while created_at < timezone.datetime(2020, 7, 1).replace(tzinfo=pytz.utc):
+        created_at = timezone.datetime(2019, 10, 1).replace(tzinfo=pytz.utc)
+        while created_at < timezone.datetime(2020, 12, 1).replace(tzinfo=pytz.utc):
             for user in User.objects.filter(district=district):
                 print(user.first_name)
                 if user.role in [USER_TYPE_DHO, USER_TYPE_AMBULANCE, USER_TYPE_DEVELOPER]:
@@ -160,8 +175,38 @@ def generate_system_user_stats():
                 filename = SHEET_FILES_FOLDER + "GetIN Traceability Form.xlsx"
                 wb = load_workbook(filename)
                 sheet = wb['Sheet1']
+
+                appointment_data = {
+                    "attended": 0,
+                    "expected": 0,
+                    "missed": 0
+                }
+
+                if user.role == USER_TYPE_MIDWIFE:
+                    appointment_data = Appointment.objects.filter(Q(user=user) & Q(created_at__gte=created_at) &
+                                            Q(created_at__lte=add_months(created_at, 1)
+                                              .replace(tzinfo=pytz.utc))).aggregate(
+                        attended=Count(Case(
+                            When(Q(status=ATTENDED), then=1),
+                            output_field=IntegerField(),
+                        )),
+                        expected=Count(Case(
+                            When(Q(status=EXPECTED), then=1),
+                            output_field=IntegerField(),
+                        )),
+                        missed=Count(Case(
+                            When(Q(status=MISSED), then=1),
+                            output_field=IntegerField(),
+                        ))
+                    )
+
+                followups = FollowUp.objects.filter(Q(user=user) & Q(created_at__gte=created_at) &
+                                            Q(created_at__lte=add_months(created_at, 1).replace(tzinfo=pytz.utc))).count()
+
                 sheet.append([user.first_name + " " + user.last_name, user.phone, user.role, district.name,
-                              created_at.strftime("%B"), girls])
+                              created_at.strftime("%B"), created_at.strftime("%Y"), girls, appointment_data['attended'],
+                              appointment_data['expected'],
+                              appointment_data['missed'], followups])
                 wb.save(filename)
             created_at = add_months(created_at, 1).replace(tzinfo=pytz.utc)
 

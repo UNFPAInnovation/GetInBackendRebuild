@@ -391,7 +391,7 @@ class FollowUp(models.Model):
 
 class MappingEncounter(models.Model):
     girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     family_planning = models.ManyToManyField(FamilyPlanning, blank=True, null=True)
     observation = models.ForeignKey(Observation, on_delete=models.DO_NOTHING, blank=True, null=True)
     voucher_card = models.CharField(max_length=250, blank=True, null=True)
