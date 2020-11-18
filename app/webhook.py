@@ -203,6 +203,7 @@ class ODKWebhook(APIView):
                 # lastly delete the old girl
                 old_girl.delete()
             else:
+                voucher_number = voucher_number if user.district.name.lower() != "bundibugyo" else ""
                 new_girl = Girl.objects.create(first_name=first_name, last_name=last_name, village=village,
                             phone_number=girls_phone_number, user=user, nationality=nationality, disabled=disabled,
                             next_of_kin_phone_number=next_of_kin_number, education_level=education_level, dob=dob,
@@ -238,14 +239,15 @@ class ODKWebhook(APIView):
 
             mapping_encounter.observation = observation
             mapping_encounter.attended_anc_visit = attended_anc_visit
-            mapping_encounter.voucher_card = voucher_number
+            mapping_encounter.voucher_card = voucher_number if user.district.name.lower() != "bundibugyo" else ""
             mapping_encounter.odk_instance_id = odk_instance_id
             mapping_encounter.user = user
             mapping_encounter.girl = girl
             mapping_encounter.save()
             self.save_family_planning_methods_in_mapping_encounter(mapped_girl_object, mapping_encounter)
 
-            if voucher_number_creation:
+            # MSI voucher are not provided to bundibugyo users
+            if voucher_number_creation and user.district.name.lower() != "bundibugyo":
                 self.get_and_save_msi_voucher_to_girl(girl)
             return Response({'result': 'success'}, status.HTTP_200_OK)
         except Exception:
