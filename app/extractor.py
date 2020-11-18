@@ -123,11 +123,11 @@ def extract_excel_user_data_from_sheet(location):
             break
 
         try:
-            subcounty = SubCounty.objects.get(name=sub_county)
+            subcounty = SubCounty.objects.get(name__icontains=sub_county)
             village = subcounty.parish_set.first().village_set.first()
         except Exception as e:
             print(e)
-            village = District.objects.get(name=district).county_set.first().subcounty_set.first() \
+            village = District.objects.get(name__icontains=district).county_set.first().subcounty_set.first() \
                 .parish_set.first().village_set.first()
 
         try:
