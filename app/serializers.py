@@ -125,6 +125,7 @@ class VillageGetSerializer(serializers.ModelSerializer):
 
 class HealthFacilityGetSerializer(serializers.ModelSerializer):
     sub_county_id = serializers.IntegerField(write_only=True)
+    sub_county = SubCountyGetSerializer(many=False, read_only=True)
 
     class Meta:
         model = HealthFacility
