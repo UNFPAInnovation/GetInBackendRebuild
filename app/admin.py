@@ -19,7 +19,6 @@ class GirlAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Girl, GirlAdmin)
-
 admin.site.register(HealthFacility)
 admin.site.register(FollowUp)
 admin.site.register(Delivery)
