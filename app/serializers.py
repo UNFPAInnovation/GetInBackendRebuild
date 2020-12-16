@@ -9,6 +9,7 @@ from GetInBackendRebuild.settings import SECRET_KEY
 from app.models import User, District, County, SubCounty, Parish, Village, Girl, HealthFacility, FollowUp, Delivery, \
     MappingEncounter, AppointmentEncounter, Appointment, SmsModel, Observation, FamilyPlanning, Region, MSIService
 
+from app.utils.constants import USER_TYPE_MIDWIFE, USER_TYPE_CHEW, USER_TYPE_AMBULANCE
 
 def create_token(user=None):
     payload = jwt_payload_handler(user)
@@ -51,6 +52,24 @@ class LocationMSISerializer(serializers.Field):
             }
         }
         return data
+
+
+class MidwifeSerializer(serializers.Field):
+    def to_representation(self, health_facility):
+       data = User.objects.filter(health_facility__name=health_facility.name, role=USER_TYPE_MIDWIFE).count()
+       return data
+
+
+class ChewSerializer(serializers.Field):
+    def to_representation(self, health_facility):
+       data = User.objects.filter(health_facility__name=health_facility.name, role=USER_TYPE_CHEW).count()
+       return data
+
+
+class AmbulanceSerializer(serializers.Field):
+    def to_representation(self, health_facility):
+       data = User.objects.filter(health_facility__name=health_facility.name, role=USER_TYPE_AMBULANCE).count()
+       return data
 
 
 class MSIServicesSerializer(serializers.Field):
@@ -126,12 +145,14 @@ class VillageGetSerializer(serializers.ModelSerializer):
 class HealthFacilityGetSerializer(serializers.ModelSerializer):
     sub_county_id = serializers.IntegerField(write_only=True)
     sub_county = SubCountyGetSerializer(many=False, read_only=True)
+    midwife = MidwifeSerializer(source = '*',read_only=True)
+    chew = ChewSerializer(source = '*',read_only=True)
+    ambulance = AmbulanceSerializer(source = '*',read_only=True)
 
     class Meta:
         model = HealthFacility
         fields = (
-            'id', 'sub_county', 'name', 'sub_county_id', 'facility_level')
-
+            'id', 'sub_county', 'name', 'sub_county_id', 'facility_level', 'midwife', 'chew', 'ambulance')
 
 class UserSerializer(serializers.ModelSerializer):
     village = VillageGetSerializer(many=False, read_only=True)
