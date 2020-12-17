@@ -2,7 +2,7 @@ import datetime
 import calendar
 
 import pytz
-from django.db.models import Q
+from django.db.models import Q, Sum, Case, When, IntegerField
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend, OrderingFilter
 from dry_rest_permissions.generics import DRYPermissions
@@ -50,11 +50,13 @@ class GirlView(ListCreateAPIView):
         user = self.request.user
         if user.role == USER_TYPE_MIDWIFE:
             users = User.objects.filter(midwife=user)
-            model = Girl.objects.filter(Q(user__in=users) | Q(user=user)).order_by('-created_at')
+            model = Girl.objects.filter(Q(user__in=users) | Q(
+                user=user)).order_by('-created_at')
         elif user.role in [USER_TYPE_CHEW]:
             model = Girl.objects.filter(user=user).order_by('-created_at')
         elif user.role in [USER_TYPE_DHO]:
-            model = Girl.objects.filter(user__district=user.district).order_by('-created_at')
+            model = Girl.objects.filter(
+                user__district=user.district).order_by('-created_at')
         else:
             model = Girl.objects.all()
         return model
@@ -69,11 +71,14 @@ class MappingEncounterView(ListCreateAPIView):
         user = self.request.user
         if user.role == USER_TYPE_MIDWIFE:
             users = User.objects.filter(midwife=user)
-            model = MappingEncounter.objects.filter(Q(user__in=users) | Q(user=user)).order_by('-created_at')
+            model = MappingEncounter.objects.filter(
+                Q(user__in=users) | Q(user=user)).order_by('-created_at')
         elif user.role in [USER_TYPE_CHEW]:
-            model = MappingEncounter.objects.filter(user=user).order_by('-created_at')
+            model = MappingEncounter.objects.filter(
+                user=user).order_by('-created_at')
         elif user.role in [USER_TYPE_DHO]:
-            model = MappingEncounter.objects.filter(user__district=user.district).order_by('-created_at')
+            model = MappingEncounter.objects.filter(
+                user__district=user.district).order_by('-created_at')
         else:
             model = MappingEncounter.objects.all().order_by('-created_at')
         return model
@@ -125,7 +130,8 @@ class HealthFacilityView(ListCreateAPIView):
         user = self.request.user
 
         if user.role in [USER_TYPE_DHO]:
-            model = HealthFacility.objects.filter(sub_county__county__district=user.district)
+            model = HealthFacility.objects.filter(
+                sub_county__county__district=user.district)
         else:
             model = HealthFacility.objects.all()
         return model
@@ -139,11 +145,14 @@ class FollowUpView(ListCreateAPIView):
         user = self.request.user
         if user.role == USER_TYPE_MIDWIFE:
             users = User.objects.filter(midwife=user)
-            model = FollowUp.objects.filter(Q(user__in=users) | Q(user=user)).order_by('-created_at')
+            model = FollowUp.objects.filter(
+                Q(user__in=users) | Q(user=user)).order_by('-created_at')
         elif user.role == USER_TYPE_CHEW:
-            model = FollowUp.objects.filter(Q(user=user)).order_by('-created_at')
+            model = FollowUp.objects.filter(
+                Q(user=user)).order_by('-created_at')
         elif user.role == USER_TYPE_DHO:
-            model = FollowUp.objects.filter(user__district=user.district).order_by('-created_at')
+            model = FollowUp.objects.filter(
+                user__district=user.district).order_by('-created_at')
         else:
             model = FollowUp.objects.all().order_by('-created_at')
         return model
@@ -168,7 +177,8 @@ class DeliveriesView(ListCreateAPIView):
         elif user.role == USER_TYPE_CHEW:
             model = Delivery.objects.filter(user=user).order_by('-created_at')
         elif user.role == USER_TYPE_DHO:
-            model = Delivery.objects.filter(user__district=user.district).order_by('-created_at')
+            model = Delivery.objects.filter(
+                user__district=user.district).order_by('-created_at')
         else:
             model = Delivery.objects.all().order_by('-created_at')
         return model
@@ -194,10 +204,12 @@ class AppointmentView(ListCreateAPIView):
                 Q(user_id__in=[user.id for user in users]) | Q(user__id=user.id)).order_by('-created_at')
         elif user.role in [USER_TYPE_CHEW]:
             # return appointments created by CHEW
-            appointments = Appointment.objects.filter(Q(user=user) | Q(girl__user=user)).order_by('-created_at')
+            appointments = Appointment.objects.filter(
+                Q(user=user) | Q(girl__user=user)).order_by('-created_at')
         elif user.role in [USER_TYPE_DHO]:
             # return all appointments in the DHO district
-            appointments = Appointment.objects.filter(user__district=user.district).order_by('-created_at')
+            appointments = Appointment.objects.filter(
+                user__district=user.district).order_by('-created_at')
         else:
             # return everything for super users and developers
             appointments = Appointment.objects.all().order_by('-created_at')
@@ -213,9 +225,10 @@ class DashboardStatsView(APIView):
         get_params = dict(zip(request.GET.keys(), request.GET.values()))
         date_format = '%Y-%m-%d'
 
-        created_at_from = datetime.datetime.strptime(get_params['from'], date_format).replace(tzinfo=pytz.utc)
+        created_at_from = datetime.datetime.strptime(
+            get_params['from'], date_format).replace(tzinfo=pytz.utc)
         created_at_to_limit = datetime.datetime.strptime(get_params['to'], date_format).replace(tzinfo=pytz.utc) \
-                              + timezone.timedelta(days=1)
+            + timezone.timedelta(days=1)
 
         all_months_range_data = []
         first_date_range = True
@@ -226,7 +239,8 @@ class DashboardStatsView(APIView):
         while created_at_from <= created_at_to_limit:
             '''We loop through all months for the data querried.
             we do some mutation on the dates so as to group the data in months '''
-            created_at_to = self.generate_date_range(created_at_from, created_at_to_limit, first_date_range)
+            created_at_to = self.generate_date_range(
+                created_at_from, created_at_to_limit, first_date_range)
 
             all_subcounties = []
 
@@ -241,24 +255,27 @@ class DashboardStatsView(APIView):
                     total_girls_in_subcounty = Girl.objects.filter(Q(village__parish__sub_county=subcounty) &
                                                                    Q(created_at__gte=created_at_from) & Q(
                         created_at__lte=created_at_to)).count()
-                    response["totalNumberOfGirlsMappedFrom" + subcounty.name] = total_girls_in_subcounty
+                    response["totalNumberOfGirlsMappedFrom" +
+                             subcounty.name] = total_girls_in_subcounty
                     total_girls_in_all_subcounties += total_girls_in_subcounty
 
-                girls = Girl.objects.filter(Q(age__gte=12) & Q(age__lte=15) & Q(user__district=district) &
-                                            Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to))
+                    girls = Girl.objects.aggregate(girls_count_12_15=Sum(
+                        Case(When(Q(age__lte=15) & Q(age__lte=15) & Q(user__district=district) &
+                                  Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to), then=1), output_field=IntegerField())),
+                        girls_count_16_19=Sum(
+                        Case(When(Q(age__gte=16) & Q(age__lte=19) & Q(user__district=district) &
+                                  Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to), then=1), output_field=IntegerField())),
+                        girls_count_20_24=Sum(
+                        Case(When(Q(age__gte=20) & Q(age__lte=24) & Q(user__district=district) &
+                                  Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to), then=1), output_field=IntegerField()))
+                    )
 
-                response["mappedGirlsInAgeGroup12_15"] = girls.count()
-
-                girls = Girl.objects.filter(Q(age__gte=16) & Q(age__lte=19) & Q(user__district=district) &
-                                            Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to))
-                response["mappedGirlsInAgeGroup16_19"] = girls.count()
-
-                girls = Girl.objects.filter(Q(age__gte=20) & Q(age__lte=24) & Q(user__district=district) &
-                                            Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to))
-                response["mappedGirlsInAgeGroup20_24"] = girls.count()
-
+                response["mappedGirlsInAgeGroup12_15"] = girls['girls_count_12_15']
+                response["mappedGirlsInAgeGroup16_19"] = girls['girls_count_16_19']
+                response["mappedGirlsInAgeGroup20_24"] = girls['girls_count_20_24']
                 response["count"] = total_girls_in_all_subcounties
-                response["subcounties"] = [subcounty.name for subcounty in sub_counties]
+                response["subcounties"] = [
+                    subcounty.name for subcounty in sub_counties]
 
                 all_months_range_data.append(response)
             elif request.path == '/api/v1/deliveries_stats':
@@ -272,14 +289,16 @@ class DashboardStatsView(APIView):
                 # remove duplicate subcounties
                 all_subcounties = list(set(all_subcounties))
 
-                response["subcounties"] = [subcounty.name for subcounty in all_subcounties]
+                response["subcounties"] = [
+                    subcounty.name for subcounty in all_subcounties]
 
                 all_deliveries_total = 0
 
                 for subcounty in all_subcounties:
                     delivery_total = Delivery.objects.filter(
                         girl__village__parish_id__in=[parish.id for parish in subcounty.parish_set.all()]).count()
-                    response["deliveriesFromSubcounty" + subcounty.name] = delivery_total
+                    response["deliveriesFromSubcounty" +
+                             subcounty.name] = delivery_total
                     all_deliveries_total += delivery_total
 
                 response["count"] = all_deliveries_total
@@ -297,9 +316,11 @@ class DashboardStatsView(APIView):
                 .replace(tzinfo=pytz.utc)
         else:
             if add_months(created_at_from, 1).replace(tzinfo=pytz.utc) > created_at_to_limit:
-                created_at_to = created_at_from.replace(day=created_at_to_limit.day).replace(tzinfo=pytz.utc)
+                created_at_to = created_at_from.replace(
+                    day=created_at_to_limit.day).replace(tzinfo=pytz.utc)
             else:
-                created_at_to = add_months(created_at_from, 1).replace(tzinfo=pytz.utc)
+                created_at_to = add_months(
+                    created_at_from, 1).replace(tzinfo=pytz.utc)
         return created_at_to
 
 
@@ -310,7 +331,8 @@ class SmsView(ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
         if user.role == USER_TYPE_DHO:
-            model = SmsModel.objects.filter(sender_id=user.id).order_by('-created_at')
+            model = SmsModel.objects.filter(
+                sender_id=user.id).order_by('-created_at')
         else:
             model = SmsModel.objects.all().order_by('-created_at')
         return model
@@ -353,5 +375,6 @@ class AirtimeDispatchView(APIView):
 
     def post(self, request, format=None):
         airtime_module = AirtimeModule()
-        airtime_module.send_airtime(request.data["numbers"], request.data["amount"])
+        airtime_module.send_airtime(
+            request.data["numbers"], request.data["amount"])
         return Response({"result": "success"})
