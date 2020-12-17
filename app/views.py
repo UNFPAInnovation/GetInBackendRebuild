@@ -2,7 +2,7 @@ import datetime
 import calendar
 
 import pytz
-from django.db.models import Q
+from django.db.models import Q, Sum, Case, When, IntegerField
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend, OrderingFilter
 from dry_rest_permissions.generics import DRYPermissions
@@ -243,19 +243,20 @@ class DashboardStatsView(APIView):
                     response["totalNumberOfGirlsMappedFrom" + subcounty.name] = total_girls_in_subcounty
                     total_girls_in_all_subcounties += total_girls_in_subcounty
 
-                girls = Girl.objects.filter(Q(age__gte=12) & Q(age__lte=15) & Q(user__district=district) &
-                                            Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to))
+               girls = Girl.objects.aggregate(girls_count_12_15=Sum(
+                        Case(When(Q(age__lte=15) & Q(age__lte=15) & Q(user__district=district) &
+                                  Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to), then=1), output_field=IntegerField())),
+                        girls_count_16_19=Sum(
+                        Case(When(Q(age__gte=16) & Q(age__lte=19) & Q(user__district=district) &
+                                  Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to), then=1), output_field=IntegerField())),
+                        girls_count_20_24=Sum(
+                        Case(When(Q(age__gte=20) & Q(age__lte=24) & Q(user__district=district) &
+                                  Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to), then=1), output_field=IntegerField()))
+                    )
 
-                response["mappedGirlsInAgeGroup12_15"] = girls.count()
-
-                girls = Girl.objects.filter(Q(age__gte=16) & Q(age__lte=19) & Q(user__district=district) &
-                                            Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to))
-                response["mappedGirlsInAgeGroup16_19"] = girls.count()
-
-                girls = Girl.objects.filter(Q(age__gte=20) & Q(age__lte=24) & Q(user__district=district) &
-                                            Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to))
-                response["mappedGirlsInAgeGroup20_24"] = girls.count()
-
+                response["mappedGirlsInAgeGroup12_15"] = girls['girls_count_12_15']
+                response["mappedGirlsInAgeGroup16_19"] = girls['girls_count_16_19']
+                response["mappedGirlsInAgeGroup20_24"] = girls['girls_count_20_24']
                 response["count"] = total_girls_in_all_subcounties
                 response["subcounties"] = [subcounty.name for subcounty in sub_counties]
 
