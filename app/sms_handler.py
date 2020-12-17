@@ -4,15 +4,18 @@ from rest_framework.response import Response
 from app.models import SmsModel, User
 from app.serializers import SmsModelSerializer
 from app.utils.constants import username, api_key
-
+from django.utils import timezone
 africastalking.initialize(username, api_key)
 sms = africastalking.SMS
+print(username)
+print(api_key)
 
 
-def send_sms(message, sender, receiver_ids):
+def send_hw_sms(message, sender, receiver_ids):
     server_response = []
     phone_numbers = ["+256" + User.objects.get(id=receiver_id).phone[1:] for receiver_id in receiver_ids]
     response = sms.send(message, phone_numbers)
+    sms_logger(str(response) + message)
     recipients_results = response['SMSMessageData']['Recipients']
 
     for recipient in recipients_results:
@@ -26,9 +29,19 @@ def send_sms(message, sender, receiver_ids):
         except Exception as e:
             print(e)
     server_response = "success"
-    return Response({'result': server_response})
+    return server_response
 
 
-def send_single_sms(message, phone_number):
+def send_sms_message(message, phone_number):
     response = sms.send(message, phone_number)
-    print(response)
+    sms_logger(str(response) + message)
+    return response
+
+
+def sms_logger(logs):
+    try:
+        webhooklog = open('sms_sender_log.txt', 'a')
+        webhooklog.write("\n\n" + str(timezone.now()) + "\n" + logs)
+        webhooklog.close()
+    except Exception as e:
+        print(e)

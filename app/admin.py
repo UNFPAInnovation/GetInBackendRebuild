@@ -1,7 +1,8 @@
 from django.contrib import admin
 
 from app.models import User, District, County, SubCounty, Parish, Village, Girl, HealthFacility, FollowUp, Delivery, \
-    MappingEncounter, Appointment, AppointmentEncounter, Referral, FamilyPlanning, Observation, NotificationLog, Region
+    MappingEncounter, Appointment, AppointmentEncounter, Referral, FamilyPlanning, Observation, NotificationLog, Region, \
+    HealthMessage
 
 admin.site.register(User)
 admin.site.register(Region)
@@ -29,3 +30,4 @@ admin.site.register(Referral)
 admin.site.register(FamilyPlanning)
 admin.site.register(Observation)
 admin.site.register(NotificationLog)
+admin.site.register(HealthMessage)

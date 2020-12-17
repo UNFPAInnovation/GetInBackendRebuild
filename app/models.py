@@ -627,3 +627,8 @@ class NotificationLog(models.Model):
 class MSIService(models.Model):
     girl = models.ForeignKey(Girl, on_delete=models.CASCADE)
     option = models.CharField(choices=MSI_OPTIONS, default=ANC1, max_length=250)
+
+
+class HealthMessage(models.Model):
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
