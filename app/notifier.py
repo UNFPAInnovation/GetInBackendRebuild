@@ -169,7 +169,4 @@ class NotifierView(APIView):
         nine_months_date = timezone.timedelta(days=274)
         pregnant_girls = Girl.objects.filter(last_menstruation_date__gte=self.current_date - nine_months_date)
         phone_numbers = ["+256" + girl.phone_number[1:] for girl in pregnant_girls]
-        print(phone_numbers)
-        # todo remove this test phone number
-        phone_numbers = ['+256756878460']
         send_sms_message(self.get_random_health_messages(), phone_numbers)

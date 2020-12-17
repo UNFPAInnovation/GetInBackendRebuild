@@ -53,7 +53,6 @@ STAGE = (
     (CURRENT, CURRENT),
 )
 
-
 FAMILY_PLANNING_STATUS = (
     (PRE, 'Pre'),
     (POST, 'Post'),
@@ -66,6 +65,11 @@ MSI_OPTIONS = (
     (ANC4, 'AN4'),
     (DELIVERY, 'Delivery'),
     (FAMILY_PLANNING, 'Family Planning'),
+)
+
+SMS_MESSAGE_TYPES = (
+    (HEALTH_MESSAGES, 'HEALTH_MESSAGES'),
+    (APPOINTMENT_REMINDER_MESSAGES, 'APPOINTMENT_REMINDER_MESSAGES'),
 )
 
 
@@ -440,7 +444,7 @@ class AppointmentEncounter(models.Model):
     @staticmethod
     def has_write_permission(request):
         # return request.user.role in [USER_TYPE_CHEW, USER_TYPE_MIDWIFE] or request.user.is_staff \
-               # or request.user.is_superuser
+        # or request.user.is_superuser
         return True
 
     @staticmethod
@@ -610,6 +614,31 @@ class NotificationLog(models.Model):
 
     def __str__(self):
         return self.appointment.girl.last_name + " " + self.appointment.girl.first_name + " " + str(self.created_at)
+
+    @staticmethod
+    def has_write_permission(request):
+        return True
+
+    @staticmethod
+    def has_read_permission(request):
+        return True
+
+    @staticmethod
+    def has_object_write_permission(self, request):
+        return True
+
+
+class SentSmsLog(models.Model):
+    phone_number = models.CharField(max_length=15)
+    message = models.TextField()
+    message_type = models.CharField(max_length=200, choices=SMS_MESSAGE_TYPES, default=HEALTH_MESSAGES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.phone_number + self.message
 
     @staticmethod
     def has_write_permission(request):

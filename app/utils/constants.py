@@ -44,6 +44,9 @@ ANC3 = "AN3"
 ANC4 = "AN4"
 DELIVERY = "Delivery"
 FAMILY_PLANNING = "Family Planning"
+
+HEALTH_MESSAGES = "HEALTH_MESSAGES"
+APPOINTMENT_REMINDER_MESSAGES = "APPOINTMENT_REMINDER_MESSAGES"
 #####################################
 # NOTE: The form ids must be the same in odk central, android app, xslm forms and django backend
 # When you change a form and generate the xml, odk central will require you to upload one with a different id
