@@ -44,7 +44,6 @@ class UserCreateView(ListCreateAPIView):
     queryset = User.objects.all()
     filter_class = UserFilter
 
-
 class GirlView(ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
