@@ -44,6 +44,7 @@ class UserCreateView(ListCreateAPIView):
     queryset = User.objects.all()
     filter_class = UserFilter
 
+
 class GirlView(ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
@@ -243,16 +244,20 @@ class DashboardStatsView(APIView):
                     response["totalNumberOfGirlsMappedFrom" + subcounty.name] = total_girls_in_subcounty
                     total_girls_in_all_subcounties += total_girls_in_subcounty
 
-               girls = Girl.objects.aggregate(girls_count_12_15=Sum(
+                girls = Girl.objects.aggregate(
+                    girls_count_12_15=Sum(
                         Case(When(Q(age__lte=15) & Q(age__lte=15) & Q(user__district=district) &
-                                  Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to), then=1), output_field=IntegerField())),
-                        girls_count_16_19=Sum(
+                                  Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to), then=1),
+                             output_field=IntegerField())),
+                    girls_count_16_19=Sum(
                         Case(When(Q(age__gte=16) & Q(age__lte=19) & Q(user__district=district) &
-                                  Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to), then=1), output_field=IntegerField())),
-                        girls_count_20_24=Sum(
+                                  Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to), then=1),
+                             output_field=IntegerField())),
+                    girls_count_20_24=Sum(
                         Case(When(Q(age__gte=20) & Q(age__lte=24) & Q(user__district=district) &
-                                  Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to), then=1), output_field=IntegerField()))
-                    )
+                                  Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to), then=1),
+                             output_field=IntegerField()))
+                )
 
                 response["mappedGirlsInAgeGroup12_15"] = girls['girls_count_12_15']
                 response["mappedGirlsInAgeGroup16_19"] = girls['girls_count_16_19']
