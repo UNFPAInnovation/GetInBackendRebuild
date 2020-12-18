@@ -71,6 +71,10 @@ class AmbulanceSerializer(serializers.Field):
        data = User.objects.filter(health_facility__name=health_facility.name, role=USER_TYPE_AMBULANCE).count()
        return data
 
+class AverageDeliveriesSerializer(serializers.Field):
+    def to_representation(self, health_facility):
+        data = Delivery.objects.filter(user__health_facility__name=health_facility.name).count()
+        return data      
 
 class MSIServicesSerializer(serializers.Field):
     def to_representation(self, girl):
@@ -148,11 +152,12 @@ class HealthFacilityGetSerializer(serializers.ModelSerializer):
     midwife = MidwifeSerializer(source = '*',read_only=True)
     chew = ChewSerializer(source = '*',read_only=True)
     ambulance = AmbulanceSerializer(source = '*',read_only=True)
+    average_deliveries = AverageDeliveriesSerializer(source='*', read_only=True)
 
     class Meta:
         model = HealthFacility
         fields = (
-            'id', 'sub_county', 'name', 'sub_county_id', 'facility_level', 'midwife', 'chew', 'ambulance')
+            'id', 'sub_county', 'name', 'sub_county_id', 'facility_level', 'midwife', 'chew', 'ambulance', 'average_deliveries')
 
 class UserSerializer(serializers.ModelSerializer):
     village = VillageGetSerializer(many=False, read_only=True)
