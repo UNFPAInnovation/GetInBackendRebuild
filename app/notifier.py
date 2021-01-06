@@ -52,13 +52,15 @@ class NotifierView(APIView):
             print(appointment.date)
 
             # extract midwife and vht firebase device ids
-            firebase_device_ids = list({appointment.user.firebase_device_id, appointment.girl.user.firebase_device_id})
+            firebase_device_ids = list(
+                filter(None, {appointment.user.firebase_device_id, appointment.girl.user.firebase_device_id}))
+            print(firebase_device_ids)
             girl_phone_numbers.append("+256" + appointment.girl.phone_number[1:])
             print('girl_phone_numbers')
             print(girl_phone_numbers)
 
             # midwife and vhts phone numbers
-            health_worker_ids = list({appointment.user.id, appointment.girl.user.id})
+            health_worker_ids = list(filter(None, {appointment.user.id, appointment.girl.user.id}))
             print('health_worker_ids')
             print(health_worker_ids)
 
@@ -70,13 +72,13 @@ class NotifierView(APIView):
             if not NotificationLog.objects.filter(Q(appointment=appointment) & Q(stage=BEFORE)):
                 send_firebase_notification(firebase_device_ids, message_title, message_body)
 
-                sender = User.objects.get(username__icontains="admin")
-                # send_hw_sms(message_body, sender, receiver_ids=health_worker_ids)
+                sender = User.objects.filter(username__icontains="admin").first()
+                send_hw_sms(message_body, sender, receiver_ids=health_worker_ids)
 
                 NotificationLog(appointment=appointment, stage=BEFORE).save()
         girls_message_body = "GetIN. Please visit hospital for ANC visits in three days"
-        # send_sms_message(girls_message_body, phone_number=girl_phone_numbers)
-
+        girl_phone_numbers = list(filter(None, set(girl_phone_numbers)))
+        send_sms_message(girls_message_body, girl_phone_numbers)
 
     def send_appointment_one_day_after_date(self):
         girl_phone_numbers = []
@@ -106,7 +108,7 @@ class NotifierView(APIView):
             if not NotificationLog.objects.filter(Q(appointment=appointment) & Q(stage=AFTER)):
                 send_firebase_notification(firebase_device_ids, message_title, message_body)
 
-                sender = User.objects.get(username__icontains="admin")
+                sender = User.objects.filter(username__icontains="admin").first()
                 # send_hw_sms(message_body, sender, receiver_ids=health_workers_ids)
 
                 NotificationLog(appointment=appointment, stage=AFTER).save()
@@ -141,7 +143,7 @@ class NotifierView(APIView):
             if not NotificationLog.objects.filter(Q(appointment=appointment) & Q(stage__in=[CURRENT, AFTER])):
                 send_firebase_notification(firebase_device_ids, message_title, message_body)
 
-                sender = User.objects.get(username__icontains="admin")
+                sender = User.objects.filter(username__icontains="admin").first()
                 # send_hw_sms(message_body, sender, receiver_ids=health_workers_ids)
                 NotificationLog(appointment=appointment, stage=CURRENT).save()
 

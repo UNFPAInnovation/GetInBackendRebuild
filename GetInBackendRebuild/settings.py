@@ -241,3 +241,5 @@ LOGGING = {
         },
     },
 }
+
+EMAIL_BACKEND = env('EMAIL_BACKEND')
