@@ -60,21 +60,18 @@ class NotifierView(APIView):
             print(girl_phone_numbers)
 
             # midwife and vhts phone numbers
-            health_worker_ids = list(filter(None, {appointment.user.id, appointment.girl.user.id}))
-            print('health_worker_ids')
-            print(health_worker_ids)
+            hw_phone_numbers = list(filter(None, {appointment.user.phone, appointment.girl.user.phone}))
+            print('hw_phone_numbers')
+            print(hw_phone_numbers)
 
             message_title = "GetIn ANC reminder"
-            message_body = "GetIN. " + appointment.girl.first_name + " " + appointment.girl.last_name \
-                           + "'s ANC visits is in three days"
+            hw_message_body = "GetIN. " + appointment.girl.first_name + " " + appointment.girl.last_name \
+                              + "'s ANC visits is in three days"
 
             # only send notification and sms if the user has never received. this prevents spamming
             if not NotificationLog.objects.filter(Q(appointment=appointment) & Q(stage=BEFORE)):
-                send_firebase_notification(firebase_device_ids, message_title, message_body)
-
-                sender = User.objects.filter(username__icontains="admin").first()
-                send_hw_sms(message_body, sender, receiver_ids=health_worker_ids)
-
+                send_firebase_notification(firebase_device_ids, message_title, hw_message_body)
+                send_sms_message(hw_message_body, hw_phone_numbers)
                 NotificationLog(appointment=appointment, stage=BEFORE).save()
         girls_message_body = "GetIN. Please visit hospital for ANC visits in three days"
         girl_phone_numbers = list(filter(None, set(girl_phone_numbers)))

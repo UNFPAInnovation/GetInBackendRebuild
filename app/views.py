@@ -326,14 +326,17 @@ class SmsView(ListCreateAPIView):
         print(message)
 
         try:
-            sender = request.user
+            try:
+                sender = request.user
+            except Exception as e:
+                print(e)
+                # use the developer account as the sender incase the user is None
+                sender = User.objects.get(username__icontains="admin")
+            receiver_ids = request.data.get('receiver_ids')
+            send_hw_sms(message, sender, receiver_ids)
         except Exception as e:
-            print(e)
-            # use the developer account as the sender incase the user is None
-            sender = User.objects.get(username__icontains="admin")
-
-        receiver_ids = request.data.get('receiver_ids')
-        return Response({'result': send_hw_sms(message, sender, receiver_ids)})
+            return Response({'result': 'failure'})
+        return Response({'result': 'success'})
 
 
 class ExtractView(APIView):
