@@ -24,6 +24,7 @@ from app.serializers import UserSerializer, User, GirlSerializer, DistrictGetSer
     CountyGetSerializer, SubCountyGetSerializer, ParishGetSerializer, VillageGetSerializer, HealthFacilityGetSerializer, \
     FollowUpGetSerializer, FollowUpPostSerializer, DeliveryPostSerializer, DeliveryGetSerializer, \
     MappingEncounterSerializer, AppointmentSerializer, SmsModelSerializer
+from app.sms_handler import send_hw_sms
 
 from app.utils.constants import USER_TYPE_MIDWIFE, USER_TYPE_CHEW, USER_TYPE_DHO
 from app.utils.utilities import add_months
@@ -332,7 +333,7 @@ class SmsView(ListCreateAPIView):
             sender = User.objects.get(username__icontains="admin")
 
         receiver_ids = request.data.get('receiver_ids')
-        return sms_handler.send_sms(message, sender, receiver_ids)
+        return Response({'result': send_hw_sms(message, sender, receiver_ids)})
 
 
 class ExtractView(APIView):
