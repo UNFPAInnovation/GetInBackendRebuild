@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 
 from app.firebase_notification import send_firebase_notification
 from app.models import Appointment, User, NotificationLog, Girl, HealthMessage
-from app.sms_handler import send_hw_sms, send_sms_message
+from app.sms_handler import send_hw_sms, send_sms_message, sms_logger
 from app.utils.constants import BEFORE, AFTER, CURRENT, USER_TYPE_CHEW, USER_TYPE_MIDWIFE
 from random import shuffle
 
@@ -44,6 +44,7 @@ class NotifierView(APIView):
 
     def send_appointment_three_days_before_date(self):
         girl_phone_numbers = []
+        sms_logger("#started# ", " three days before date notifier")
 
         appointments = Appointment.objects.filter(
             Q(date__lt=self.current_date + timezone.timedelta(days=3)) & Q(date__gte=self.current_date))
