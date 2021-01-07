@@ -43,12 +43,10 @@ class TestSMS(ParentTest):
                                          phone_number="0756783339",
                                          education_level=O_LEVEL)
 
-        Appointment.objects.create(girl=self.girl, user=self.midwife, date=timezone.now() + timezone.timedelta(days=2))
-        Appointment.objects.create(girl=self.girl2, user=self.chew, date=timezone.now() + timezone.timedelta(days=2))
+        Appointment.objects.create(girl=self.girl, user=self.midwife, date=timezone.now())
+        Appointment.objects.create(girl=self.girl2, user=self.chew, date=timezone.now() + timezone.timedelta(days=1))
         Appointment.objects.create(girl=self.girl3, user=self.midwife2, date=timezone.now() + timezone.timedelta(days=2))
-        Appointment.objects.create(girl=self.girl4, user=self.midwife3, date=timezone.now() + timezone.timedelta(days=2))
-        Appointment.objects.create(girl=self.girl, user=self.midwife, date=timezone.now() + timezone.timedelta(days=4))
-        Appointment.objects.create(girl=self.girl2, user=self.midwife, date=timezone.now() + timezone.timedelta(days=10))
+        Appointment.objects.create(girl=self.girl4, user=self.midwife3, date=timezone.now() + timezone.timedelta(days=3))
 
         for text in range(200):
             HealthMessage.objects.create(text=get_random_string(length=20))
@@ -85,5 +83,8 @@ class TestSMS(ParentTest):
         - If health worker has multiple upcoming appointments for several girls, only one must be sent
         - Sent sms dont exceed the daily limit
         """
-        self.notifier.send_appointment_three_days_before_date()
-        self.assertEqual(SentSmsLog.objects.count(), 8)
+        self.notifier.send_appointment_sms_to_eligible_girls()
+        self.assertEqual(SentSmsLog.objects.count(), 3)
+        self.assertEqual(SentSmsLog.objects.filter(message__icontains='today').count(), 1)
+        self.assertEqual(SentSmsLog.objects.filter(message__icontains='tomorrow').count(), 1)
+        self.assertEqual(SentSmsLog.objects.filter(message__icontains='3 days').count(), 1)

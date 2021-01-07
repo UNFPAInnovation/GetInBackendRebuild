@@ -189,8 +189,8 @@ CRONJOBS = [
     # show cron job. python manage.py crontab show
     # deactivate cron job. python manage.py crontab remove
 
-    # run cron job at 10:05 every day
-    ('5 10 * * *', 'app.cron.notifier_appointment_reminder_cron_job'),
+    # run cron job at 9:05 every day
+    ('5 9 * * *', 'app.cron.notifier_appointment_reminder_cron_job'),
     # # run cron job at 11:05 every day
     ('5 11 * * *', 'app.cron.notifier_daily_usage_reminder_cron_job'),
     # # run cron job at 18:05 every day

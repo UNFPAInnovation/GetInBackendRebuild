@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from app.firebase_notification import send_firebase_notification
 from app.models import Appointment, User, NotificationLog, Girl, HealthMessage
 from app.sms_handler import send_hw_sms, send_sms_message, sms_logger
-from app.utils.constants import BEFORE, AFTER, CURRENT, USER_TYPE_CHEW, USER_TYPE_MIDWIFE
+from app.utils.constants import BEFORE, AFTER, CURRENT, USER_TYPE_CHEW, USER_TYPE_MIDWIFE, EXPECTED
 from random import shuffle
 
 
@@ -20,6 +20,7 @@ class NotifierView(APIView):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        # .date() ensures that the time is midnight
         self.current_date = timezone.now().date()
 
     def post(self, request, *args, **kwargs):
@@ -39,44 +40,32 @@ class NotifierView(APIView):
     def get(self, request, format=None, **kwargs):
         # self.send_appointment_three_days_before_date()
         # self.send_appointment_one_day_after_date()
-        # self.send_appointment_on_actual_day()
         return Response({"result": "success"}, 200)
 
-    def send_appointment_three_days_before_date(self):
-        girl_phone_numbers = []
-        sms_logger("#started# ", " three days before date notifier")
-
+    def send_appointment_sms_to_eligible_girls(self):
+        girl_today_phone_numbers = []
+        girl_tomorrow_phone_numbers = []
+        girl_three_days_phone_numbers = []
+        sms_logger("#started# ", " today, tomorrow, three days before date notifier")
         appointments = Appointment.objects.filter(
-            Q(date__lt=self.current_date + timezone.timedelta(days=3)) & Q(date__gte=self.current_date))
+            Q(date__lte=self.current_date + timezone.timedelta(days=4))
+            & Q(date__gte=self.current_date) & Q(status=EXPECTED))
 
         for appointment in appointments:
-            print(appointment.date)
+            days_to_appointment = (appointment.date - timezone.now()).days
+            if days_to_appointment <= -1 or appointment.date.day == self.current_date.day:
+                girl_today_phone_numbers.append("+256" + appointment.girl.phone_number[1:])
+            elif days_to_appointment == 0:
+                girl_tomorrow_phone_numbers.append("+256" + appointment.girl.phone_number[1:])
+            elif days_to_appointment == 2:
+                girl_three_days_phone_numbers.append("+256" + appointment.girl.phone_number[1:])
 
-            # extract midwife and vht firebase device ids
-            firebase_device_ids = list(
-                filter(None, {appointment.user.firebase_device_id, appointment.girl.user.firebase_device_id}))
-            print(firebase_device_ids)
-            girl_phone_numbers.append("+256" + appointment.girl.phone_number[1:])
-            print('girl_phone_numbers')
-            print(girl_phone_numbers)
-
-            # midwife and vhts phone numbers
-            hw_phone_numbers = list(filter(None, {appointment.user.phone, appointment.girl.user.phone}))
-            print('hw_phone_numbers')
-            print(hw_phone_numbers)
-
-            message_title = "GetIn ANC reminder"
-            hw_message_body = "GetIN. " + appointment.girl.first_name + " " + appointment.girl.last_name \
-                              + "'s ANC visits is in three days"
-
-            # only send notification and sms if the user has never received. this prevents spamming
-            if not NotificationLog.objects.filter(Q(appointment=appointment) & Q(stage=BEFORE)):
-                send_firebase_notification(firebase_device_ids, message_title, hw_message_body)
-                send_sms_message(hw_message_body, hw_phone_numbers)
-                NotificationLog(appointment=appointment, stage=BEFORE).save()
-        girls_message_body = "GetIN. Please visit hospital for ANC visits in three days"
-        girl_phone_numbers = list(filter(None, set(girl_phone_numbers)))
-        send_sms_message(girls_message_body, girl_phone_numbers)
+        girl_today_message = "Today is the due day for your ANC visit, your midwife is waiting to receive you at the health facility."
+        girl_tomorrow_message = "Your next ANC visit is due tomorrow, please don’t forget to attend your appointment for the safety of your unborn baby."
+        girl_three_days_message = "Your next ANC visit is due in 3 days, please don’t forget to attend your appointment for the safety of your unborn baby."
+        send_sms_message(girl_today_message, list(filter(None, set(girl_today_phone_numbers))))
+        send_sms_message(girl_tomorrow_message, list(filter(None, set(girl_tomorrow_phone_numbers))))
+        send_sms_message(girl_three_days_message, list(filter(None, set(girl_three_days_phone_numbers))))
 
     def send_appointment_one_day_after_date(self):
         girl_phone_numbers = []
@@ -111,41 +100,6 @@ class NotifierView(APIView):
 
                 NotificationLog(appointment=appointment, stage=AFTER).save()
         girls_message_body = "GetIN. You have missed your ANC visit. Please visit health facility immediately"
-        # send_sms_message(girls_message_body, phone_number=girl_phone_numbers)
-
-    def send_appointment_on_actual_day(self):
-        girl_phone_numbers = []
-
-        appointments = Appointment.objects.filter(Q(date__lte=timezone.now().replace(hour=23, minute=59, second=59))
-                                                  & Q(date__gte=self.current_date))
-
-        for appointment in appointments:
-            print(appointment.date)
-
-            # extract midwife and vht firebase device ids
-            firebase_device_ids = list({appointment.user.firebase_device_id, appointment.girl.user.firebase_device_id})
-            girl_phone_numbers.append("+256" + appointment.girl.phone_number[1:])
-            print('girl_phone_numbers')
-            print(girl_phone_numbers)
-
-            # midwife and vhts phone numbers
-            health_workers_ids = list({appointment.user.id, appointment.girl.user.id})
-            print('health_workers_ids')
-            print(health_workers_ids)
-
-            message_title = "GetIn ANC reminder"
-            message_body = "GetIN. " + appointment.girl.first_name + " " + appointment.girl.last_name \
-                           + "'s ANC visits is today"
-
-            # only send notification and sms if the user has never received. this prevents spamming
-            if not NotificationLog.objects.filter(Q(appointment=appointment) & Q(stage__in=[CURRENT, AFTER])):
-                send_firebase_notification(firebase_device_ids, message_title, message_body)
-
-                sender = User.objects.filter(username__icontains="admin").first()
-                # send_hw_sms(message_body, sender, receiver_ids=health_workers_ids)
-                NotificationLog(appointment=appointment, stage=CURRENT).save()
-
-        girls_message_body = "GetIN. Please visit hospital today for your ANC visits"
         # send_sms_message(girls_message_body, phone_number=girl_phone_numbers)
 
     def send_daily_usage_reminder(self):

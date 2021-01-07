@@ -10,7 +10,7 @@ def notifier_appointment_reminder_cron_job():
     Appointment reminder. Notifies the VHT, midwife and girl about expected and missed appointments
     """
     notifier = NotifierView()
-    notifier.send_appointment_three_days_before_date()
+    notifier.send_appointment_sms_to_eligible_girls()
     # notifier.send_appointment_one_day_after_date()
     # notifier.send_appointment_on_actual_day()
 
