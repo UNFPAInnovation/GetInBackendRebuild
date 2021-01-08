@@ -60,9 +60,9 @@ class NotifierView(APIView):
             elif days_to_appointment == 2:
                 girl_three_days_phone_numbers.append("+256" + appointment.girl.phone_number[1:])
 
-        girl_today_message = "Today is the due day for your ANC visit, your midwife is waiting to receive you at the health facility."
-        girl_tomorrow_message = "Your next ANC visit is due tomorrow, please don't forget to attend your appointment for the safety of your unborn baby."
-        girl_three_days_message = "Your next ANC visit is due in 3 days, please don't forget to attend your appointment for the safety of your unborn baby."
+        girl_today_message = "Today is the due day for your ANC visit, your midwife is waiting to receive you at the health facility. From GETIN TEAM"
+        girl_tomorrow_message = "Your next ANC visit is due tomorrow, please don't forget to attend your appointment for the safety of your unborn baby. From GETIN TEAM"
+        girl_three_days_message = "Your next ANC visit is due in 3 days, please don't forget to attend your appointment for the safety of your unborn baby. From GETIN TEAM"
         send_sms_message(girl_today_message, list(filter(None, set(girl_today_phone_numbers))))
         send_sms_message(girl_tomorrow_message, list(filter(None, set(girl_tomorrow_phone_numbers))))
         send_sms_message(girl_three_days_message, list(filter(None, set(girl_three_days_phone_numbers))))
