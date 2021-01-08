@@ -7,9 +7,11 @@ from rest_framework.views import APIView
 
 from app.firebase_notification import send_firebase_notification
 from app.models import Appointment, User, NotificationLog, Girl, HealthMessage
-from app.sms_handler import send_hw_sms, send_sms_message, sms_logger
-from app.utils.constants import BEFORE, AFTER, CURRENT, USER_TYPE_CHEW, USER_TYPE_MIDWIFE, EXPECTED
+from app.sms_handler import send_sms_message, sms_logger
+from app.utils.constants import BEFORE, AFTER, CURRENT, USER_TYPE_CHEW, USER_TYPE_MIDWIFE, EXPECTED, MISSED
 from random import shuffle
+
+from app.utils.utilities import de_emojify
 
 
 class NotifierView(APIView):
@@ -38,8 +40,8 @@ class NotifierView(APIView):
         return Response({"result": "failure"}, 400)
 
     def get(self, request, format=None, **kwargs):
-        # self.send_appointment_three_days_before_date()
-        # self.send_appointment_one_day_after_date()
+        self.send_appointment_sms_to_eligible_girls()
+        self.send_missed_appointment_reminder_one_day_after()
         return Response({"result": "success"}, 200)
 
     def send_appointment_sms_to_eligible_girls(self):
@@ -53,7 +55,7 @@ class NotifierView(APIView):
 
         for appointment in appointments:
             days_to_appointment = (appointment.date - timezone.now()).days
-            if days_to_appointment <= -1 or appointment.date.day == self.current_date.day:
+            if appointment.date.day == self.current_date.day:
                 girl_today_phone_numbers.append("+256" + appointment.girl.phone_number[1:])
             elif days_to_appointment == 0:
                 girl_tomorrow_phone_numbers.append("+256" + appointment.girl.phone_number[1:])
@@ -67,40 +69,30 @@ class NotifierView(APIView):
         send_sms_message(girl_tomorrow_message, list(filter(None, set(girl_tomorrow_phone_numbers))))
         send_sms_message(girl_three_days_message, list(filter(None, set(girl_three_days_phone_numbers))))
 
-    def send_appointment_one_day_after_date(self):
-        girl_phone_numbers = []
-
-        appointments = Appointment.objects.filter(Q(date__lte=self.current_date)
-                                                  & Q(date__gte=self.current_date - timezone.timedelta(days=1)))
+    def send_missed_appointment_reminder_one_day_after(self):
+        appointments = Appointment.objects.filter(
+            Q(date__lt=self.current_date)
+            & Q(date__gte=self.current_date - timezone.timedelta(days=1))
+                          & Q(status__in=[EXPECTED, MISSED]))
 
         for appointment in appointments:
-            print(appointment.date)
+            yesterday = self.current_date - timezone.timedelta(days=1)
+            if appointment.date.day != yesterday.day:
+                continue
 
-            # extract midwife and vht firebase device ids
             firebase_device_ids = list({appointment.user.firebase_device_id, appointment.girl.user.firebase_device_id})
-            girl_phone_numbers.append("+256" + appointment.girl.phone_number[1:])
-            print('girl_phone_numbers')
-            print(girl_phone_numbers)
-
-            # midwife and vhts phone numbers
             health_workers_ids = list({appointment.user.id, appointment.girl.user.id})
-            print('health_workers_ids')
-            print(health_workers_ids)
 
             message_title = "GetIn ANC reminder"
-            message_body = "GetIN. " + appointment.girl.first_name + " " + appointment.girl.last_name \
-                           + "'s has missed ANC visit"
+            message_body = "GetIN. " + de_emojify(appointment.girl.first_name) + " " + de_emojify(
+                appointment.girl.last_name) + "'s has missed ANC visit"
 
             # only send notification and sms if the user has never received. this prevents spamming
             if not NotificationLog.objects.filter(Q(appointment=appointment) & Q(stage=AFTER)):
                 send_firebase_notification(firebase_device_ids, message_title, message_body)
-
-                sender = User.objects.filter(username__icontains="admin").first()
-                # send_hw_sms(message_body, sender, receiver_ids=health_workers_ids)
-
+                phone_numbers = ["+256" + User.objects.get(id=receiver_id).phone[1:] for receiver_id in health_workers_ids]
+                send_sms_message(message_body, phone_numbers)
                 NotificationLog(appointment=appointment, stage=AFTER).save()
-        girls_message_body = "GetIN. You have missed your ANC visit. Please visit health facility immediately"
-        # send_sms_message(girls_message_body, phone_number=girl_phone_numbers)
 
     def send_daily_usage_reminder(self):
         print('start sending daily usage reminders')

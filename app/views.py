@@ -24,9 +24,9 @@ from app.serializers import UserSerializer, User, GirlSerializer, DistrictGetSer
     CountyGetSerializer, SubCountyGetSerializer, ParishGetSerializer, VillageGetSerializer, HealthFacilityGetSerializer, \
     FollowUpGetSerializer, FollowUpPostSerializer, DeliveryPostSerializer, DeliveryGetSerializer, \
     MappingEncounterSerializer, AppointmentSerializer, SmsModelSerializer
-from app.sms_handler import send_hw_sms
+from app.sms_handler import send_sms_message
 
-from app.utils.constants import USER_TYPE_MIDWIFE, USER_TYPE_CHEW, USER_TYPE_DHO
+from app.utils.constants import USER_TYPE_MIDWIFE, USER_TYPE_CHEW, USER_TYPE_DHO, GENERAL_MESSAGE
 from app.utils.utilities import add_months
 
 # disabled the markdown manually
@@ -322,21 +322,13 @@ class SmsView(ListCreateAPIView):
         return model
 
     def post(self, request, *args, **kwargs):
-        message = request.data.get('message')
-        print(message)
-
         try:
-            try:
-                sender = request.user
-            except Exception as e:
-                print(e)
-                # use the developer account as the sender incase the user is None
-                sender = User.objects.get(username__icontains="admin")
             receiver_ids = request.data.get('receiver_ids')
-            send_hw_sms(message, sender, receiver_ids)
+            phone_numbers = ["+256" + User.objects.get(id=receiver_id).phone[1:] for receiver_id in receiver_ids]
+            send_sms_message(request.data.get('message'), phone_numbers, GENERAL_MESSAGE)
+            return Response({'result': 'success'})
         except Exception as e:
             return Response({'result': 'failure'})
-        return Response({'result': 'success'})
 
 
 class ExtractView(APIView):

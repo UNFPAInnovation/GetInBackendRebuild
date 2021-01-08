@@ -42,11 +42,35 @@ class TestSMS(ParentTest):
                                          last_menstruation_date=timezone.now() - timezone.timedelta(weeks=50),
                                          phone_number="0756783339",
                                          education_level=O_LEVEL)
+        self.girl5 = Girl.objects.create(user=self.midwife3, first_name=get_random_string(length=7),
+                                         marital_status=MARRIED,
+                                         last_name=last_name, dob=timezone.now() - timezone.timedelta(days=4000),
+                                         village=self.village2,
+                                         last_menstruation_date=timezone.now() - timezone.timedelta(weeks=50),
+                                         phone_number="0756783339",
+                                         education_level=O_LEVEL)
+        self.girl6 = Girl.objects.create(user=self.midwife2, first_name=get_random_string(length=7),
+                                         marital_status=MARRIED,
+                                         last_name=last_name, dob=timezone.now() - timezone.timedelta(days=4000),
+                                         village=self.village,
+                                         last_menstruation_date=timezone.now() - timezone.timedelta(weeks=50),
+                                         phone_number="0756783339",
+                                         education_level=O_LEVEL)
+        self.girl7 = Girl.objects.create(user=self.midwife, first_name=get_random_string(length=7),
+                                         marital_status=MARRIED,
+                                         last_name=last_name, dob=timezone.now() - timezone.timedelta(days=4000),
+                                         village=self.village,
+                                         last_menstruation_date=timezone.now() - timezone.timedelta(weeks=50),
+                                         phone_number="0756783339",
+                                         education_level=O_LEVEL)
 
         Appointment.objects.create(girl=self.girl, user=self.midwife, date=timezone.now())
         Appointment.objects.create(girl=self.girl2, user=self.chew, date=timezone.now() + timezone.timedelta(days=1))
         Appointment.objects.create(girl=self.girl3, user=self.midwife2, date=timezone.now() + timezone.timedelta(days=2))
         Appointment.objects.create(girl=self.girl4, user=self.midwife3, date=timezone.now() + timezone.timedelta(days=3))
+        Appointment.objects.create(girl=self.girl5, user=self.midwife3, date=timezone.now() - timezone.timedelta(days=1))
+        Appointment.objects.create(girl=self.girl6, user=self.midwife2, date=timezone.now() - timezone.timedelta(days=1))
+        Appointment.objects.create(girl=self.girl7, user=self.midwife, date=timezone.now() - timezone.timedelta(days=2))
 
         for text in range(200):
             HealthMessage.objects.create(text=get_random_string(length=20))
@@ -88,3 +112,15 @@ class TestSMS(ParentTest):
         self.assertEqual(SentSmsLog.objects.filter(message__icontains='today').count(), 1)
         self.assertEqual(SentSmsLog.objects.filter(message__icontains='tomorrow').count(), 1)
         self.assertEqual(SentSmsLog.objects.filter(message__icontains='3 days').count(), 1)
+
+    def test_missed_appointment(self):
+        """
+        Test sending of missed appointment sms to health worker
+        Acceptance criterion:
+        - Only health workers attached to the girl should receive sms
+        - Only missed or expected appointments should trigger sms to health worker
+        - Only one message should reach a health worker every 20 hr period
+        """
+        self.notifier.send_missed_appointment_reminder_one_day_after()
+        self.assertEqual(SentSmsLog.objects.count(), 2)
+        self.assertEqual(SentSmsLog.objects.filter(message__icontains='missed').count(), 2)
