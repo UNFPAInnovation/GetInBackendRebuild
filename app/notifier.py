@@ -84,8 +84,8 @@ class NotifierView(APIView):
             health_workers_ids = list({appointment.user.id, appointment.girl.user.id})
 
             message_title = "GetIn ANC reminder"
-            message_body = "GetIN. " + de_emojify(appointment.girl.first_name) + " " + de_emojify(
-                appointment.girl.last_name) + "'s has missed ANC visit"
+            message_body = de_emojify(appointment.girl.first_name) + " " + de_emojify(
+                appointment.girl.last_name) + " has missed ANC visit yesterday. Please call or visit her to find out the reason why she missed. From GETIN TEAM"
 
             # only send notification and sms if the user has never received. this prevents spamming
             if not NotificationLog.objects.filter(Q(appointment=appointment) & Q(stage=AFTER)):
