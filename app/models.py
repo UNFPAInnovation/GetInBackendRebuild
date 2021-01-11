@@ -276,6 +276,7 @@ class Girl(models.Model):
     def set_trimester(self):
         # calculate trimester of the girl based on the last menstruation date
         # trimester 1 = 1-12 weeks, trimester 2 = 13-26 weeks, trimester 3 = 27-40
+
         try:
             # error is thrown when updating from django admin
             year, month, day = [int(x) for x in self.last_menstruation_date.split("-")]

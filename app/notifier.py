@@ -24,6 +24,7 @@ class NotifierView(APIView):
         super().__init__(**kwargs)
         # .date() ensures that the time is midnight
         self.current_date = timezone.now().date()
+        self.nine_months_date = timezone.timedelta(days=274)
 
     def post(self, request, *args, **kwargs):
         try:
@@ -51,7 +52,8 @@ class NotifierView(APIView):
         sms_logger("#started# ", " today, tomorrow, three days before date notifier")
         appointments = Appointment.objects.filter(
             Q(date__lte=self.current_date + timezone.timedelta(days=4))
-            & Q(date__gte=self.current_date) & Q(status=EXPECTED))
+            & Q(date__gte=self.current_date) & Q(status=EXPECTED)
+            & Q(girl__last_menstruation_date__gte=self.current_date - self.nine_months_date))
 
         for appointment in appointments:
             days_to_appointment = (appointment.date - timezone.now()).days
@@ -73,10 +75,12 @@ class NotifierView(APIView):
         appointments = Appointment.objects.filter(
             Q(date__lt=self.current_date)
             & Q(date__gte=self.current_date - timezone.timedelta(days=1))
-                          & Q(status__in=[EXPECTED, MISSED]))
+            & Q(status__in=[EXPECTED, MISSED])
+            & Q(girl__last_menstruation_date__gte=self.current_date - self.nine_months_date))
 
         for appointment in appointments:
             yesterday = self.current_date - timezone.timedelta(days=1)
+            # skip days that are not yesterday
             if appointment.date.day != yesterday.day:
                 continue
 
@@ -90,7 +94,8 @@ class NotifierView(APIView):
             # only send notification and sms if the user has never received. this prevents spamming
             if not NotificationLog.objects.filter(Q(appointment=appointment) & Q(stage=AFTER)):
                 send_firebase_notification(firebase_device_ids, message_title, message_body)
-                phone_numbers = ["+256" + User.objects.get(id=receiver_id).phone[1:] for receiver_id in health_workers_ids]
+                phone_numbers = ["+256" + User.objects.get(id=receiver_id).phone[1:] for receiver_id in
+                                 health_workers_ids]
                 send_sms_message(message_body, phone_numbers)
                 NotificationLog(appointment=appointment, stage=AFTER).save()
 
@@ -112,7 +117,6 @@ class NotifierView(APIView):
         """
         Sends health messages to pregnant girls every Wednesday at 12pm
         """
-        nine_months_date = timezone.timedelta(days=274)
-        pregnant_girls = Girl.objects.filter(last_menstruation_date__gte=self.current_date - nine_months_date)
+        pregnant_girls = Girl.objects.filter(last_menstruation_date__gte=self.current_date - self.nine_months_date)
         phone_numbers = ["+256" + girl.phone_number[1:] for girl in pregnant_girls]
         send_sms_message(self.get_random_health_messages(), phone_numbers)

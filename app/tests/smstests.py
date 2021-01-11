@@ -1,3 +1,5 @@
+import random
+
 from django.utils.crypto import get_random_string
 
 from app.tests.parenttest import ParentTest
@@ -39,29 +41,44 @@ class TestSMS(ParentTest):
                                          marital_status=MARRIED,
                                          last_name=last_name, dob=timezone.now() - timezone.timedelta(days=4000),
                                          village=self.village2,
-                                         last_menstruation_date=timezone.now() - timezone.timedelta(weeks=50),
+                                         last_menstruation_date=timezone.now() - timezone.timedelta(weeks=20),
                                          phone_number="0756783339",
                                          education_level=O_LEVEL)
         self.girl5 = Girl.objects.create(user=self.midwife3, first_name=get_random_string(length=7),
                                          marital_status=MARRIED,
                                          last_name=last_name, dob=timezone.now() - timezone.timedelta(days=4000),
                                          village=self.village2,
-                                         last_menstruation_date=timezone.now() - timezone.timedelta(weeks=50),
-                                         phone_number="0756783339",
+                                         last_menstruation_date=timezone.now() - timezone.timedelta(weeks=20),
+                                         phone_number="0756789" + str(random.randint(100, 999)),
                                          education_level=O_LEVEL)
         self.girl6 = Girl.objects.create(user=self.midwife2, first_name=get_random_string(length=7),
                                          marital_status=MARRIED,
                                          last_name=last_name, dob=timezone.now() - timezone.timedelta(days=4000),
                                          village=self.village,
-                                         last_menstruation_date=timezone.now() - timezone.timedelta(weeks=50),
-                                         phone_number="0756783339",
+                                         last_menstruation_date=timezone.now() - timezone.timedelta(weeks=30),
+                                         phone_number="0756789" + str(random.randint(100, 999)),
                                          education_level=O_LEVEL)
         self.girl7 = Girl.objects.create(user=self.midwife, first_name=get_random_string(length=7),
                                          marital_status=MARRIED,
                                          last_name=last_name, dob=timezone.now() - timezone.timedelta(days=4000),
                                          village=self.village,
-                                         last_menstruation_date=timezone.now() - timezone.timedelta(weeks=50),
-                                         phone_number="0756783339",
+                                         last_menstruation_date=timezone.now() - timezone.timedelta(weeks=20),
+                                         phone_number="0756789" + str(random.randint(100, 999)),
+                                         education_level=O_LEVEL)
+
+        self.girl8 = Girl.objects.create(user=self.midwife4, first_name=get_random_string(length=7),
+                                         marital_status=MARRIED,
+                                         last_name=last_name, dob=timezone.now() - timezone.timedelta(days=4000),
+                                         village=self.village,
+                                         last_menstruation_date=timezone.now() - timezone.timedelta(weeks=42),
+                                         phone_number="0756789" + str(random.randint(100, 999)),
+                                         education_level=O_LEVEL)
+        self.girl9 = Girl.objects.create(user=self.midwife4, first_name=get_random_string(length=7),
+                                         marital_status=MARRIED,
+                                         last_name=last_name, dob=timezone.now() - timezone.timedelta(days=4000),
+                                         village=self.village,
+                                         last_menstruation_date=timezone.now() - timezone.timedelta(weeks=42),
+                                         phone_number="0756789" + str(random.randint(100, 999)),
                                          education_level=O_LEVEL)
 
         Appointment.objects.create(girl=self.girl, user=self.midwife, date=timezone.now())
@@ -71,6 +88,8 @@ class TestSMS(ParentTest):
         Appointment.objects.create(girl=self.girl5, user=self.midwife3, date=timezone.now() - timezone.timedelta(days=1))
         Appointment.objects.create(girl=self.girl6, user=self.midwife2, date=timezone.now() - timezone.timedelta(days=1))
         Appointment.objects.create(girl=self.girl7, user=self.midwife, date=timezone.now() - timezone.timedelta(days=2))
+        Appointment.objects.create(girl=self.girl8, user=self.midwife4, date=timezone.now() + timezone.timedelta(days=1))
+        Appointment.objects.create(girl=self.girl9, user=self.midwife4, date=timezone.now() - timezone.timedelta(days=1))
 
         for text in range(200):
             HealthMessage.objects.create(text=get_random_string(length=20))
@@ -105,7 +124,8 @@ class TestSMS(ParentTest):
         - Users must never get spam messages
         - Users must get notified 3 days to appointment day
         - If health worker has multiple upcoming appointments for several girls, only one must be sent
-        - Sent sms dont exceed the daily limit
+        - Sent sms should not exceed the daily limit
+        - Only girls who are still pregnant should receive messages
         """
         self.notifier.send_appointment_sms_to_eligible_girls()
         self.assertEqual(SentSmsLog.objects.count(), 3)
@@ -120,6 +140,7 @@ class TestSMS(ParentTest):
         - Only health workers attached to the girl should receive sms
         - Only missed or expected appointments should trigger sms to health worker
         - Only one message should reach a health worker every 20 hr period
+        - Only health workers who have pregnant girls should receive sms
         """
         self.notifier.send_missed_appointment_reminder_one_day_after()
         self.assertEqual(SentSmsLog.objects.count(), 2)

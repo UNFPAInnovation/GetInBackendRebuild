@@ -199,7 +199,7 @@ class TestChewMapping(ParentTest):
                             "primary_level"
                         ],
                         "MenstruationDate": [
-                            "2020-" + str(current_date.month - 1) + "-28"
+                            "2020-" + str((current_date - timezone.timedelta(days=30)).month) + "-28"
                         ]
                     }
                 ],
