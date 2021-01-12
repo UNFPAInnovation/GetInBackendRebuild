@@ -108,14 +108,14 @@ class TestSMS(ParentTest):
         - Only girls who are pregnant should receive the sms messages
         """
         self.notifier.send_health_messages()
-        self.assertEqual(SentSmsLog.objects.count(), 3)
+        self.assertEqual(SentSmsLog.objects.count(), 7)
 
         # simulate sms sent 24 hours prior. to ensure no user
         sms_log = SentSmsLog.objects.last()
         sms_log.created_at = timezone.now() - timezone.timedelta(hours=24)
         sms_log.save(update_fields=['created_at'])
         self.notifier.send_health_messages()
-        self.assertEqual(SentSmsLog.objects.count(), 4)
+        self.assertEqual(SentSmsLog.objects.count(), 8)
 
     def test_appointment_notification_before_appointment(self):
         """
