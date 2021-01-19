@@ -19,11 +19,24 @@ class GirlAdmin(admin.ModelAdmin):
     exclude = ('followup', 'mappingencounter', 'delivery', 'appointment', 'referral')
 
 
+class AppointmentAdmin(admin.ModelAdmin):
+    list_display = ['girl_first_name', 'girl_last_name', 'user', 'date', 'created_at']
+
+    def girl_first_name(self, obj):
+        return obj.girl.first_name
+
+    def girl_last_name(self, obj):
+        return obj.girl.last_name
+
+    girl_first_name.admin_order_field = 'girl__first_name'
+    girl_last_name.admin_order_field = 'girl__last_name'
+
+
 admin.site.register(Girl, GirlAdmin)
 admin.site.register(HealthFacility)
 admin.site.register(FollowUp)
 admin.site.register(Delivery)
-admin.site.register(Appointment)
+admin.site.register(Appointment, AppointmentAdmin)
 admin.site.register(MappingEncounter)
 admin.site.register(AppointmentEncounter)
 admin.site.register(Referral)
