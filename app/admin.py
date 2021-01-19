@@ -20,13 +20,16 @@ class GirlAdmin(admin.ModelAdmin):
 
 
 class AppointmentAdmin(admin.ModelAdmin):
-    list_display = ['girl_first_name', 'girl_last_name', 'user', 'date', 'created_at']
+    list_display = ['girl_first_name', 'girl_last_name', 'girl_phone_number', 'user', 'date', 'created_at']
 
     def girl_first_name(self, obj):
         return obj.girl.first_name
 
     def girl_last_name(self, obj):
         return obj.girl.last_name
+    
+    def girl_phone_number(self, obj):
+        return obj.girl.phone_number
 
     girl_first_name.admin_order_field = 'girl__first_name'
     girl_last_name.admin_order_field = 'girl__last_name'
