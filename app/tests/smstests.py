@@ -81,7 +81,7 @@ class TestSMS(ParentTest):
                                          phone_number="0756789" + str(random.randint(100, 999)),
                                          education_level=O_LEVEL)
 
-        Appointment.objects.create(girl=self.girl, user=self.midwife, date=timezone.now())
+        Appointment.objects.create(girl=self.girl, user=self.midwife, date=timezone.now() - timezone.timedelta(hours=7))
         Appointment.objects.create(girl=self.girl2, user=self.chew, date=timezone.now() + timezone.timedelta(days=1))
         Appointment.objects.create(girl=self.girl3, user=self.midwife2, date=timezone.now() + timezone.timedelta(days=2))
         Appointment.objects.create(girl=self.girl4, user=self.midwife3, date=timezone.now() + timezone.timedelta(days=3))

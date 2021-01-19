@@ -17,7 +17,7 @@ def send_sms_message(message, phone_numbers, message_type=APPOINTMENT_REMINDER_M
     Only a limited number of sms are sent per day
     """
     valid_phone_numbers = []
-    limit = 20
+    limit = 50
 
     for phone_number in phone_numbers:
         # constraint to limit sms sent to users per day

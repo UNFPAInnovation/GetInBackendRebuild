@@ -52,16 +52,15 @@ class NotifierView(APIView):
         sms_logger("#started# ", " today, tomorrow, three days before date notifier")
         appointments = Appointment.objects.filter(
             Q(date__lte=self.current_date + timezone.timedelta(days=4))
-            & Q(date__gte=self.current_date) & Q(status=EXPECTED)
+            & Q(date__gte=self.current_date - timezone.timedelta(days=1)) & Q(status=EXPECTED)
             & Q(girl__last_menstruation_date__gte=self.current_date - self.nine_months_date))
 
         for appointment in appointments:
-            days_to_appointment = (appointment.date - timezone.now()).days
             if appointment.date.day == self.current_date.day:
                 girl_today_phone_numbers.append("+256" + appointment.girl.phone_number[1:])
-            elif days_to_appointment == 0:
+            elif appointment.date.day == (timezone.now() + timezone.timedelta(days=1)).day:
                 girl_tomorrow_phone_numbers.append("+256" + appointment.girl.phone_number[1:])
-            elif days_to_appointment == 2:
+            elif appointment.date.day == (timezone.now() + timezone.timedelta(days=3)).day:
                 girl_three_days_phone_numbers.append("+256" + appointment.girl.phone_number[1:])
 
         girl_today_message = "Today is the due day for your ANC visit, your midwife is waiting to receive you at the health facility. From GETIN TEAM"
