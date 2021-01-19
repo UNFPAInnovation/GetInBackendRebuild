@@ -48,6 +48,7 @@ FAMILY_PLANNING = "Family Planning"
 
 HEALTH_MESSAGES = "HEALTH_MESSAGES"
 APPOINTMENT_REMINDER_MESSAGES = "APPOINTMENT_REMINDER_MESSAGES"
+APP_USAGE_REMINDER_MESSAGES = "APP_USAGE_REMINDER_MESSAGES"
 GENERAL_MESSAGE = "GENERAL_MESSAGE"
 #####################################
 # NOTE: The form ids must be the same in odk central, android app, xslm forms and django backend

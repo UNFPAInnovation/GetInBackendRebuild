@@ -11,13 +11,12 @@ print(username)
 print(api_key)
 
 
-def send_sms_message(message, phone_numbers, message_type=APPOINTMENT_REMINDER_MESSAGES):
+def send_sms_message(message, phone_numbers, message_type=APPOINTMENT_REMINDER_MESSAGES, limit=50):
     """
     No user should get the same message twice in the same day
     Only a limited number of sms are sent per day
     """
     valid_phone_numbers = []
-    limit = 50
 
     for phone_number in phone_numbers:
         # constraint to limit sms sent to users per day

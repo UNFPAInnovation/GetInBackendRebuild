@@ -8,7 +8,8 @@ from rest_framework.views import APIView
 from app.firebase_notification import send_firebase_notification
 from app.models import Appointment, User, NotificationLog, Girl, HealthMessage
 from app.sms_handler import send_sms_message, sms_logger
-from app.utils.constants import BEFORE, AFTER, CURRENT, USER_TYPE_CHEW, USER_TYPE_MIDWIFE, EXPECTED, MISSED
+from app.utils.constants import BEFORE, AFTER, CURRENT, USER_TYPE_CHEW, USER_TYPE_MIDWIFE, EXPECTED, MISSED, \
+    APP_USAGE_REMINDER_MESSAGES
 from random import shuffle
 
 from app.utils.utilities import de_emojify
@@ -31,8 +32,6 @@ class NotifierView(APIView):
             firebase_device_id = request.data.get('firebase_device_id')
             user_id = request.data.get('user_id')
             user = User.objects.get(id=user_id)
-
-            print(firebase_device_id)
             user.firebase_device_id = firebase_device_id
             user.save(update_fields=['firebase_device_id'])
             return Response({"result": "success"}, 200)
@@ -99,12 +98,18 @@ class NotifierView(APIView):
                 NotificationLog(appointment=appointment, stage=AFTER).save()
 
     def send_daily_usage_reminder(self):
-        print('start sending daily usage reminders')
         users = User.objects.filter(Q(role__icontains=USER_TYPE_CHEW) | Q(role__icontains=USER_TYPE_MIDWIFE))
         firebase_device_ids = [user.firebase_device_id for user in users]
         message_title = 'GetIn Reminder'
         message_body = 'Please remember to use the GetIn app to map girls, follow up on appointments and call the girls'
         send_firebase_notification(firebase_device_ids, message_title, message_body)
+
+    def send_weekly_usage_reminder(self):
+        users = User.objects.filter(Q(role__icontains=USER_TYPE_CHEW) | Q(role__icontains=USER_TYPE_MIDWIFE))
+        phone_numbers = ["+256" + user.phone[1:] for user in users]
+        message_body = 'Please remember to use the GetIn app to map girls, ' \
+                       'follow up on appointments and call the girls. GETIN TEAM '
+        send_sms_message(message_body, phone_numbers, APP_USAGE_REMINDER_MESSAGES, 300)
 
     @staticmethod
     def get_random_health_messages():

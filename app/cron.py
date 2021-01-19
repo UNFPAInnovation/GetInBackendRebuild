@@ -22,6 +22,14 @@ def notifier_daily_usage_reminder_cron_job():
     notifier.send_daily_usage_reminder()
 
 
+def notifier_weekly_usage_reminder_cron_job():
+    """
+    Sends out weekly sms reminder to use the GetIn mobile app
+    """
+    notifier = NotifierView()
+    notifier.send_weekly_usage_reminder()
+
+
 def transition_expected_appointments():
     """
     Updates missed appointments that have EXPECTED status to MISSED status.

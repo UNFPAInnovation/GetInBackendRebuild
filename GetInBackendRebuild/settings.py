@@ -194,7 +194,9 @@ CRONJOBS = [
     # # run cron job at 11:05 every day
     ('5 11 * * *', 'app.cron.notifier_daily_usage_reminder_cron_job'),
     # # run cron job at 18:05 every day
-    ('5 18 * * *', 'app.cron.transition_expected_appointments')
+    ('5 18 * * *', 'app.cron.transition_expected_appointments'),
+    # run cron job at 10:05 every Tuesday
+    ('5 10 * * 2', 'app.cron.notifier_weekly_usage_reminder_cron_job'),
 ]
 
 # Internationalization

@@ -145,3 +145,7 @@ class TestSMS(ParentTest):
         self.notifier.send_missed_appointment_reminder_one_day_after()
         self.assertEqual(SentSmsLog.objects.count(), 2)
         self.assertEqual(SentSmsLog.objects.filter(message__icontains='missed').count(), 2)
+
+    def test_send_weekly_sms_reminders(self):
+        self.notifier.send_weekly_usage_reminder()
+        self.assertEqual(SentSmsLog.objects.count(), 5)
