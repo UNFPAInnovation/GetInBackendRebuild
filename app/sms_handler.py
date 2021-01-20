@@ -21,7 +21,7 @@ def send_sms_message(message, phone_numbers, message_type=APPOINTMENT_REMINDER_M
     for phone_number in phone_numbers:
         # constraint to limit sms sent to users per day
         if SentSmsLog.objects.filter(created_at__gte=timezone.now() - timezone.timedelta(hours=20),
-                                     created_at__lte=timezone.now()).count() > limit:
+                                     created_at__lte=timezone.now(), message_type=message_type).count() > limit:
             break
 
         phone_number = internationalize(phone_number)
