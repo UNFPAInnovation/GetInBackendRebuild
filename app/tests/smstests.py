@@ -147,5 +147,22 @@ class TestSMS(ParentTest):
         self.assertEqual(SentSmsLog.objects.filter(message__icontains='missed').count(), 2)
 
     def test_send_weekly_sms_reminders(self):
+        """
+        Test sending of weekly app usage reminder sms to health worker
+        Acceptance criterion:
+        - Only one message should reach a health worker every 20 hr period
+        - Only health workers who are not test users must get sms
+        """
+        self.notifier.send_weekly_usage_reminder()
+        self.assertEqual(SentSmsLog.objects.count(), 5)
+
+        # test users have mid or vht in user name. create test user then send weekly reminder again
+        self.chew2 = User.objects.create(username="vhtuservt2", first_name="vht2", last_name="uservht2",
+                                         phone="075687" + str(random.randint(1000, 9999)),
+                                         password=self.chew_phone_number,
+                                         gender=GENDER_FEMALE,
+                                         village=self.village, district=self.district, role=USER_TYPE_CHEW,
+                                         midwife=self.midwife, email="chewtest2@test.com")
+
         self.notifier.send_weekly_usage_reminder()
         self.assertEqual(SentSmsLog.objects.count(), 5)

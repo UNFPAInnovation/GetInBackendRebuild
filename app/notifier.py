@@ -98,14 +98,16 @@ class NotifierView(APIView):
                 NotificationLog(appointment=appointment, stage=AFTER).save()
 
     def send_daily_usage_reminder(self):
-        users = User.objects.filter(Q(role__icontains=USER_TYPE_CHEW) | Q(role__icontains=USER_TYPE_MIDWIFE))
+        users = User.objects.filter(Q(role__icontains=USER_TYPE_CHEW) | Q(role__icontains=USER_TYPE_MIDWIFE)) \
+            .exclude(Q(username__icontains='vht') | Q(username__icontains='mid'))
         firebase_device_ids = [user.firebase_device_id for user in users]
         message_title = 'GetIn Reminder'
         message_body = 'Please remember to use the GetIn app to map girls, follow up on appointments and call the girls'
         send_firebase_notification(firebase_device_ids, message_title, message_body)
 
     def send_weekly_usage_reminder(self):
-        users = User.objects.filter(Q(role__icontains=USER_TYPE_CHEW) | Q(role__icontains=USER_TYPE_MIDWIFE))
+        users = User.objects.filter(Q(role__icontains=USER_TYPE_CHEW) | Q(role__icontains=USER_TYPE_MIDWIFE)) \
+            .exclude(Q(username__icontains='vht') | Q(username__icontains='mid'))
         phone_numbers = ["+256" + user.phone[1:] for user in users]
         message_body = 'Please remember to use the GetIn app to map girls, ' \
                        'follow up on appointments and call the girls. GETIN TEAM '

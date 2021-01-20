@@ -28,32 +28,32 @@ class ParentTest(APITestCase):
         self.village2 = Village.objects.create(name="Abira", parish=self.parish2)
 
         self.midwife_phone_number = "075687" + str(random.randint(1000, 9999))
-        self.midwife = User.objects.create(username="midwife40", first_name="mid",
+        self.midwife = User.objects.create(username="mw40", first_name="md",
                                            last_name="wife40" + get_random_string(length=4),
                                            phone="0756677" + str(random.randint(100, 999)),
                                            password=self.midwife_phone_number, gender=GENDER_FEMALE,
                                            village=self.village,
                                            district=self.district, role=USER_TYPE_MIDWIFE, email="midwifetest@test.com")
-        self.midwife2 = User.objects.create(username="midwife41", first_name="mid",
+        self.midwife2 = User.objects.create(username="mw41", first_name="md",
                                             last_name="wife41" + get_random_string(length=4),
                                             phone="0756677" + str(random.randint(100, 999)), password="0756677888",
                                             gender=GENDER_FEMALE, village=self.village,
                                             district=self.district, role=USER_TYPE_MIDWIFE,
                                             email="midwifetest2@test.com")
-        self.midwife3 = User.objects.create(username="midwife43", first_name="mid",
+        self.midwife3 = User.objects.create(username="mw43", first_name="md",
                                             last_name="wife43" + get_random_string(length=4),
                                             phone="0756677" + str(random.randint(100, 999)), password="0756677883",
                                             gender=GENDER_MALE, village=self.village2,
                                             district=self.district2, role=USER_TYPE_MIDWIFE,
                                             email="midwifetest3@test.com")
-        self.midwife4 = User.objects.create(username="midwife50", first_name="mid",
+        self.midwife4 = User.objects.create(username="mw50", first_name="md",
                                            last_name="wife40" + get_random_string(length=4),
                                            phone="0756677" + str(random.randint(100, 999)),
                                            password=self.midwife_phone_number, gender=GENDER_FEMALE,
                                            village=self.village,
                                            district=self.district, role=USER_TYPE_MIDWIFE, email="midwifetest4@test.com")
         self.chew_phone_number = "075687" + str(random.randint(1000, 9999))
-        self.chew = User.objects.create(username="vhtuservht", first_name="vht", last_name="uservht",
+        self.chew = User.objects.create(username="vtuservt", first_name="vt", last_name="uservt",
                                         phone=self.chew_phone_number, password=self.chew_phone_number,
                                         gender=GENDER_FEMALE,
                                         village=self.village, district=self.district, role=USER_TYPE_CHEW,
