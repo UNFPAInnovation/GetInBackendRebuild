@@ -11,7 +11,7 @@ def notifier_appointment_reminder_cron_job():
     """
     notifier = NotifierView()
     notifier.send_appointment_sms_to_eligible_girls()
-    notifier.send_missed_appointment_reminder_one_day_after()
+    # notifier.send_missed_appointment_reminder_one_day_after()
 
 
 def notifier_daily_usage_reminder_cron_job():

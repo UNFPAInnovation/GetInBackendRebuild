@@ -41,7 +41,7 @@ class NotifierView(APIView):
 
     def get(self, request, format=None, **kwargs):
         self.send_appointment_sms_to_eligible_girls()
-        self.send_missed_appointment_reminder_one_day_after()
+        # self.send_missed_appointment_reminder_one_day_after()
         return Response({"result": "success"}, 200)
 
     def send_appointment_sms_to_eligible_girls(self):
