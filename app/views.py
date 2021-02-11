@@ -40,9 +40,15 @@ class UserCreateView(ListCreateAPIView):
     """
     Allows creation of user.
     """
+    def get_queryset(self):
+        user = self.request.user
+        if user.role in [USER_TYPE_DHO]:
+            return User.objects.filter(district=user.district).order_by('-created_at')
+        else:
+            return User.objects.all()
+
     permission_classes = (IsPostOrIsAuthenticated,)
     serializer_class = UserSerializer
-    queryset = User.objects.all()
     filter_class = UserFilter
 
 
@@ -51,14 +57,13 @@ class GirlView(ListCreateAPIView):
         user = self.request.user
         if user.role == USER_TYPE_MIDWIFE:
             users = User.objects.filter(midwife=user)
-            model = Girl.objects.filter(Q(user__in=users) | Q(user=user)).order_by('-created_at')
+            return Girl.objects.filter(Q(user__in=users) | Q(user=user)).order_by('-created_at')
         elif user.role in [USER_TYPE_CHEW]:
-            model = Girl.objects.filter(user=user).order_by('-created_at')
+            return Girl.objects.filter(user=user).order_by('-created_at')
         elif user.role in [USER_TYPE_DHO]:
-            model = Girl.objects.filter(user__district=user.district).order_by('-created_at')
+            return Girl.objects.filter(user__district=user.district).order_by('-created_at')
         else:
-            model = Girl.objects.all()
-        return model
+            return Girl.objects.all()
 
     serializer_class = GirlSerializer
     permission_classes = (DRYPermissions, IsAuthenticated)
