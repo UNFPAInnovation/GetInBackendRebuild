@@ -40,6 +40,7 @@ class UserCreateView(ListCreateAPIView):
     """
     Allows creation of user.
     """
+
     def get_queryset(self):
         user = self.request.user
         if user.role in [USER_TYPE_DHO]:
@@ -243,12 +244,15 @@ class DashboardStatsView(APIView):
                 response["year"] = created_at_from.year
                 response["month"] = created_at_from.strftime("%B")
 
-                for subcounty in sub_counties:
-                    total_girls_in_subcounty = Girl.objects.filter(Q(village__parish__sub_county=subcounty) &
-                                                                   Q(created_at__gte=created_at_from) & Q(
-                        created_at__lte=created_at_to)).count()
-                    response["totalNumberOfGirlsMappedFrom" + subcounty.name] = total_girls_in_subcounty
-                    total_girls_in_all_subcounties += total_girls_in_subcounty
+                subvalues = SubCounty.objects.annotate(girls_count=Sum(
+                    Case(
+                        When(Q(parish__village__girl__created_at__gte=created_at_from) & Q(
+                            parish__village__girl__created_at__lte=created_at_to), then=1),
+                        output_field=IntegerField())), ).exclude(girls_count=None).values('name', 'girls_count')
+
+                for subcounty in subvalues:
+                    response["totalNumberOfGirlsMappedFrom" + subcounty['name']] = subcounty['girls_count']
+                    total_girls_in_all_subcounties += subcounty['girls_count']
 
                 girls = Girl.objects.aggregate(
                     girls_count_12_15=Sum(
@@ -303,15 +307,11 @@ class DashboardStatsView(APIView):
 
     def generate_date_range(self, created_at_from, created_at_to_limit, first_date_range):
         if first_date_range:
-            created_at_to = created_at_from.replace(day=calendar.monthrange(created_at_from.year,
-                                                                            created_at_from.month)[1]) \
+            return created_at_from.replace(day=calendar.monthrange(created_at_from.year,
+                                                                   created_at_from.month)[1]) \
                 .replace(tzinfo=pytz.utc)
         else:
-            if add_months(created_at_from, 1).replace(tzinfo=pytz.utc) > created_at_to_limit:
-                created_at_to = created_at_from.replace(day=created_at_to_limit.day).replace(tzinfo=pytz.utc)
-            else:
-                created_at_to = add_months(created_at_from, 1).replace(tzinfo=pytz.utc)
-        return created_at_to
+            return add_months(created_at_from, 1).replace(tzinfo=pytz.utc)
 
 
 class SmsView(ListCreateAPIView):
