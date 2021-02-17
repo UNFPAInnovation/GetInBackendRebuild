@@ -12,7 +12,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from GetInBackendRebuild.settings import SHEET_FILES_FOLDER
-from app import sms_handler
 from app.airtime_dispatcher import AirtimeModule
 from app.extractor import extract_excel_org_unit_data, extract_excel_user_data_from_sheet
 from app.filters import GirlFilter, FollowUpFilter, MappingEncounterFilter, DeliveryFilter, AppointmentFilter, \

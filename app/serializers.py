@@ -11,6 +11,7 @@ from app.models import User, District, County, SubCounty, Parish, Village, Girl,
 
 from app.utils.constants import USER_TYPE_MIDWIFE, USER_TYPE_CHEW, USER_TYPE_AMBULANCE
 
+
 def create_token(user=None):
     payload = jwt_payload_handler(user)
     token = jwt.encode(payload, SECRET_KEY)
@@ -56,25 +57,23 @@ class LocationMSISerializer(serializers.Field):
 
 class MidwifeSerializer(serializers.Field):
     def to_representation(self, health_facility):
-       data = User.objects.filter(health_facility__name=health_facility.name, role=USER_TYPE_MIDWIFE).count()
-       return data
+        return User.objects.filter(health_facility__name=health_facility.name, role=USER_TYPE_MIDWIFE).count()
 
 
 class ChewSerializer(serializers.Field):
     def to_representation(self, health_facility):
-       data = User.objects.filter(health_facility__name=health_facility.name, role=USER_TYPE_CHEW).count()
-       return data
+        return User.objects.filter(health_facility__name=health_facility.name, role=USER_TYPE_CHEW).count()
 
 
 class AmbulanceSerializer(serializers.Field):
     def to_representation(self, health_facility):
-       data = User.objects.filter(health_facility__name=health_facility.name, role=USER_TYPE_AMBULANCE).count()
-       return data
+        return User.objects.filter(health_facility__name=health_facility.name, role=USER_TYPE_AMBULANCE).count()
+
 
 class AverageDeliveriesSerializer(serializers.Field):
     def to_representation(self, health_facility):
-        data = Delivery.objects.filter(user__health_facility__name=health_facility.name).count()
-        return data      
+        return Delivery.objects.filter(user__health_facility__name=health_facility.name).count()
+
 
 class MSIServicesSerializer(serializers.Field):
     def to_representation(self, girl):
@@ -149,15 +148,17 @@ class VillageGetSerializer(serializers.ModelSerializer):
 class HealthFacilityGetSerializer(serializers.ModelSerializer):
     sub_county_id = serializers.IntegerField(write_only=True)
     sub_county = SubCountyGetSerializer(many=False, read_only=True)
-    midwife = MidwifeSerializer(source = '*',read_only=True)
-    chew = ChewSerializer(source = '*',read_only=True)
-    ambulance = AmbulanceSerializer(source = '*',read_only=True)
+    midwife = MidwifeSerializer(source='*', read_only=True)
+    chew = ChewSerializer(source='*', read_only=True)
+    ambulance = AmbulanceSerializer(source='*', read_only=True)
     average_deliveries = AverageDeliveriesSerializer(source='*', read_only=True)
 
     class Meta:
         model = HealthFacility
         fields = (
-            'id', 'sub_county', 'name', 'sub_county_id', 'facility_level', 'midwife', 'chew', 'ambulance', 'average_deliveries')
+            'id', 'sub_county', 'name', 'sub_county_id', 'facility_level', 'midwife', 'chew', 'ambulance',
+            'average_deliveries')
+
 
 class UserSerializer(serializers.ModelSerializer):
     village = VillageGetSerializer(many=False, read_only=True)
@@ -190,6 +191,7 @@ class UserSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['phone'])
         user.save()
         return user
+
 
 class GirlSerializer(serializers.ModelSerializer):
     village = VillageGetSerializer(many=False, read_only=True)
