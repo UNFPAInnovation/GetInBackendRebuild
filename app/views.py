@@ -13,7 +13,7 @@ from rest_framework.views import APIView
 
 from GetInBackendRebuild.settings import SHEET_FILES_FOLDER
 from app.airtime_dispatcher import AirtimeModule
-from app.extractor import extract_excel_org_unit_data, extract_excel_user_data_from_sheet
+from app.extractor import extract_excel_org_unit_data, extract_excel_user_data
 from app.filters import GirlFilter, FollowUpFilter, MappingEncounterFilter, DeliveryFilter, AppointmentFilter, \
     UserFilter
 from app.models import Girl, District, County, SubCounty, Parish, Village, \
@@ -340,11 +340,11 @@ class ExtractView(APIView):
         location = (SHEET_FILES_FOLDER + "bundibugyo_org_units.xlsx")
         # extract_excel_data(location_arua)
 
-        location = (SHEET_FILES_FOLDER + "Kampala Org Units DB.xlsx")
-        extract_excel_org_unit_data(location)
-
-        arua_users = (SHEET_FILES_FOLDER + "GetInAruaUsers.xlsx")
-        extract_excel_user_data_from_sheet(arua_users)
+        # location = (SHEET_FILES_FOLDER + "Kampala Org Units DB.xlsx")
+        # extract_excel_org_unit_data(location)
+        #
+        # arua_users = (SHEET_FILES_FOLDER + "GetInAruaUsers.xlsx")
+        # extract_excel_user_data(arua_users)
 
         return Response({"result": "success"})
 
