@@ -14,6 +14,5 @@ class AirtimeModule:
                 'amount': amount,
                 'currency_code': 'UGX'
             })
-        x = airtime.send(recipients=recipients, amount='50', currency_code='UGX')
-        print(x)
+        return airtime.send(recipients=recipients, amount='50', currency_code='UGX')
 

@@ -19,3 +19,4 @@ from app.tests.viewtests import *
 from app.tests.smstests import *
 from app.tests.excelimporttest import *
 from app.tests.monthlystatssheetstest import *
+from app.tests.airtimetests import *

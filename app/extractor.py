@@ -113,10 +113,10 @@ def extract_excel_user_data(location, district_name):
             print(traceback.print_exc())
 
 
-def generate_monthly_system_stats(filename=SHEET_FILES_FOLDER + 'GetIN Traceability Form ' + str(
+def generate_monthly_system_stats(location=SHEET_FILES_FOLDER + 'GetIN Traceability Form ' + str(
     timezone.now().strftime("%m-%d-%Y, %H:%M")) + '.xls', end_date=None):
     """
-    :param filename: name of the excel file containing the output
+    :param location: name of the excel file containing the output
     :param end_date: date up to which the metrics will be generated
     Creates user performance excel sheet
     Sheet Fields: NAME OF HEALTHWORKER, PHONE NO., ROLE, DISTRICT, MONTH, YEAR, NO. OF GIRLS MAPPED, ATTENDED, MISSED, EXPECTED, FOLLOW UPS
@@ -133,10 +133,10 @@ def generate_monthly_system_stats(filename=SHEET_FILES_FOLDER + 'GetIN Traceabil
         for r_index, row_item in enumerate(columns):
             sheet1.write(r_index, c_index, row_item)
 
-    book.save(filename)
+    book.save(location)
     book.save(TemporaryFile())
 
-    convert_xls_to_xlsx(filename)
+    convert_xls_to_xlsx(location)
 
     for district in District.objects.all():
         created_at = timezone.datetime(2019, 10, 1).replace(tzinfo=pytz.utc)
@@ -150,7 +150,7 @@ def generate_monthly_system_stats(filename=SHEET_FILES_FOLDER + 'GetIN Traceabil
                 girls = Girl.objects.filter(Q(created_at__gte=created_at) &
                                             Q(created_at__lte=add_months(created_at, 1)
                                               .replace(tzinfo=pytz.utc)) & Q(user=user)).count()
-                wb = load_workbook(filename.replace('xls', 'xlsx'))
+                wb = load_workbook(location.replace('xls', 'xlsx'))
                 sheet = wb['Sheet1']
 
                 appointment_data = {
@@ -185,7 +185,7 @@ def generate_monthly_system_stats(filename=SHEET_FILES_FOLDER + 'GetIN Traceabil
                               created_at.strftime("%B"), created_at.strftime("%Y"), girls, appointment_data['attended'],
                               appointment_data['expected'],
                               appointment_data['missed'], followups])
-                wb.save(filename.replace('xls', 'xlsx'))
+                wb.save(location.replace('xls', 'xlsx'))
             created_at = add_months(created_at, 1).replace(tzinfo=pytz.utc)
 
 
@@ -208,8 +208,10 @@ def convert_xls_to_xlsx(src_file_path):
     book_xlsx.save(src_file_path.replace('xls', 'xlsx'))
 
 
-def extract_excel_user_data_for_airtime_dispatchment(location, amount):
+def extract_excel_user_data_for_airtime_dispatchment(location):
     """
+    :param location: excel file containing the phone numbers
+    :param amount: the amount of airtime that will be loaded on the users' phones
     Sends airtime to users GetIN phone numbers
     """
     wb = xlrd.open_workbook(location)
@@ -222,9 +224,11 @@ def extract_excel_user_data_for_airtime_dispatchment(location, amount):
             phone_numbers.append("+256" + str(int(row_data[0])))
         except Exception as e:
             print(e)
+    return list(set(phone_numbers))
 
-    print(phone_numbers)
-    print(len(phone_numbers))
+
+def send_airtime_to_users(location, amount):
+    phone_numbers = extract_excel_user_data_for_airtime_dispatchment(location)
     airtime = AirtimeModule()
     airtime.send_airtime(phone_numbers, amount)
 
@@ -232,8 +236,8 @@ def extract_excel_user_data_for_airtime_dispatchment(location, amount):
 def generate_user_credential_sheet(district_name):
     for user in User.objects.filter(district__name=district_name):
         girls = Girl.objects.filter(user=user).count()
-        filename = SHEET_FILES_FOLDER + "GetIN User Credentials.xlsx"
-        wb = load_workbook(filename)
+        location = SHEET_FILES_FOLDER + "GetIN User Credentials.xlsx"
+        wb = load_workbook(location)
         sheet = wb['Sheet1']
         sheet.append([user.first_name + " " + user.last_name, user.username, user.phone, user.role, girls])
-        wb.save(filename)
+        wb.save(location)
