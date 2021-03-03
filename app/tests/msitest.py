@@ -83,9 +83,9 @@ class TestMSI(ParentTest):
             "dob": "2000-03-03",
             "user": {
                 "id": str(self.chew.id),
-                "first_name": "vht",
-                "last_name": "uservht",
-                "username": "vhtuservht",
+                "first_name": "vt",
+                "last_name": "uservt",
+                "username": "vtuservt",
                 "email": "chewtest@test.com",
                 "gender": "female",
                 "village": 1,

@@ -45,9 +45,9 @@ class TestImport(APITestCase):
         extract_excel_org_unit_data(excel_sheet)
         self.assertEqual(District.objects.count(), 1)
         self.assertEqual(County.objects.count(), 1)
-        self.assertEqual(SubCounty.objects.count(), 5)
-        self.assertEqual(Parish.objects.count(), 5)
-        self.assertEqual(Village.objects.count(), 5)
+        self.assertEqual(SubCounty.objects.count(), 6)
+        self.assertEqual(Parish.objects.count(), 6)
+        self.assertEqual(Village.objects.count(), 6)
         self.assertEqual(Village.objects.last().name, "Ajiriva")
 
     def test_import_users(self):

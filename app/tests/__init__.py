@@ -17,3 +17,4 @@ from app.tests.serializertests import *
 from app.tests.dashboard_statstests import *
 from app.tests.viewtests import *
 from app.tests.smstests import *
+from app.tests.excelimporttest import *
