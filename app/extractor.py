@@ -1,8 +1,8 @@
 import traceback
+from tempfile import TemporaryFile
 
 import pytz
 import xlrd
-from django.db.models import Q
 from django.utils import timezone
 
 from GetInBackendRebuild.settings import SHEET_FILES_FOLDER
@@ -10,9 +10,10 @@ from app.airtime_dispatcher import AirtimeModule
 from app.models import District, County, SubCounty, Parish, Village, User, Girl, Appointment, FollowUp, HealthFacility
 from app.utils.utilities import add_months
 from openpyxl import Workbook, load_workbook
+from xlwt import Workbook as WorkbookCreation
 from app.utils.constants import *
-from django.db.models.expressions import F, Q, ExpressionWrapper
-from django.db.models import Sum, Case, Value, When, Avg, FloatField, IntegerField, Count
+from django.db.models.expressions import Q
+from django.db.models import Case, When, IntegerField, Count
 
 
 def extract_excel_org_unit_data(location):
@@ -24,8 +25,6 @@ def extract_excel_org_unit_data(location):
     """
     wb = xlrd.open_workbook(location)
     sheet = wb.sheet_by_index(0)
-
-    sheet.cell_value(0, 0)
 
     for row_number in range(0, 1000):
         try:
@@ -62,7 +61,6 @@ def extract_excel_user_data(location, district_name):
     """
     wb = xlrd.open_workbook(location)
     sheet = wb.sheet_by_index(0)
-    sheet.cell_value(0, 0)
 
     for row_number in range(0, 1000):
         try:
@@ -103,7 +101,8 @@ def extract_excel_user_data(location, district_name):
         try:
             getin_number_value = "0" + str(int(getin_number_value))
             user = User(first_name=first_name_value.strip(), village=village, last_name=last_name_value.strip(),
-                        username=str(first_name_value.strip()).lower()[0] + str(last_name_value.strip()).lower().replace(" ", ""),
+                        username=str(first_name_value.strip()).lower()[0] + str(
+                            last_name_value.strip()).lower().replace(" ", ""),
                         email=first_name_value + last_name_value + "@getinmobile.org", phone=getin_number_value.strip(),
                         health_facility=health_facility,
                         gender=GENDER_FEMALE if gender.lower().find("f") > -1 else GENDER_MALE,
@@ -114,18 +113,44 @@ def extract_excel_user_data(location, district_name):
             print(traceback.print_exc())
 
 
-def generate_monthly_system_stats():
+def generate_monthly_system_stats(filename=SHEET_FILES_FOLDER + 'GetIN Traceability Form ' + str(
+    timezone.now().strftime("%m-%d-%Y, %H:%M")) + '.xls', end_date=None):
+    """
+    :param filename: name of the excel file containing the output
+    :param end_date: date up to which the metrics will be generated
+    Creates user performance excel sheet
+    Sheet Fields: NAME OF HEALTHWORKER, PHONE NO., ROLE, DISTRICT, MONTH, YEAR, NO. OF GIRLS MAPPED, ATTENDED, MISSED, EXPECTED, FOLLOW UPS
+    """
+    book = WorkbookCreation()
+    sheet1 = book.add_sheet('Sheet1')
+
+    data = [
+        ["NAME OF HEALTHWORKER"], ["PHONE NO."], ["ROLE"], ["DISTRICT"], ["MONTH"], ["YEAR"],
+        ["NO. OF GIRLS MAPPED"], ["ATTENDED"], ["MISSED"], ["EXPECTED"], ["FOLLOW UPS"]
+    ]
+
+    for c_index, columns in enumerate(data):
+        for r_index, row_item in enumerate(columns):
+            sheet1.write(r_index, c_index, row_item)
+
+    book.save(filename)
+    book.save(TemporaryFile())
+
+    convert_xls_to_xlsx(filename)
+
     for district in District.objects.all():
         created_at = timezone.datetime(2019, 10, 1).replace(tzinfo=pytz.utc)
-        while created_at < timezone.datetime(2020, 12, 1).replace(tzinfo=pytz.utc):
+        if not end_date:
+            end_date = timezone.now()
+
+        while created_at < end_date.replace(tzinfo=pytz.utc):
             for user in User.objects.filter(district=district):
                 if user.role in [USER_TYPE_DHO, USER_TYPE_AMBULANCE, USER_TYPE_DEVELOPER]:
                     continue
                 girls = Girl.objects.filter(Q(created_at__gte=created_at) &
                                             Q(created_at__lte=add_months(created_at, 1)
                                               .replace(tzinfo=pytz.utc)) & Q(user=user)).count()
-                filename = SHEET_FILES_FOLDER + "GetIN Traceability Form.xlsx"
-                wb = load_workbook(filename)
+                wb = load_workbook(filename.replace('xls', 'xlsx'))
                 sheet = wb['Sheet1']
 
                 appointment_data = {
@@ -160,8 +185,27 @@ def generate_monthly_system_stats():
                               created_at.strftime("%B"), created_at.strftime("%Y"), girls, appointment_data['attended'],
                               appointment_data['expected'],
                               appointment_data['missed'], followups])
-                wb.save(filename)
+                wb.save(filename.replace('xls', 'xlsx'))
             created_at = add_months(created_at, 1).replace(tzinfo=pytz.utc)
+
+
+def convert_xls_to_xlsx(src_file_path):
+    book_xls = xlrd.open_workbook(src_file_path)
+    book_xlsx = Workbook()
+
+    sheet_names = book_xls.sheet_names()
+    for sheet_index, sheet_name in enumerate(sheet_names):
+        sheet_xls = book_xls.sheet_by_name(sheet_name)
+        if sheet_index == 0:
+            sheet_xlsx = book_xlsx.active
+            sheet_xlsx.title = sheet_name
+        else:
+            sheet_xlsx = book_xlsx.create_sheet(title=sheet_name)
+
+        for row in range(0, sheet_xls.nrows):
+            for col in range(0, sheet_xls.ncols):
+                sheet_xlsx.cell(row=row + 1, column=col + 1).value = sheet_xls.cell_value(row, col)
+    book_xlsx.save(src_file_path.replace('xls', 'xlsx'))
 
 
 def extract_excel_user_data_for_airtime_dispatchment(location, amount):
@@ -170,8 +214,6 @@ def extract_excel_user_data_for_airtime_dispatchment(location, amount):
     """
     wb = xlrd.open_workbook(location)
     sheet = wb.sheet_by_index(0)
-
-    sheet.cell_value(0, 0)
     phone_numbers = []
 
     for row_number in range(0, sheet.utter_max_rows):
