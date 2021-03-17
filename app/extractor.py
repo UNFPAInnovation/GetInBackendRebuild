@@ -1,3 +1,4 @@
+import datetime
 import traceback
 from tempfile import TemporaryFile
 
@@ -7,7 +8,8 @@ from django.utils import timezone
 
 from GetInBackendRebuild.settings import SHEET_FILES_FOLDER
 from app.airtime_dispatcher import AirtimeModule
-from app.models import District, County, SubCounty, Parish, Village, User, Girl, Appointment, FollowUp, HealthFacility
+from app.models import District, County, SubCounty, Parish, Village, User, Girl, Appointment, FollowUp, HealthFacility, \
+    Delivery
 from app.utils.utilities import add_months
 from openpyxl import Workbook, load_workbook
 from xlwt import Workbook as WorkbookCreation
@@ -241,3 +243,21 @@ def generate_user_credential_sheet(district_name):
         sheet = wb['Sheet1']
         sheet.append([user.first_name + " " + user.last_name, user.username, user.phone, user.role, girls])
         wb.save(location)
+
+
+def generate_overall_stats(district):
+    result = dict()
+
+    result["Mapped girls"] = Girl.objects.filter(
+        Q(created_at__gte=datetime.datetime(2019, 11, 1)) & Q(created_at__lte=datetime.datetime(2021, 3, 18)) & Q(
+            user__district__name__icontains=district)).count()
+    result["ANC visits"] = Appointment.objects.filter(
+        Q(created_at__gte=datetime.datetime(2019, 11, 1)) & Q(created_at__lte=datetime.datetime(2021, 3, 18)) & Q(
+            user__district__name__icontains=district)).count()
+    result["Follow ups"] = FollowUp.objects.filter(
+        Q(created_at__gte=datetime.datetime(2019, 11, 1)) & Q(created_at__lte=datetime.datetime(2021, 3, 18)) & Q(
+            user__district__name__icontains=district)).count()
+    result["Deliveries"] = Delivery.objects.filter(
+        Q(created_at__gte=datetime.datetime(2019, 11, 1)) & Q(created_at__lte=datetime.datetime(2021, 3, 18)) & Q(
+            user__district__name__icontains=district)).count()
+    return result

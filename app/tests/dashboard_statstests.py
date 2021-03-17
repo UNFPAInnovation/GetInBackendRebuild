@@ -2,6 +2,8 @@ import random
 
 from django.urls import reverse
 from rest_framework import status
+
+from app.extractor import generate_overall_stats
 from app.models import *
 from app.tests.parenttest import ParentTest
 from django.utils.crypto import get_random_string
@@ -182,3 +184,47 @@ class TestDashboardStats(ParentTest):
         url = reverse("deliveries-stats")
         response = self.client.get(url, kwargs)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_overall_stats(self):
+        months = [
+            random.randint(1, self.current_date.month),
+            random.randint(1, self.current_date.month),
+            random.randint(1, self.current_date.month),
+            random.randint(1, self.current_date.month),
+            random.randint(1, self.current_date.month),
+            random.randint(1, self.current_date.month),
+            random.randint(1, self.current_date.month),
+            random.randint(1, self.current_date.month),
+            random.randint(1, self.current_date.month),
+            random.randint(1, self.current_date.month),
+            random.randint(1, self.current_date.month),
+            random.randint(1, self.current_date.month)
+        ]
+
+        for index, month in enumerate(months):
+            last_name = get_random_string(length=7)
+            if index > 3:
+                village = self.village2
+                user = self.midwife3
+            else:
+                village = self.village
+                user = self.midwife4
+            girl = Girl.objects.create(user=user, first_name=get_random_string(length=7), marital_status=SINGLE,
+                                       last_name=last_name, dob=timezone.datetime(2000, 3, 3),
+                                       village=village, last_menstruation_date=timezone.datetime(2020, 3, 3),
+                                       phone_number="0756789" + str(random.randint(100, 999)),
+                                       education_level=PRIMARY_LEVEL)
+
+            Delivery.objects.create(girl=girl, user=user, action_taken="Referred",
+                                    baby_birth_date=timezone.datetime(self.current_date.year, month, 1))
+            FollowUp.objects.create(girl=girl, user=user)
+            Appointment.objects.create(girl=girl, user=user,
+                                       date=timezone.now() - timezone.timedelta(days=random.randint(1, 20)))
+            Appointment.objects.create(girl=girl, user=user,
+                                       date=timezone.now() - timezone.timedelta(days=random.randint(21, 28)))
+        self.assertEqual(Girl.objects.count(), 12)
+        self.assertEqual(Appointment.objects.count(), 24)
+        self.assertEqual(generate_overall_stats('bundibugyo'), {"Mapped girls": 4, "ANC visits": 8, "Follow ups": 4,
+                                                                "Deliveries": 4})
+        self.assertEqual(generate_overall_stats('arua'), {"Mapped girls": 8, "ANC visits": 16, "Follow ups": 8,
+                                                          "Deliveries": 8})
