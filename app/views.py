@@ -247,7 +247,8 @@ class DashboardStatsView(APIView):
                     Case(
                         When(Q(parish__village__girl__created_at__gte=created_at_from) & Q(
                             parish__village__girl__created_at__lte=created_at_to), then=1),
-                        output_field=IntegerField())), ).exclude(girls_count=None).values('name', 'girls_count')
+                        output_field=IntegerField())), ).exclude(girls_count=None) \
+                    .values('name', 'girls_count').filter(county__district=district)
 
                 for subcounty in subvalues:
                     response["totalNumberOfGirlsMappedFrom" + subcounty['name']] = subcounty['girls_count']
