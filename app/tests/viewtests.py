@@ -1,3 +1,5 @@
+import random
+
 from django.urls import reverse
 from django.utils.crypto import get_random_string
 from rest_framework import status
@@ -13,14 +15,14 @@ class TestViews(ParentTest):
                                         last_name=last_name, dob=timezone.now() - timezone.timedelta(days=4000),
                                         village=self.village,
                                         last_menstruation_date=timezone.now() - timezone.timedelta(weeks=12),
-                                        phone_number="0756789543",
+                                        phone_number="0756677" + str(random.randint(100, 999)),
                                         education_level=PRIMARY_LEVEL)
 
         self.girl2 = Girl.objects.create(user=self.chew, first_name=get_random_string(length=7), marital_status=SINGLE,
                                          last_name=last_name, dob=timezone.now() - timezone.timedelta(days=4500),
                                          village=self.village,
                                          last_menstruation_date=timezone.now() - timezone.timedelta(weeks=8),
-                                         phone_number="0756783333",
+                                         phone_number="0756677" + str(random.randint(100, 999)),
                                          education_level=O_LEVEL)
 
         self.girl3 = Girl.objects.create(user=self.midwife2, first_name=get_random_string(length=7),
@@ -28,14 +30,14 @@ class TestViews(ParentTest):
                                          last_name=last_name, dob=timezone.now() - timezone.timedelta(days=4000),
                                          village=self.village,
                                          last_menstruation_date=timezone.now() - timezone.timedelta(weeks=7),
-                                         phone_number="0756783334",
+                                         phone_number="0756677" + str(random.randint(100, 999)),
                                          education_level=O_LEVEL)
         self.girl4 = Girl.objects.create(user=self.midwife3, first_name=get_random_string(length=7),
                                          marital_status=MARRIED,
                                          last_name=last_name, dob=timezone.now() - timezone.timedelta(days=4000),
                                          village=self.village2,
                                          last_menstruation_date=timezone.now() - timezone.timedelta(weeks=7),
-                                         phone_number="0756783339",
+                                         phone_number="0756677" + str(random.randint(100, 999)),
                                          education_level=O_LEVEL)
 
     def test_appointment_view(self):

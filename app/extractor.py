@@ -226,6 +226,7 @@ def extract_excel_user_data_for_airtime_dispatchment(location):
             phone_numbers.append("+256" + str(int(row_data[0])))
         except Exception as e:
             print(e)
+            break
     return list(set(phone_numbers))
 
 

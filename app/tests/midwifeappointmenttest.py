@@ -221,8 +221,8 @@ class TestAppointment(ParentTest):
         NOTE: The json object can either start with the form name or object called data
         """
         last_name = get_random_string(length=7)
-        girl = Girl.objects.create(user=self.chew, first_name=get_random_string(length=7), marital_status=SINGLE,
-                                   last_name=last_name, dob=timezone.datetime(2000, 3, 3), village=self.village,
+        girl = Girl.objects.create(user=self.chew2, first_name=get_random_string(length=7), marital_status=SINGLE,
+                                   last_name=last_name, dob=timezone.datetime(2000, 3, 3), village=self.village3,
                                    last_menstruation_date=timezone.datetime(2020, 3, 3), phone_number="0756789543",
                                    education_level=PRIMARY_LEVEL)
         request_data = {
@@ -312,7 +312,7 @@ class TestAppointment(ParentTest):
                     }
                 ]
             },
-            "form_meta_data": {"GIRL_ID": girl.id, "USER_ID": self.midwife.id}
+            "form_meta_data": {"GIRL_ID": girl.id, "USER_ID": self.midwife5.id}
         }
 
         url = reverse("mapping_encounter_webhook")
@@ -395,7 +395,7 @@ class TestAppointment(ParentTest):
                     }
                 ]
             },
-            "form_meta_data": {"GIRL_ID": girl.id, "USER_ID": self.midwife.id}
+            "form_meta_data": {"GIRL_ID": girl.id, "USER_ID": self.midwife5.id}
         }
 
         request = self.client.post(url, request_data, format='json')

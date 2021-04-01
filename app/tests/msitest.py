@@ -18,8 +18,8 @@ class TestMSI(ParentTest):
         Test structure of json sent to msi webhook
         """
         last_name = "MukuluGirlTest" + get_random_string(length=3)
-        girl = Girl.objects.create(user=self.chew, first_name="Ttest", marital_status=SINGLE,
-                                   last_name=last_name, dob=timezone.datetime(2000, 3, 3).date(), village=self.village,
+        girl = Girl.objects.create(user=self.chew2, first_name="Ttest", marital_status=SINGLE,
+                                   last_name=last_name, dob=timezone.datetime(2000, 3, 3).date(), village=self.village3,
                                    last_menstruation_date=timezone.datetime(2020, 3, 3).date(),
                                    phone_number="0756789543",
                                    education_level=PRIMARY_LEVEL, next_of_kin_phone_number="0756789542")
@@ -28,50 +28,50 @@ class TestMSI(ParentTest):
             "first_name": "Ttest",
             "last_name": last_name,
             "village": {
-                "id": 1,
+                "id": self.village3.id,
                 "parish": {
-                    "id": 1,
+                    "id": self.parish3.id,
                     "sub_county": {
-                        "id": 1,
+                        "id": self.sub_county3.id,
                         "county": {
-                            "id": 1,
+                            "id": self.county3.id,
                             "district": {
-                                "id": 1,
-                                "name": "BUNDIBUGYO",
-                                "region": 1
+                                "id": self.district3.id,
+                                "name": self.district3.name,
+                                "region": self.region2.id,
                             },
-                            "name": "BWAMBA_COUNTY"
+                            "name": self.county3.name,
                         },
-                        "name": "BUBANDI"
+                        "name": self.sub_county3.name,
                     },
-                    "name": "NJUULE"
+                    "name": self.parish3.name,
                 },
-                "name": "BUNDISELYA"
+                "name": self.village3.name
             },
             "location": {
                 "village": {
-                    "id": 1,
-                    "name": "BUNDISELYA"
+                    "id": self.village3.id,
+                    "name": self.village3.name
                 },
                 "parish": {
-                    "id": 1,
-                    "name": "NJUULE"
+                    "id": self.parish3.id,
+                    "name": self.parish3.name
                 },
                 "sub_county": {
-                    "id": 1,
-                    "name": "BUBANDI"
+                    "id": self.sub_county3.id,
+                    "name": self.sub_county3.name
                 },
                 "county": {
-                    "id": 1,
-                    "name": "BWAMBA_COUNTY"
+                    "id": self.county3.id,
+                    "name": self.county3.name
                 },
                 "district": {
-                    "id": 1,
-                    "name": "BUNDIBUGYO"
+                    "id": self.district3.id,
+                    "name": self.district3.name
                 },
                 "region": {
-                    "id": 1,
-                    "name": "Western"
+                    "id": self.region2.id,
+                    "name": self.region2.name
                 }
             },
             "phone_number": "0756789543",
@@ -82,19 +82,19 @@ class TestMSI(ParentTest):
             "last_menstruation_date": "2020-03-03",
             "dob": "2000-03-03",
             "user": {
-                "id": str(self.chew.id),
-                "first_name": "vt",
-                "last_name": "uservt",
-                "username": "vtuservt",
-                "email": "chewtest@test.com",
-                "gender": "female",
-                "village": 1,
+                "id": str(self.chew2.id),
+                "first_name": self.chew2.first_name,
+                "last_name": self.chew2.last_name,
+                "username": self.chew2.username,
+                "email": self.chew2.email,
+                "gender": self.chew2.gender,
+                "village": self.chew2.village.id,
                 "number_plate": None,
                 "role": "chew",
-                "phone": self.chew_phone_number
+                "phone": self.chew2.phone
             },
             "odk_instance_id": None,
-            "age": 20,
+            "age": girl.age,
             "completed_all_visits": False,
             "pending_visits": 30,
             "missed_visits": 0,

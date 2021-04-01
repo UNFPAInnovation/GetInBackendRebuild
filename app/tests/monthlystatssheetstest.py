@@ -18,7 +18,7 @@ class TestMonthlyStats(ParentTest):
         """
         filename = SHEET_FILES_FOLDER + 'GetIN Traceability Form ' + \
                    str(timezone.now().strftime("%m-%d-%Y-%H:%M")) + '.xls'
-        generate_monthly_system_stats(filename=filename)
+        generate_monthly_system_stats(location=filename)
         wb = xlrd.open_workbook(filename + 'x')
         sheet = wb.sheet_by_index(0)
         name = ""
@@ -34,6 +34,6 @@ class TestMonthlyStats(ParentTest):
             month = row_data[4]
 
         first_user = User.objects.filter(district=District.objects.last(),
-                                         role__in=[USER_TYPE_MIDWIFE, USER_TYPE_CHEW]).first()
+                                         role__in=[USER_TYPE_MIDWIFE, USER_TYPE_CHEW]).last()
         self.assertEqual(name, first_user.first_name + " " + first_user.last_name)
         self.assertEqual(month, timezone.now().strftime("%B"))

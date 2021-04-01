@@ -1,6 +1,8 @@
 from GetInBackendRebuild.settings import env
 import os
 
+MSI_DISTRICTS = ['yumbe', 'moyo', 'adjumani']
+
 GENDER_MALE = "male"
 GENDER_FEMALE = "female"
 
@@ -9,11 +11,9 @@ O_LEVEL = "O level"
 A_LEVEL = "A level"
 TERTIARY_LEVEL = "Tertiary"
 
-
 SINGLE = "Single"
 MARRIED = "Married"
 DIVORCED = "Divorced"
-
 
 HOME = "Home"
 HEALTH_FACILITY = "Health facility"
@@ -30,10 +30,8 @@ MISSED = "Missed"
 ATTENDED = "Attended"
 EXPECTED = "Expected"
 
-
 PRE = "Pre"
 POST = "Post"
-
 
 BEFORE = "Before"
 AFTER = "After"

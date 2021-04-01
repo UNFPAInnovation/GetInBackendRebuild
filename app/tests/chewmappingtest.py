@@ -141,6 +141,7 @@ class TestChewMapping(ParentTest):
                         timezone.now().replace(tzinfo=None) + timezone.timedelta(weeks=2))
 
         self.assertEqual(Girl.objects.first().voucher_number, '')
+        self.assertEqual(MSIService.objects.count(), 0)
 
     def test_mapping_encounter_by_chew_girl_below_84(self):
         """
@@ -283,6 +284,7 @@ class TestChewMapping(ParentTest):
         request = self.client.get(url)
         self.assertEqual(request.status_code, status.HTTP_200_OK)
         self.assertEqual(request.json()['count'], 1)
+        self.assertEqual(MSIService.objects.count(), 0)
 
     def test_mapping_encounter_by_chew_with_previous_appointments(self):
         """
@@ -391,6 +393,9 @@ class TestChewMapping(ParentTest):
                     {
                         "VoucherCard": [
                             "no"
+                        ],
+                        "VoucherNumberCreation": [
+                            "yes"
                         ]
                     }
                 ],
@@ -436,3 +441,164 @@ class TestChewMapping(ParentTest):
         self.client.force_authenticate(user=self.dho)
         request = self.client.get(url)
         self.assertEqual(request.status_code, status.HTTP_200_OK)
+        self.assertEqual(MSIService.objects.count(), 0)
+
+    def test_mapping_encounter_by_chew_in_MSI_regions(self):
+        """
+        Test mapping girl who is in a region where MSI operates
+        Result:
+        - VHT should always create vouchers. Regardless of the options they choose
+        """
+        last_name = "MukuluGirlTest" + get_random_string(length=3)
+        current_date = timezone.now()
+
+        request_data = {
+            "data": {
+                "$": {
+                    "id": "GetInMapGirlYumbe1_chew",
+                    "xmlns:h": "http://www.w3.org/1999/xhtml",
+                    "xmlns:jr": "http://openrosa.org/javarosa",
+                    "xmlns:xsd": "http://www.w3.org/2001/XMLSchema",
+                    "xmlns:ev": "http://www.w3.org/2001/xml-events",
+                    "xmlns:orx": "http://openrosa.org/xforms",
+                    "xmlns:odk": "http://www.opendatakit.org/xforms"
+                },
+                "GirlDemographic": [
+                    {
+                        "FirstName": [
+                            "Samusa"
+                        ],
+                        "LastName": [
+                            last_name
+                        ],
+                        "GirlsPhoneNumber": [
+                            "0783563675"
+                        ],
+                        "DOB": [
+                            "1998-04-01"
+                        ]
+                    }
+                ],
+                "GirlDemographic2": [
+                    {
+                        "NextOfKinNumber": [
+                            "0783563675"
+                        ]
+                    }
+                ],
+                "NationalityGroup": [
+                    {
+                        "Nationality": [
+                            "Ugandan"
+                        ]
+                    }
+                ],
+                "GirlLocation": [
+                    {
+                        "county": [
+                            "Yumbe"
+                        ],
+                        "subcounty": [
+                            "Kululu"
+                        ],
+                        "parish": [
+                            "Aliapi"
+                        ],
+                        "village": [
+                            "Onjiri"
+                        ]
+                    }
+                ],
+                "DisabilityGroup": [
+                    {
+                        "Disability": [
+                            "no"
+                        ]
+                    }
+                ],
+                "Observations3": [
+                    {
+                        "marital_status": [
+                            "married"
+                        ],
+                        "education_level": [
+                            "primary_level"
+                        ],
+                        "MenstruationDate": [
+                            str(current_date.year) + "-" + str((current_date - timezone.timedelta(days=30)).month) + "-28"
+                        ]
+                    }
+                ],
+                "Observations1": [
+                    {
+                        "bleeding": [
+                            "no"
+                        ],
+                        "fever": [
+                            "no"
+                        ]
+                    }
+                ],
+                "Observations2": [
+                    {
+                        "swollenfeet": [
+                            "no"
+                        ],
+                        "blurred_vision": [
+                            "no"
+                        ]
+                    }
+                ],
+                "EmergencyCall": [
+                    ""
+                ],
+                "ContraceptiveGroup": [
+                    {
+                        "UsedContraceptives": [
+                            "yes"
+                        ],
+                        "ContraceptiveMethod": [
+                            "Pills"
+                        ]
+                    }
+                ],
+                "ANCAppointmentPreviousGroup": [
+                    {
+                        "AttendedANCVisit": [
+                            "yes"
+                        ],
+                        "ANCDatePrevious": [
+                            "2021-01-29"
+                        ]
+                    }
+                ],
+                "VouncherCardGroup": [
+                    {
+                        "VoucherCard": [
+                            "no"
+                        ],
+                        "VoucherNumberCreation": [
+                            "no"
+                        ]
+                    }
+                ],
+                "meta": [
+                    {
+                        "instanceID": [
+                            "uuid:c7d07eda-3fc2-4cce-a4ac-5acc1b8f5d35"
+                        ]
+                    }
+                ]
+            },
+            "form_meta_data": {
+                "GIRL_ID": "0",
+                "USER_ID": self.chew2.id
+            }
+        }
+
+        url = reverse("mapping_encounter_webhook")
+        request = self.client.post(url, request_data, format='json')
+        self.assertEqual(request.status_code, status.HTTP_200_OK)
+        self.assertEqual(Girl.objects.count(), 1)
+        self.assertEqual(Girl.objects.first().last_name, last_name)
+        self.assertNotEqual(Girl.objects.first().voucher_number, '')

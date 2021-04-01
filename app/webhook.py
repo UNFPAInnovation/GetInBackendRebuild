@@ -203,7 +203,7 @@ class ODKWebhook(APIView):
                 # lastly delete the old girl
                 old_girl.delete()
             else:
-                voucher_number = voucher_number if user.district.name.lower() != "bundibugyo" else ""
+                voucher_number = voucher_number if user.district.name.lower() in MSI_DISTRICTS else ""
                 new_girl = Girl.objects.create(first_name=first_name, last_name=last_name, village=village,
                             phone_number=girls_phone_number, user=user, nationality=nationality, disabled=disabled,
                             next_of_kin_phone_number=next_of_kin_number, education_level=education_level, dob=dob,
@@ -246,8 +246,8 @@ class ODKWebhook(APIView):
             mapping_encounter.save()
             self.save_family_planning_methods_in_mapping_encounter(mapped_girl_object, mapping_encounter)
 
-            # MSI voucher are not provided to bundibugyo users
-            if voucher_number_creation and user.district.name.lower() != "bundibugyo":
+            # MSI voucher are only provided to MSI districts
+            if user.district.name.lower() in MSI_DISTRICTS and user.role == USER_TYPE_CHEW:
                 self.get_and_save_msi_voucher_to_girl(girl)
             return Response({'result': 'success'}, status.HTTP_200_OK)
         except Exception:
@@ -574,8 +574,7 @@ class ODKWebhook(APIView):
             user = User.objects.get(id=user_id)
 
             try:
-                has_voucher = appointment_object["voucher_received_group"][0]["has_voucher"][0] == "yes"
-                if has_voucher:
+                if user.district.name.lower() in MSI_DISTRICTS and user.role == USER_TYPE_MIDWIFE:
                     msi_service = appointment_object["voucher_redeem_group"][0]["voucher_services"][0]
                     MSIService.objects.create(girl=girl, option=msi_service)
             except Exception as e:
