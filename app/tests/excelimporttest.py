@@ -68,7 +68,7 @@ class TestImport(APITestCase):
             ["Namakula", "Mukasa", "Okoth", "Opio", "Ibanda Mugada"],
             ["0756878450", "0756878451", "0756878452", "0756878453", "0756878454"],
             ["0756878440", "0756878441", "0756878442", "0756878443", "0756878444"],
-            ["chew", "chew", "midwife", "chew", "midwife"],
+            ["chew", "vht", "midwife", "chew", "midwife"],
             ["female", "female", "female", "female", "male"],
             ["Bondo HCIII", "Bondo HCII", "Arua Hospital", "Orivu HCIII", "Pajulu HCIII"],
             ["Dadamu", "Dadamu", "Dadamu", "Dadamu", "Dadamu"],
