@@ -1,5 +1,3 @@
-import datetime
-
 import django_filters
 
 from app.models import Girl, FollowUp, Appointment, MappingEncounter, Delivery, User, AppointmentEncounter
@@ -9,17 +7,13 @@ class SuperFilter(django_filters.FilterSet):
     created_from = django_filters.DateTimeFilter(field_name='created_at', lookup_expr='gte',
                                                  help_text='Created at is greater than or equal to')
     created_to = django_filters.DateTimeFilter(field_name='created_at', lookup_expr='lte',
-                                               help_text='Created is less than or equal to', method='to_filter')
+                                               help_text='Created is less than or equal to')
 
     class Meta:
         model = Girl
         fields = {
             'created_from', 'created_to'
         }
-
-    def to_filter(self, queryset, name, value):
-        value = value + datetime.timedelta(days=1)
-        return queryset.filter(**{name: value})
 
 
 class GirlFilter(SuperFilter):
