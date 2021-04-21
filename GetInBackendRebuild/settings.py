@@ -197,6 +197,8 @@ CRONJOBS = [
     ('5 18 * * *', 'app.cron.transition_expected_appointments'),
     # run cron job at 10:05 every Tuesday
     ('5 10 * * 2', 'app.cron.notifier_weekly_usage_reminder_cron_job'),
+    # run cron job at 01:00 every Month
+    ('0 1 1 * *', 'app.cron.send_monthly_stats_email')
 ]
 
 # Internationalization
@@ -243,3 +245,11 @@ LOGGING = {
         },
     },
 }
+
+EMAIL_BACKEND = env.get_value("EMAIL_BACKEND", default="django.core.mail.backends.dummy.EmailBackend")
+EMAIL_HOST = env.get_value("EMAIL_HOST")
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = env.get_value("EMAIL_USER")
+EMAIL_HOST_PASSWORD = env.get_value("EMAIL_PASSWORD")
+EMAIL_RECIPIENTS = env.list("EMAIL_RECIPIENTS")

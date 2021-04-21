@@ -1,6 +1,11 @@
+import datetime
+
 from django.utils import timezone
 
-from app.models import Appointment, Girl
+from GetInBackendRebuild.settings import EMAIL_RECIPIENTS, EMAIL_HOST
+from app.email_sender import send_email
+from app.extractor import generate_overall_stats
+from app.models import Appointment, Girl, District
 from app.notifier import NotifierView
 from app.utils.constants import EXPECTED, ATTENDED, MISSED
 
@@ -56,3 +61,26 @@ def transition_expected_appointments():
                     girl_previous_appointment.save(update_fields=['status'])
     except Exception as e:
         print(e)
+
+
+def generate_stats_message():
+    message = "Hello\n\nMonthly statistics"
+
+    districts = District.objects.exclude(name__contains='kampala')
+    for district in districts:
+        stats = generate_overall_stats(district.name)
+        message += "\n\n<strong>" + district.name + "</strong>\n"
+        for stat_key in stats.keys():
+            message += stat_key + ": " + str(stats[stat_key]) + "\n"
+
+    message += "\nRegards.\nGetIn Team"
+    return message
+
+
+def send_monthly_stats_email():
+    """
+    Sends out email to GetIn admins
+    """
+    message = generate_stats_message()
+    print('EMAIL_HOST', EMAIL_HOST)
+    send_email("GetIn statistics for " + datetime.datetime.strftime(timezone.now(), '%Y-%m-%d %H:%M'), message, EMAIL_RECIPIENTS)

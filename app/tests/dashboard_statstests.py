@@ -228,3 +228,54 @@ class TestDashboardStats(ParentTest):
                                                                 "Deliveries": 4})
         self.assertEqual(generate_overall_stats('arua'), {"Mapped girls": 8, "ANC visits": 16, "Follow ups": 8,
                                                           "Deliveries": 8})
+
+    def test_generate_stats_message(self):
+        response = """
+        Hello
+        Monthly statistics
+        
+        
+        <strong>BUNDIBUGYO</strong>
+        Mapped girls: 2
+        ANC visits: 2
+        Follow ups: 0
+        Deliveries: 0
+        
+        
+        <strong>Arua</strong>
+        Mapped girls: 0
+        ANC visits: 0
+        Follow ups: 0
+        Deliveries: 0
+        
+        
+        <strong>Adjumani</strong>
+        Mapped girls: 0
+        ANC visits: 0
+        Follow ups: 0
+        Deliveries: 0
+        
+        
+        <strong>YUMBE</strong>
+        Mapped girls: 0
+        ANC visits: 0
+        Follow ups: 0
+        Deliveries: 0
+        
+        
+        <strong>Moroto</strong>
+        Mapped girls: 0
+        ANC visits: 0
+        Follow ups: 0
+        Deliveries: 0
+        
+        
+        <strong>Morototest</strong>
+        Mapped girls: 0
+        ANC visits: 0
+        Follow ups: 0
+        Deliveries: 0
+        
+        
+        Regards.
+        GetIn Team"""
