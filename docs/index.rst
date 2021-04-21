@@ -264,6 +264,14 @@ Create directories and request for certificate from lets encrypt
     sudo service nginx restart
 
 
+Adding monthly stats email recipients
+--------------------------------------
+
+- Open the .env file
+- Add emails without quotes or spaces
+- Finally update the cron job. ``python manage.py crontab add``
+
+
 Update of code and server
 --------------------------
 

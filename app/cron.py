@@ -82,5 +82,4 @@ def send_monthly_stats_email():
     Sends out email to GetIn admins
     """
     message = generate_stats_message()
-    print('EMAIL_HOST', EMAIL_HOST)
     send_email("GetIn statistics for " + datetime.datetime.strftime(timezone.now(), '%Y-%m-%d %H:%M'), message, EMAIL_RECIPIENTS)

@@ -1,8 +1,10 @@
 import random
 
+from django.core import mail
 from django.urls import reverse
 from rest_framework import status
 
+from app.cron import generate_stats_message, send_monthly_stats_email
 from app.extractor import generate_overall_stats
 from app.models import *
 from app.tests.parenttest import ParentTest
@@ -230,52 +232,37 @@ class TestDashboardStats(ParentTest):
                                                           "Deliveries": 8})
 
     def test_generate_stats_message(self):
-        response = """
-        Hello
-        Monthly statistics
-        
-        
-        <strong>BUNDIBUGYO</strong>
-        Mapped girls: 2
-        ANC visits: 2
-        Follow ups: 0
-        Deliveries: 0
-        
-        
-        <strong>Arua</strong>
-        Mapped girls: 0
-        ANC visits: 0
-        Follow ups: 0
-        Deliveries: 0
-        
-        
-        <strong>Adjumani</strong>
-        Mapped girls: 0
-        ANC visits: 0
-        Follow ups: 0
-        Deliveries: 0
-        
-        
-        <strong>YUMBE</strong>
-        Mapped girls: 0
-        ANC visits: 0
-        Follow ups: 0
-        Deliveries: 0
-        
-        
-        <strong>Moroto</strong>
-        Mapped girls: 0
-        ANC visits: 0
-        Follow ups: 0
-        Deliveries: 0
-        
-        
-        <strong>Morototest</strong>
-        Mapped girls: 0
-        ANC visits: 0
-        Follow ups: 0
-        Deliveries: 0
-        
-        
-        Regards.
-        GetIn Team"""
+        response = """Hello
+
+Monthly statistics
+
+<strong>BUNDIBUGYO</strong>
+Mapped girls: 0
+ANC visits: 0
+Follow ups: 0
+Deliveries: 0
+
+
+<strong>Arua</strong>
+Mapped girls: 0
+ANC visits: 0
+Follow ups: 0
+Deliveries: 0
+
+
+<strong>Yumbe</strong>
+Mapped girls: 0
+ANC visits: 0
+Follow ups: 0
+Deliveries: 0
+
+Regards.
+GetIn Team"""
+        print(generate_stats_message())
+
+        self.assertEqual(generate_stats_message(), response)
+
+    def test_send_monthly_stats_email(self):
+        send_monthly_stats_email()
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject[:16], 'GetIn statistics')
