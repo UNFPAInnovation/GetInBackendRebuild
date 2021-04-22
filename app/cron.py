@@ -66,7 +66,10 @@ def transition_expected_appointments():
 def generate_stats_email_message():
     message = "Hello\n\nMonthly statistics"
 
-    districts = District.objects.exclude(name__contains='kampala')
+    # exclude inactive districts
+    districts = District.objects.all()\
+        .exclude(name__icontains='kampala')
+
     for district in districts:
         stats = generate_overall_stats(district.name)
         message += "\n\n<strong>" + district.name + "</strong>\n"
