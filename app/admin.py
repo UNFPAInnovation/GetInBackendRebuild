@@ -35,6 +35,11 @@ class AppointmentAdmin(admin.ModelAdmin):
     girl_last_name.admin_order_field = 'girl__last_name'
 
 
+class MSIServiceAdmin(admin.ModelAdmin):
+    search_fields = ('girl__first_name', 'girl__last_name', 'option')
+    list_display = ['girl', 'option', 'created_at']
+
+
 admin.site.register(Girl, GirlAdmin)
 admin.site.register(HealthFacility)
 admin.site.register(FollowUp)
@@ -48,4 +53,4 @@ admin.site.register(Observation)
 admin.site.register(NotificationLog)
 admin.site.register(HealthMessage)
 admin.site.register(SentSmsLog)
-admin.site.register(MSIService)
+admin.site.register(MSIService, MSIServiceAdmin)
