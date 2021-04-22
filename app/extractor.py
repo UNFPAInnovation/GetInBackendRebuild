@@ -9,7 +9,7 @@ from django.utils import timezone
 from GetInBackendRebuild.settings import SHEET_FILES_FOLDER
 from app.airtime_dispatcher import AirtimeModule
 from app.models import District, County, SubCounty, Parish, Village, User, Girl, Appointment, FollowUp, HealthFacility, \
-    Delivery
+    Delivery, MSIService
 from app.utils.utilities import add_months
 from openpyxl import Workbook, load_workbook
 from xlwt import Workbook as WorkbookCreation
@@ -246,19 +246,20 @@ def generate_user_credential_sheet(district_name):
         wb.save(location)
 
 
-def generate_overall_stats(district):
+def generate_overall_stats(district, from_date=datetime.datetime(2019, 11, 1), to_date=datetime.datetime(2060, 1, 1)):
     result = dict()
 
     result["Mapped girls"] = Girl.objects.filter(
-        Q(created_at__gte=datetime.datetime(2019, 11, 1)) & Q(created_at__lte=datetime.datetime(2021, 3, 18)) & Q(
-            user__district__name__icontains=district)).count()
+        Q(created_at__gte=from_date) & Q(created_at__lte=to_date) & Q(user__district__name=district)).count()
     result["ANC visits"] = Appointment.objects.filter(
-        Q(created_at__gte=datetime.datetime(2019, 11, 1)) & Q(created_at__lte=datetime.datetime(2021, 3, 18)) & Q(
-            user__district__name__icontains=district)).count()
+        Q(created_at__gte=from_date) & Q(created_at__lte=to_date) & Q(user__district__name=district)).count()
     result["Follow ups"] = FollowUp.objects.filter(
-        Q(created_at__gte=datetime.datetime(2019, 11, 1)) & Q(created_at__lte=datetime.datetime(2021, 3, 18)) & Q(
-            user__district__name__icontains=district)).count()
+        Q(created_at__gte=from_date) & Q(created_at__lte=to_date) & Q(user__district__name=district)).count()
     result["Deliveries"] = Delivery.objects.filter(
-        Q(created_at__gte=datetime.datetime(2019, 11, 1)) & Q(created_at__lte=datetime.datetime(2021, 3, 18)) & Q(
-            user__district__name__icontains=district)).count()
+        Q(created_at__gte=from_date) & Q(created_at__lte=to_date) & Q(user__district__name=district)).count()
+    result["Voucher services redeemed"] = MSIService.objects.filter(
+        Q(created_at__gte=from_date) & Q(created_at__lte=to_date) & Q(girl__user__district__name=district)).count()
+    result["Voucher cards created"] = Girl.objects.filter(
+        Q(created_at__gte=from_date) & Q(created_at__lte=to_date) & Q(user__district__name=district) &
+        Q(voucher_number__contains="-")).count()
     return result

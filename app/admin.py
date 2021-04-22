@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from app.models import User, District, County, SubCounty, Parish, Village, Girl, HealthFacility, FollowUp, Delivery, \
     MappingEncounter, Appointment, AppointmentEncounter, Referral, FamilyPlanning, Observation, NotificationLog, Region, \
-    HealthMessage, SentSmsLog
+    HealthMessage, SentSmsLog, MSIService
 
 admin.site.register(User)
 admin.site.register(Region)
@@ -27,7 +27,7 @@ class AppointmentAdmin(admin.ModelAdmin):
 
     def girl_last_name(self, obj):
         return obj.girl.last_name
-    
+
     def girl_phone_number(self, obj):
         return obj.girl.phone_number
 
@@ -48,3 +48,4 @@ admin.site.register(Observation)
 admin.site.register(NotificationLog)
 admin.site.register(HealthMessage)
 admin.site.register(SentSmsLog)
+admin.site.register(MSIService)

@@ -63,7 +63,7 @@ def transition_expected_appointments():
         print(e)
 
 
-def generate_stats_message():
+def generate_stats_email_message():
     message = "Hello\n\nMonthly statistics"
 
     districts = District.objects.exclude(name__contains='kampala')
@@ -73,7 +73,7 @@ def generate_stats_message():
         for stat_key in stats.keys():
             message += stat_key + ": " + str(stats[stat_key]) + "\n"
 
-    message += "\nRegards.\nGetIn Team"
+    message += "\n\nRegards.\nGetIn Team"
     return message
 
 
@@ -81,5 +81,6 @@ def send_monthly_stats_email():
     """
     Sends out email to GetIn admins
     """
-    message = generate_stats_message()
-    send_email("GetIn statistics for " + datetime.datetime.strftime(timezone.now(), '%Y-%m-%d %H:%M'), message, EMAIL_RECIPIENTS)
+    message = generate_stats_email_message()
+    send_email("GetIn statistics for " + datetime.datetime.strftime(timezone.now(), '%Y-%m-%d %H:%M'),
+               message, EMAIL_RECIPIENTS)
