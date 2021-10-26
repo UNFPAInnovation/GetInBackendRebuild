@@ -269,8 +269,10 @@ class ODKWebhook(APIView):
             webhook_response = webhook_response.json()
             if webhook_response['successful']:
                 voucher_number = webhook_response['eVoucher']['code']
+                voucher_expiry_date = webhook_response['eVoucher']['validUntil']
                 girl.voucher_number = voucher_number
-                girl.save(update_fields=['voucher_number'])
+                girl.voucher_expiry_date = voucher_expiry_date
+                girl.save(update_fields=['voucher_number', 'voucher_expiry_date'])
         except Exception as e:
             print(e)
 
