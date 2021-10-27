@@ -1,3 +1,4 @@
+from datetime import timedelta
 import datetime
 import json
 import random
@@ -115,7 +116,14 @@ class ODKWebhook(APIView):
             first_name = demographic1["FirstName"][0]
             last_name = demographic1["LastName"][0]
             girls_phone_number = demographic1["GirlsPhoneNumber"][0]
-            dob = demographic1["DOB"][0]
+
+            try:
+                dob = demographic1["DOB"][0]
+            except Exception as e:
+                print(e)
+                age = demographic1["Age"][0]
+                dob = datetime.datetime.now() - timedelta(days=int(age) * 365)
+
 
             try:
                 demographic2 = mapped_girl_object["GirlDemographic2"][0]
