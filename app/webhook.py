@@ -121,8 +121,9 @@ class ODKWebhook(APIView):
                 dob = demographic1["DOB"][0]
             except Exception as e:
                 print(e)
-                age = demographic1["Age"][0]
-                dob = datetime.datetime.now() - timedelta(days=int(age) * 365)
+                # increment age by one, since the dob will end up one year behind
+                age = int(demographic1["Age"][0]) + 1
+                dob = datetime.datetime.now() - timedelta(days=age * 365)
 
 
             try:
@@ -195,7 +196,7 @@ class ODKWebhook(APIView):
                                    phone_number=girls_phone_number, user=user, disabled=disabled,
                                    voucher_number=voucher_number,
                                    next_of_kin_phone_number=next_of_kin_number, nationality=nationality,
-                                   disablility=disability,
+                                   disability=disability,
                                    education_level=education_level, dob=dob, marital_status=marital_status,
                                    last_menstruation_date=last_menstruation_date, odk_instance_id=odk_instance_id)
                 edited_girl.save()
@@ -223,7 +224,7 @@ class ODKWebhook(APIView):
                                                next_of_kin_phone_number=next_of_kin_number,
                                                education_level=education_level, dob=dob,
                                                marital_status=marital_status,
-                                               last_menstruation_date=last_menstruation_date, disablility=disability,
+                                               last_menstruation_date=last_menstruation_date, disability=disability,
                                                voucher_number=voucher_number, odk_instance_id=odk_instance_id)
                 girl = new_girl
 

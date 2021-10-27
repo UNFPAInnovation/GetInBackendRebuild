@@ -203,7 +203,7 @@ class GirlSerializer(serializers.ModelSerializer):
         # list all the fields since the age property is not picked up by __all__
         fields = (
             'id', 'first_name', 'last_name', 'village', 'village_id', 'phone_number', 'trimester',
-            'next_of_kin_phone_number', 'education_level', 'marital_status', 'voucher_expiry_date', 'disablility',
+            'next_of_kin_phone_number', 'education_level', 'marital_status', 'voucher_expiry_date', 'disability',
             'last_menstruation_date', 'dob', 'user', 'odk_instance_id', 'age', 'completed_all_visits', 'voucher_number',
             'pending_visits', 'missed_visits', 'services_received', 'nationality', 'disabled', 'created_at')
 

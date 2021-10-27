@@ -602,3 +602,148 @@ class TestChewMapping(ParentTest):
         self.assertEqual(Girl.objects.count(), 1)
         self.assertEqual(Girl.objects.first().last_name, last_name)
         self.assertNotEqual(Girl.objects.first().voucher_number, '')
+
+    def test_mapping_encounter_by_chew_with_age_field(self):
+        """
+        Test mapping girl with a form that has an age field instead of DOB
+        """
+        last_name = "MukuluGirlTest" + get_random_string(length=3)
+        age = 45
+
+        request_data = {
+            "data": {
+                "$": {
+                    "id": "GetInMapGirlYumbe1_chew",
+                    "xmlns:h": "http://www.w3.org/1999/xhtml",
+                    "xmlns:jr": "http://openrosa.org/javarosa",
+                    "xmlns:xsd": "http://www.w3.org/2001/XMLSchema",
+                    "xmlns:ev": "http://www.w3.org/2001/xml-events",
+                    "xmlns:orx": "http://openrosa.org/xforms",
+                    "xmlns:odk": "http://www.opendatakit.org/xforms"
+                },
+                "GirlDemographic": [
+                    {
+                        "FirstName": [
+                            "Tttrrr"
+                        ],
+                        "LastName": [
+                            last_name
+                        ],
+                        "GirlsPhoneNumber": [
+                            "0757888777"
+                        ],
+                        "Age": [
+                            str(age)
+                        ]
+                    }
+                ],
+                "GirlDemographic2": [
+                    {
+                        "NextOfKinNumber": [
+                            "0755555777"
+                        ]
+                    }
+                ],
+                "NationalityGroup": [
+                    {
+                        "Nationality": [
+                            "Refugee"
+                        ]
+                    }
+                ],
+                "GirlLocation": [
+                    {
+                        "county": [
+                            "YUMBE"
+                        ],
+                        "subcounty": [
+                            "KURU"
+                        ],
+                        "parish": [
+                            "LIBUA"
+                        ],
+                        "village": [
+                            "A'UNGA"
+                        ]
+                    }
+                ],
+                "DisabilityGroup": [
+                    {
+                        "Disability": [
+                            "I have challenges walking/climbing some places"
+                        ]
+                    }
+                ],
+                "Observations3": [
+                    {
+                        "marital_status": [
+                            "divorced"
+                        ],
+                        "education_level": [
+                            "O Level"
+                        ],
+                        "MenstruationDate": [
+                            "2021-10-18"
+                        ]
+                    }
+                ],
+                "Observations1": [
+                    {
+                        "bleeding": [
+                            "no"
+                        ],
+                        "fever": [
+                            "no"
+                        ]
+                    }
+                ],
+                "Observations2": [
+                    {
+                        "swollenfeet": [
+                            "yes"
+                        ],
+                        "blurred_vision": [
+                            "yes"
+                        ]
+                    }
+                ],
+                "EmergencyCall": [
+                    ""
+                ],
+                "ContraceptiveGroup": [
+                    {
+                        "UsedContraceptives": [
+                            "yes"
+                        ],
+                        "ContraceptiveMethod": [
+                            "Condoms Injectables Implant"
+                        ]
+                    }
+                ],
+                "ANCAppointmentPreviousGroup": [
+                    {
+                        "AttendedANCVisit": [
+                            "no"
+                        ]
+                    }
+                ],
+                "meta": [
+                    {
+                        "instanceID": [
+                            "uuid:dc45b955-5819-4077-820c-ba9e69cf9b66"
+                        ]
+                    }
+                ]
+            },
+            "form_meta_data": {
+                "GIRL_ID": "0",
+                "USER_ID": self.chew.id
+            }
+        }
+
+        url = reverse("mapping_encounter_webhook")
+        request = self.client.post(url, request_data, format='json')
+        self.assertEqual(request.status_code, status.HTTP_200_OK)
+        self.assertEqual(Girl.objects.count(), 1)
+        self.assertEqual(MappingEncounter.objects.count(), 1)
+        self.assertEqual(Girl.objects.first().age, 45)
