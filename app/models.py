@@ -20,12 +20,14 @@ EDUCATION_CHOICES = (
     (O_LEVEL, 'O Level'),
     (A_LEVEL, 'A Level'),
     (TERTIARY_LEVEL, 'Tertiary Level'),
+    (NONE, 'None'),
 )
 
 MARITAL_STATUS_CHOICES = {
     (SINGLE, 'Single'),
     (MARRIED, 'Married'),
     (DIVORCED, 'Divorced'),
+    (WIDOWED, 'Widowed'),
 }
 
 DELIVERY_LOCATION = (
@@ -127,7 +129,8 @@ class Village(models.Model):
 class HealthFacility(models.Model):
     sub_county = models.ForeignKey(SubCounty, on_delete=models.CASCADE, blank=True, null=True)
     name = models.CharField(max_length=50)
-    facility_level = models.CharField(max_length=9, blank=True, null=True)
+    facility_level = models.CharField(max_length=9, blank=True, null=True,
+                                      help_text='0 - Hospital, 1 - HFI, 2 - HFII, 3 - HFIII, 4 - HFIV')
 
     def __str__(self):
         return self.name

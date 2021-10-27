@@ -167,8 +167,6 @@ class ODKWebhook(APIView):
                 has_voucher_card = voucher_card_group["VoucherCard"][0] == "yes"
                 if has_voucher_card:
                     voucher_number = voucher_card_group["VoucherNumber"][0]
-                else:
-                    voucher_number_creation = voucher_card_group["VoucherNumberCreation"][0] == "yes"
             except KeyError or IndexError:
                 print(traceback.print_exc())
 
@@ -255,14 +253,19 @@ class ODKWebhook(APIView):
             mapping_encounter.girl = girl
             mapping_encounter.save()
             self.save_family_planning_methods_in_mapping_encounter(mapped_girl_object, mapping_encounter)
-
-            # MSI voucher are only provided to MSI districts
-            if user.district.name.lower() in MSI_DISTRICTS and user.role == USER_TYPE_CHEW:
-                self.get_and_save_msi_voucher_to_girl(girl)
+            self.assign_voucher_to_girl_in_msi_district_under_facility_level_2(girl, user)
             return Response({'result': 'success'}, status.HTTP_200_OK)
         except Exception:
             print(traceback.print_exc())
         return Response({'result': 'failure'}, status.HTTP_400_BAD_REQUEST)
+
+    def assign_voucher_to_girl_in_msi_district_under_facility_level_2(self, girl, user):
+        try:
+            if user.district.name.lower() in MSI_DISTRICTS and user.role == USER_TYPE_CHEW \
+                    and user.midwife.health_facility.facility_level == "2":
+                self.get_and_save_msi_voucher_to_girl(girl)
+        except Exception as e:
+            print(e)
 
     def get_form_id_and_extract_json_object(self, json_result):
         try:

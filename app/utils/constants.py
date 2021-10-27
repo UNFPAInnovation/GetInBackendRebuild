@@ -10,10 +10,12 @@ PRIMARY_LEVEL = "Primary level"
 O_LEVEL = "O level"
 A_LEVEL = "A level"
 TERTIARY_LEVEL = "Tertiary"
+NONE = "None"
 
 SINGLE = "Single"
 MARRIED = "Married"
 DIVORCED = "Divorced"
+WIDOWED = "Widowed"
 
 HOME = "Home"
 HEALTH_FACILITY = "Health facility"
