@@ -521,15 +521,15 @@ class ODKWebhook(APIView):
                     if "Others" == contraceptive_method_name:
                         print("others present")
                         other_contraceptive_method = contraceptive_group["other_contraceptive_method"][0]
-                        family_planning = FamilyPlanning(method=other_contraceptive_method, status=POST)
+                        family_planning = FamilyPlanning(method=replace_underscore(other_contraceptive_method), status=POST)
                         family_planning.save()
                         delivery.family_planning.add(family_planning)
                     else:
-                        family_planning = FamilyPlanning(method=contraceptive_method_name, status=POST)
+                        family_planning = FamilyPlanning(method=replace_underscore(contraceptive_method_name), status=POST)
                         family_planning.save()
                         delivery.family_planning.add(family_planning)
             else:
-                family_planning = FamilyPlanning(method=contraceptive_method, status=POST)
+                family_planning = FamilyPlanning(method=replace_underscore(contraceptive_method), status=POST)
                 family_planning.save()
                 delivery.family_planning.add(family_planning)
         except KeyError or IndexError as e:
