@@ -393,3 +393,16 @@ Import new db
 
 #. Copy sql file into docker image ``docker cp '<filename>.sql' central_postgres_1:/'<filename>.sql'``
 #. Update odk database. ``docker exec central_postgres_1 psql -d odk -U odk -f <filename>.sql``
+
+ODK Form update
+================
+
+Updating ODK forms
+-------------------
+#. SSH into server ``gcloud beta compute ssh --zone "europe-west3-a" "production-odk-central" --project "getin-293809"``
+#. Access postgres db in docker ``docker exec -it central_postgres_1 psql -U odk``
+#. Delete form in sql by formId ``delete from forms where "xmlFormId" = 'GetINFoobar';``
+#. Visit odk central _dashboard
+#. Upload updated form
+
+.. _dashboard: https://odkcentral.getinmobile.org/#/projects/2
