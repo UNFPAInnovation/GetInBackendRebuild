@@ -142,7 +142,7 @@ class ODKWebhook(APIView):
                     disabled = disability_group['Disability'][0] == "yes"
                 else:
                     disability = disability_group['Disability'][0]
-                    disabled = disability_group['Disability'][0] == "None"
+                    disabled = disability_group['Disability'][0] != "None"
             except KeyError or IndexError as e:
                 print(e)
 
