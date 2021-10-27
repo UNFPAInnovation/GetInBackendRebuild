@@ -245,6 +245,7 @@ class Girl(models.Model):
     voucher_expiry_date = models.DateField(blank=True, null=True)
     nationality = models.CharField(max_length=100, default="Ugandan", blank=True, null=True)
     disabled = models.BooleanField(default=False, blank=True, null=True)
+    disablility = models.CharField(max_length=250, blank=True, null=True, default='None')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

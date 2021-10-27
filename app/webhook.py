@@ -102,6 +102,7 @@ class ODKWebhook(APIView):
             voucher_number_creation = False
             nationality = "Ugandan"
             disabled = False
+            disability = "None"
             mapping_encounter = MappingEncounter()
 
             try:
@@ -137,7 +138,11 @@ class ODKWebhook(APIView):
 
             try:
                 disability_group = mapped_girl_object["DisabilityGroup"][0]
-                disabled = disability_group['Disability'][0] == "yes"
+                if disability_group['Disability'][0] in ["yes", "no"]:
+                    disabled = disability_group['Disability'][0] == "yes"
+                else:
+                    disability = disability_group['Disability'][0]
+                    disabled = disability_group['Disability'][0] == "None"
             except KeyError or IndexError as e:
                 print(e)
 
@@ -181,8 +186,10 @@ class ODKWebhook(APIView):
                 if len(voucher_number) == 0:
                     voucher_number = old_girl.first().voucher_number
                 edited_girl = Girl(first_name=first_name, last_name=last_name, village=village,
-                                   phone_number=girls_phone_number, user=user, disabled=disabled, voucher_number=voucher_number,
+                                   phone_number=girls_phone_number, user=user, disabled=disabled,
+                                   voucher_number=voucher_number,
                                    next_of_kin_phone_number=next_of_kin_number, nationality=nationality,
+                                   disablility=disability,
                                    education_level=education_level, dob=dob, marital_status=marital_status,
                                    last_menstruation_date=last_menstruation_date, odk_instance_id=odk_instance_id)
                 edited_girl.save()
@@ -205,10 +212,13 @@ class ODKWebhook(APIView):
             else:
                 voucher_number = voucher_number if user.district.name.lower() in MSI_DISTRICTS else ""
                 new_girl = Girl.objects.create(first_name=first_name, last_name=last_name, village=village,
-                            phone_number=girls_phone_number, user=user, nationality=nationality, disabled=disabled,
-                            next_of_kin_phone_number=next_of_kin_number, education_level=education_level, dob=dob,
-                            marital_status=marital_status, last_menstruation_date=last_menstruation_date,
-                            voucher_number=voucher_number, odk_instance_id=odk_instance_id)
+                                               phone_number=girls_phone_number, user=user, nationality=nationality,
+                                               disabled=disabled,
+                                               next_of_kin_phone_number=next_of_kin_number,
+                                               education_level=education_level, dob=dob,
+                                               marital_status=marital_status,
+                                               last_menstruation_date=last_menstruation_date, disablility=disability,
+                                               voucher_number=voucher_number, odk_instance_id=odk_instance_id)
                 girl = new_girl
 
                 try:
