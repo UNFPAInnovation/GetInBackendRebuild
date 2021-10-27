@@ -1,5 +1,6 @@
 import json
 import random
+from unittest import mock
 
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer
@@ -9,7 +10,7 @@ from app.serializers import *
 from app.tests.parenttest import ParentTest
 from django.utils.crypto import get_random_string
 
-from app.webhook import send_data_to_msi_webhook
+from app.webhook import send_data_to_msi_webhook, ODKWebhook
 
 
 class TestMSI(ParentTest):
@@ -109,7 +110,17 @@ class TestMSI(ParentTest):
         actual_data = JSONRenderer().render(serializer.data).decode("utf-8")
         self.assertEqual(actual_data, expected_data)
 
-    def test_msi_webhook_response(self):
+    @mock.patch('app.webhook.requests.post')
+    def test_msi_webhook_response(self, mock_msi):
+        mock_msi.return_value.status_code = 200
+        mock_msi.return_value.json.return_value = {
+            "successful": True,
+            "eVoucher": {
+                "code": "733-TEC",
+                "issuedDate": "2020-08-07T14:54:45Z",
+                "validUntil": "2021-05-14T14:54:45Z"
+            }
+        }
         last_name = "MukuluGirlTest2" + get_random_string(length=3)
         girl = Girl.objects.create(user=self.chew, first_name="Ttest2", marital_status=SINGLE,
                                    last_name=last_name, dob=timezone.datetime(2000, 3, 3).date(), village=self.village,
@@ -119,3 +130,4 @@ class TestMSI(ParentTest):
         response = send_data_to_msi_webhook(girl)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.json()['successful'])
+        self.assertEqual(response.json()['eVoucher']['code'], '733-TEC')

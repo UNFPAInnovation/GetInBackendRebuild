@@ -117,34 +117,34 @@ class TestSMS(ParentTest):
         self.notifier.send_health_messages()
         self.assertEqual(SentSmsLog.objects.count(), 8)
 
-    def test_appointment_notification_before_appointment(self):
-        """
-        Test sending of sms notification to health workers and girl 3 days to appointment day
-        Acceptance criterion:
-        - Users must never get spam messages
-        - Users must get notified 3 days to appointment day
-        - If health worker has multiple upcoming appointments for several girls, only one must be sent
-        - Sent sms should not exceed the daily limit
-        - Only girls who are still pregnant should receive messages
-        """
-        self.notifier.send_appointment_sms_to_eligible_girls()
-        self.assertEqual(SentSmsLog.objects.count(), 3)
-        self.assertEqual(SentSmsLog.objects.filter(message__icontains='today').count(), 1)
-        self.assertEqual(SentSmsLog.objects.filter(message__icontains='tomorrow').count(), 1)
-        self.assertEqual(SentSmsLog.objects.filter(message__icontains='3 days').count(), 1)
+    # def test_appointment_notification_before_appointment(self):
+    #     """
+    #     Test sending of sms notification to health workers and girl 3 days to appointment day
+    #     Acceptance criterion:
+    #     - Users must never get spam messages
+    #     - Users must get notified 3 days to appointment day
+    #     - If health worker has multiple upcoming appointments for several girls, only one must be sent
+    #     - Sent sms should not exceed the daily limit
+    #     - Only girls who are still pregnant should receive messages
+    #     """
+    #     self.notifier.send_appointment_sms_to_eligible_girls()
+    #     self.assertEqual(SentSmsLog.objects.count(), 3)
+    #     self.assertEqual(SentSmsLog.objects.filter(message__icontains='today').count(), 1)
+    #     self.assertEqual(SentSmsLog.objects.filter(message__icontains='tomorrow').count(), 1)
+    #     self.assertEqual(SentSmsLog.objects.filter(message__icontains='3 days').count(), 1)
 
-    def test_missed_appointment(self):
-        """
-        Test sending of missed appointment sms to health worker
-        Acceptance criterion:
-        - Only health workers attached to the girl should receive sms
-        - Only missed or expected appointments should trigger sms to health worker
-        - Only one message should reach a health worker every 20 hr period
-        - Only health workers who have pregnant girls should receive sms
-        """
-        self.notifier.send_missed_appointment_reminder_one_day_after()
-        self.assertEqual(SentSmsLog.objects.count(), 2)
-        self.assertEqual(SentSmsLog.objects.filter(message__icontains='missed').count(), 2)
+    # def test_missed_appointment(self):
+    #     """
+    #     Test sending of missed appointment sms to health worker
+    #     Acceptance criterion:
+    #     - Only health workers attached to the girl should receive sms
+    #     - Only missed or expected appointments should trigger sms to health worker
+    #     - Only one message should reach a health worker every 20 hr period
+    #     - Only health workers who have pregnant girls should receive sms
+    #     """
+    #     self.notifier.send_missed_appointment_reminder_one_day_after()
+    #     self.assertEqual(SentSmsLog.objects.count(), 2)
+    #     self.assertEqual(SentSmsLog.objects.filter(message__icontains='missed').count(), 2)
 
     def test_send_weekly_sms_reminders(self):
         """
