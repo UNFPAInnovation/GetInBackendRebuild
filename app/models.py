@@ -254,7 +254,6 @@ class Girl(models.Model):
     voucher_expiry_date = models.DateField(blank=True, null=True)
     nationality = models.CharField(max_length=100, default="Ugandan", blank=True, null=True)
     disabled = models.BooleanField(default=False, blank=True, null=True)
-    disability = models.CharField(max_length=250, blank=True, null=True, default='None')
     disabilities = models.ManyToManyField(Disability, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -283,6 +282,7 @@ class Girl(models.Model):
 
         self.set_trimester()
         self.set_age_field()
+        self.disabled = self.disabilities.count() > 0
 
         super(Girl, self).save(force_insert, force_update, using, update_fields)
 

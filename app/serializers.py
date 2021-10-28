@@ -7,7 +7,8 @@ from rest_framework_jwt.utils import jwt_payload_handler
 
 from GetInBackendRebuild.settings import SECRET_KEY
 from app.models import User, District, County, SubCounty, Parish, Village, Girl, HealthFacility, FollowUp, Delivery, \
-    MappingEncounter, AppointmentEncounter, Appointment, SmsModel, Observation, FamilyPlanning, Region, MSIService
+    MappingEncounter, AppointmentEncounter, Appointment, SmsModel, Observation, FamilyPlanning, Region, MSIService, \
+    Disability
 
 from app.utils.constants import USER_TYPE_MIDWIFE, USER_TYPE_CHEW, USER_TYPE_AMBULANCE
 
@@ -193,17 +194,25 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 
+class DisabilitySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Disability
+        fields = '__all__'
+
+
 class GirlSerializer(serializers.ModelSerializer):
     village = VillageGetSerializer(many=False, read_only=True)
     village_id = serializers.IntegerField(write_only=True)
     services_received = MSIServicesSerializer(source='*', read_only=True)
+    disabilities = DisabilitySerializer(many=True, read_only=True)
 
     class Meta:
         model = Girl
         # list all the fields since the age property is not picked up by __all__
         fields = (
             'id', 'first_name', 'last_name', 'village', 'village_id', 'phone_number', 'trimester',
-            'next_of_kin_phone_number', 'education_level', 'marital_status', 'voucher_expiry_date', 'disability',
+            'next_of_kin_phone_number', 'education_level', 'marital_status', 'voucher_expiry_date', 'disabilities',
             'last_menstruation_date', 'dob', 'user', 'odk_instance_id', 'age', 'completed_all_visits', 'voucher_number',
             'pending_visits', 'missed_visits', 'services_received', 'nationality', 'disabled', 'created_at')
 

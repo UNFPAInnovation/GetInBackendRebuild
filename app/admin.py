@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from app.models import User, District, County, SubCounty, Parish, Village, Girl, HealthFacility, FollowUp, Delivery, \
     MappingEncounter, Appointment, AppointmentEncounter, Referral, FamilyPlanning, Observation, NotificationLog, Region, \
-    HealthMessage, SentSmsLog, MSIService
+    HealthMessage, SentSmsLog, MSIService, Disability
 
 admin.site.register(User)
 admin.site.register(Region)
@@ -11,6 +11,7 @@ admin.site.register(County)
 admin.site.register(SubCounty)
 admin.site.register(Parish)
 admin.site.register(Village)
+admin.site.register(Disability)
 
 
 class GirlAdmin(admin.ModelAdmin):
