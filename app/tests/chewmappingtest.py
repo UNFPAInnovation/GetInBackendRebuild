@@ -489,7 +489,7 @@ class TestChewMapping(ParentTest):
                             "0783563675"
                         ],
                         "DOB": [
-                            "1998-04-01"
+                            "2005-04-01"
                         ]
                     }
                 ],
@@ -526,7 +526,7 @@ class TestChewMapping(ParentTest):
                 "DisabilityGroup": [
                     {
                         "Disability": [
-                            "no"
+                            "yes"
                         ]
                     }
                 ],
@@ -539,7 +539,8 @@ class TestChewMapping(ParentTest):
                             "primary_level"
                         ],
                         "MenstruationDate": [
-                            str(current_date.year) + "-" + str((current_date - timezone.timedelta(days=30)).month) + "-28"
+                            str(current_date.year) + "-" + str(
+                                (current_date - timezone.timedelta(days=30)).month) + "-28"
                         ]
                     }
                 ],
@@ -615,6 +616,7 @@ class TestChewMapping(ParentTest):
         self.assertEqual(request.status_code, status.HTTP_200_OK)
         self.assertEqual(Girl.objects.count(), 1)
         self.assertEqual(Girl.objects.first().last_name, last_name)
+        self.assertTrue(Girl.objects.first().disabled)
         # self.assertNotEqual(Girl.objects.first().voucher_number, '')
 
     def test_mapping_encounter_by_chew_with_age_field(self):
@@ -684,7 +686,7 @@ class TestChewMapping(ParentTest):
                 "DisabilityGroup": [
                     {
                         "Disability": [
-                            "I have challenges walking/climbing some places"
+                            "walking"
                         ]
                     }
                 ],
@@ -761,3 +763,434 @@ class TestChewMapping(ParentTest):
         self.assertEqual(Girl.objects.count(), 1)
         self.assertEqual(MappingEncounter.objects.count(), 1)
         self.assertEqual(Girl.objects.first().age, 45)
+
+        data = {
+            "data": {
+                "$": {
+                    "id": "GetInMapGirlYumbe1_chew",
+                    "xmlns:ev": "http://www.w3.org/2001/xml-events",
+                    "xmlns:orx": "http://openrosa.org/xforms",
+                    "xmlns:odk": "http://www.opendatakit.org/xforms",
+                    "xmlns:h": "http://www.w3.org/1999/xhtml",
+                    "xmlns:jr": "http://openrosa.org/javarosa",
+                    "xmlns:xsd": "http://www.w3.org/2001/XMLSchema"
+                },
+                "GirlDemographic": [
+                    {
+                        "FirstName": [
+                            "Testing"
+                        ],
+                        "LastName": [
+                            "Fizz"
+                        ],
+                        "GirlsPhoneNumber": [
+                            "0756666455"
+                        ],
+                        "Age": [
+                            "45"
+                        ]
+                    }
+                ],
+                "GirlDemographic2": [
+                    {
+                        "NextOfKinNumber": [
+                            "0756666777"
+                        ]
+                    }
+                ],
+                "NationalityGroup": [
+                    {
+                        "Nationality": [
+                            "Refugee"
+                        ]
+                    }
+                ],
+                "GirlLocation": [
+                    {
+                        "county": [
+                            "YUMBE"
+                        ],
+                        "subcounty": [
+                            "KURU"
+                        ],
+                        "parish": [
+                            "LIBUA"
+                        ],
+                        "village": [
+                            "A'UNGA"
+                        ]
+                    }
+                ],
+                "DisabilityGroup": [
+                    {
+                        "Disability": [
+                            "hearing walking"
+                        ]
+                    }
+                ],
+                "Observations3": [
+                    {
+                        "marital_status": [
+                            "divorced"
+                        ],
+                        "education_level": [
+                            "A Level"
+                        ],
+                        "MenstruationDate": [
+                            "2021-09-28"
+                        ]
+                    }
+                ],
+                "Observations1": [
+                    {
+                        "bleeding": [
+                            "no"
+                        ],
+                        "fever": [
+                            "no"
+                        ]
+                    }
+                ],
+                "Observations2": [
+                    {
+                        "swollenfeet": [
+                            "yes"
+                        ],
+                        "blurred_vision": [
+                            "yes"
+                        ]
+                    }
+                ],
+                "EmergencyCall": [
+                    ""
+                ],
+                "ContraceptiveGroup": [
+                    {
+                        "UsedContraceptives": [
+                            "yes"
+                        ],
+                        "ContraceptiveMethod": [
+                            "IUD Injectables"
+                        ]
+                    }
+                ],
+                "ANCAppointmentPreviousGroup": [
+                    {
+                        "AttendedANCVisit": [
+                            "yes"
+                        ],
+                        "ANCDatePrevious": [
+                            "2021-09-30"
+                        ]
+                    }
+                ],
+                "meta": [
+                    {
+                        "instanceID": [
+                            "uuid:80d151c5-4f3b-46bd-9125-8ce0debecd80"
+                        ]
+                    }
+                ]
+            },
+            "form_meta_data": {
+                "GIRL_ID": "0",
+                "USER_ID": self.chew.id
+            }
+        }
+
+    def test_mapping_encounter_by_chew_with_girl_having_multiple_disabilities(self):
+        """
+        Test mapping girl with a form that has multiple disabilities
+        """
+        last_name = "MukuluGirlTest" + get_random_string(length=3)
+
+        request_data = {
+            "data": {
+                "$": {
+                    "id": "GetInMapGirlYumbe1_chew",
+                    "xmlns:ev": "http://www.w3.org/2001/xml-events",
+                    "xmlns:orx": "http://openrosa.org/xforms",
+                    "xmlns:odk": "http://www.opendatakit.org/xforms",
+                    "xmlns:h": "http://www.w3.org/1999/xhtml",
+                    "xmlns:jr": "http://openrosa.org/javarosa",
+                    "xmlns:xsd": "http://www.w3.org/2001/XMLSchema"
+                },
+                "GirlDemographic": [
+                    {
+                        "FirstName": [
+                            "Testing"
+                        ],
+                        "LastName": [
+                            last_name
+                        ],
+                        "GirlsPhoneNumber": [
+                            "0756666455"
+                        ],
+                        "Age": [
+                            "45"
+                        ]
+                    }
+                ],
+                "GirlDemographic2": [
+                    {
+                        "NextOfKinNumber": [
+                            "0756666777"
+                        ]
+                    }
+                ],
+                "NationalityGroup": [
+                    {
+                        "Nationality": [
+                            "Refugee"
+                        ]
+                    }
+                ],
+                "GirlLocation": [
+                    {
+                        "county": [
+                            "YUMBE"
+                        ],
+                        "subcounty": [
+                            "KURU"
+                        ],
+                        "parish": [
+                            "LIBUA"
+                        ],
+                        "village": [
+                            "A'UNGA"
+                        ]
+                    }
+                ],
+                "DisabilityGroup": [
+                    {
+                        "Disability": [
+                            "hearing walking"
+                        ]
+                    }
+                ],
+                "Observations3": [
+                    {
+                        "marital_status": [
+                            "divorced"
+                        ],
+                        "education_level": [
+                            "A Level"
+                        ],
+                        "MenstruationDate": [
+                            "2021-09-28"
+                        ]
+                    }
+                ],
+                "Observations1": [
+                    {
+                        "bleeding": [
+                            "no"
+                        ],
+                        "fever": [
+                            "no"
+                        ]
+                    }
+                ],
+                "Observations2": [
+                    {
+                        "swollenfeet": [
+                            "yes"
+                        ],
+                        "blurred_vision": [
+                            "yes"
+                        ]
+                    }
+                ],
+                "EmergencyCall": [
+                    ""
+                ],
+                "ContraceptiveGroup": [
+                    {
+                        "UsedContraceptives": [
+                            "yes"
+                        ],
+                        "ContraceptiveMethod": [
+                            "IUD Injectables"
+                        ]
+                    }
+                ],
+                "ANCAppointmentPreviousGroup": [
+                    {
+                        "AttendedANCVisit": [
+                            "yes"
+                        ],
+                        "ANCDatePrevious": [
+                            "2021-09-30"
+                        ]
+                    }
+                ],
+                "meta": [
+                    {
+                        "instanceID": [
+                            "uuid:80d151c5-4f3b-46bd-9125-8ce0debecd80"
+                        ]
+                    }
+                ]
+            },
+            "form_meta_data": {
+                "GIRL_ID": "0",
+                "USER_ID": self.chew.id
+            }
+        }
+
+        url = reverse("mapping_encounter_webhook")
+        request = self.client.post(url, request_data, format='json')
+        self.assertEqual(request.status_code, status.HTTP_200_OK)
+        self.assertEqual(Girl.objects.count(), 1)
+        self.assertEqual(MappingEncounter.objects.count(), 1)
+        self.assertEqual(Girl.objects.first().disabilities.count(), 2)
+        self.assertTrue(Girl.objects.first().disabled)
+        self.assertEqual(Girl.objects.first().disabilities.first().name, 'walking')
+
+    def test_mapping_encounter_by_chew_with_girl_none_disability_option(self):
+        """
+        Test mapping girl with a form that has none as a disability
+        """
+        last_name = "MukuluGirlTest" + get_random_string(length=3)
+
+        request_data = {
+            "data": {
+                "$": {
+                    "id": "GetInMapGirlYumbe1_chew",
+                    "xmlns:ev": "http://www.w3.org/2001/xml-events",
+                    "xmlns:orx": "http://openrosa.org/xforms",
+                    "xmlns:odk": "http://www.opendatakit.org/xforms",
+                    "xmlns:h": "http://www.w3.org/1999/xhtml",
+                    "xmlns:jr": "http://openrosa.org/javarosa",
+                    "xmlns:xsd": "http://www.w3.org/2001/XMLSchema"
+                },
+                "GirlDemographic": [
+                    {
+                        "FirstName": [
+                            "Testing"
+                        ],
+                        "LastName": [
+                            last_name
+                        ],
+                        "GirlsPhoneNumber": [
+                            "0756666455"
+                        ],
+                        "Age": [
+                            "45"
+                        ]
+                    }
+                ],
+                "GirlDemographic2": [
+                    {
+                        "NextOfKinNumber": [
+                            "0756666777"
+                        ]
+                    }
+                ],
+                "NationalityGroup": [
+                    {
+                        "Nationality": [
+                            "Refugee"
+                        ]
+                    }
+                ],
+                "GirlLocation": [
+                    {
+                        "county": [
+                            "YUMBE"
+                        ],
+                        "subcounty": [
+                            "KURU"
+                        ],
+                        "parish": [
+                            "LIBUA"
+                        ],
+                        "village": [
+                            "A'UNGA"
+                        ]
+                    }
+                ],
+                "DisabilityGroup": [
+                    {
+                        "Disability": [
+                            "none"
+                        ]
+                    }
+                ],
+                "Observations3": [
+                    {
+                        "marital_status": [
+                            "divorced"
+                        ],
+                        "education_level": [
+                            "A Level"
+                        ],
+                        "MenstruationDate": [
+                            "2021-09-28"
+                        ]
+                    }
+                ],
+                "Observations1": [
+                    {
+                        "bleeding": [
+                            "no"
+                        ],
+                        "fever": [
+                            "no"
+                        ]
+                    }
+                ],
+                "Observations2": [
+                    {
+                        "swollenfeet": [
+                            "yes"
+                        ],
+                        "blurred_vision": [
+                            "yes"
+                        ]
+                    }
+                ],
+                "EmergencyCall": [
+                    ""
+                ],
+                "ContraceptiveGroup": [
+                    {
+                        "UsedContraceptives": [
+                            "yes"
+                        ],
+                        "ContraceptiveMethod": [
+                            "IUD Injectables"
+                        ]
+                    }
+                ],
+                "ANCAppointmentPreviousGroup": [
+                    {
+                        "AttendedANCVisit": [
+                            "yes"
+                        ],
+                        "ANCDatePrevious": [
+                            "2021-09-30"
+                        ]
+                    }
+                ],
+                "meta": [
+                    {
+                        "instanceID": [
+                            "uuid:80d151c5-4f3b-46bd-9125-8ce0debecd80"
+                        ]
+                    }
+                ]
+            },
+            "form_meta_data": {
+                "GIRL_ID": "0",
+                "USER_ID": self.chew.id
+            }
+        }
+
+        url = reverse("mapping_encounter_webhook")
+        request = self.client.post(url, request_data, format='json')
+        self.assertEqual(request.status_code, status.HTTP_200_OK)
+        self.assertEqual(Girl.objects.count(), 1)
+        self.assertEqual(MappingEncounter.objects.count(), 1)
+        self.assertEqual(Girl.objects.first().disabilities.count(), 0)
+        self.assertFalse(Girl.objects.first().disabled)

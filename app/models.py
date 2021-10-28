@@ -213,6 +213,12 @@ class User(AbstractUser):
         return True
 
 
+class Disability(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    description = models.CharField(max_length=250, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class Girl(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     first_name = models.CharField(max_length=250)
@@ -249,6 +255,7 @@ class Girl(models.Model):
     nationality = models.CharField(max_length=100, default="Ugandan", blank=True, null=True)
     disabled = models.BooleanField(default=False, blank=True, null=True)
     disability = models.CharField(max_length=250, blank=True, null=True, default='None')
+    disabilities = models.ManyToManyField(Disability, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

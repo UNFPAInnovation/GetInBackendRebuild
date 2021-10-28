@@ -14,8 +14,9 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from app.loaders import setup_disabilities
 from app.models import Girl, Parish, Village, FollowUp, Delivery, MappingEncounter, \
-    Appointment, AppointmentEncounter, Referral, FamilyPlanning, Observation, MSIService
+    Appointment, AppointmentEncounter, Referral, FamilyPlanning, Observation, MSIService, Disability
 from app.serializers import User, GirlMSISerializer, GirlMSIDateFormattedSerializer
 
 import logging
@@ -76,6 +77,7 @@ class ODKWebhook(APIView):
             user_id = form_meta_data["USER_ID"]
         except KeyError:
             print(traceback.print_exc())
+        setup_disabilities()
 
         is_mapping_form = any(form_id in self.json_result_string for form_id in MAPPING_FORMS)
         if is_mapping_form:
@@ -147,7 +149,7 @@ class ODKWebhook(APIView):
 
             try:
                 disability_group = mapped_girl_object["DisabilityGroup"][0]
-                if disability_group['Disability'][0] in ["yes", "no"]:
+                if disability_group['Disability'][0] in ["yes", "no", "none"]:
                     disabled = disability_group['Disability'][0] == "yes"
                 else:
                     disability = disability_group['Disability'][0]
@@ -262,6 +264,7 @@ class ODKWebhook(APIView):
             mapping_encounter.girl = girl
             mapping_encounter.save()
             self.save_family_planning_methods_in_mapping_encounter(mapped_girl_object, mapping_encounter)
+            self.save_disabilities_in_mapping_encounter(mapped_girl_object, girl)
             self.assign_voucher_to_girl_in_msi_district_under_facility_level_2(girl, user)
             return Response({'result': 'success'}, status.HTTP_200_OK)
         except Exception:
@@ -298,7 +301,8 @@ class ODKWebhook(APIView):
         except Exception as e:
             print(e)
 
-    def save_family_planning_methods_in_mapping_encounter(self, mapped_girl_object, mapping_encounter):
+    @staticmethod
+    def save_family_planning_methods_in_mapping_encounter(mapped_girl_object, mapping_encounter):
         try:
             contraceptive_group = mapped_girl_object["ContraceptiveGroup"][0]
             used_contraceptives = contraceptive_group["UsedContraceptives"][0] == "yes"
@@ -332,7 +336,27 @@ class ODKWebhook(APIView):
         except KeyError or IndexError as e:
             print(e)
 
-    def auto_generate_appointment(self, girl, user, previous_appointment_date=None):
+    @staticmethod
+    def save_disabilities_in_mapping_encounter(mapped_girl_object, girl):
+        try:
+            disability_group = mapped_girl_object["DisabilityGroup"][0]
+            disabilities = str(disability_group['Disability'][0])
+            print("disability " + disabilities)
+
+            if disabilities in ["yes", "no", "none"]:
+                raise ValueError("Is a yes or no disability question")
+
+            if " " in disabilities:
+                disabilities = disabilities.split(" ")
+                for disability in disabilities:
+                    girl.disabilities.add(Disability.objects.get(name__icontains=disability))
+            else:
+                girl.disabilities.add(Disability.objects.get(name__icontains=disabilities))
+        except Exception as e:
+            print(e)
+
+    @staticmethod
+    def auto_generate_appointment(girl, user, previous_appointment_date=None):
         # if girl.age < 25:
         if True:
             # Priority is given to girls who are less than 25 years
