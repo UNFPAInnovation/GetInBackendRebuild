@@ -526,7 +526,7 @@ class TestChewMapping(ParentTest):
                 "DisabilityGroup": [
                     {
                         "Disability": [
-                            "yes"
+                            "no"
                         ]
                     }
                 ],
@@ -616,8 +616,7 @@ class TestChewMapping(ParentTest):
         self.assertEqual(request.status_code, status.HTTP_200_OK)
         self.assertEqual(Girl.objects.count(), 1)
         self.assertEqual(Girl.objects.first().last_name, last_name)
-        self.assertTrue(Girl.objects.first().disabled)
-        # self.assertNotEqual(Girl.objects.first().voucher_number, '')
+        self.assertFalse(Girl.objects.first().disabled)
 
     def test_mapping_encounter_by_chew_with_age_field(self):
         """

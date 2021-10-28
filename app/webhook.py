@@ -105,7 +105,6 @@ class ODKWebhook(APIView):
             voucher_number_creation = False
             nationality = "Ugandan"
             disabled = False
-            disability = "None"
             mapping_encounter = MappingEncounter()
 
             try:
@@ -198,7 +197,6 @@ class ODKWebhook(APIView):
                                    phone_number=girls_phone_number, user=user, disabled=disabled,
                                    voucher_number=voucher_number,
                                    next_of_kin_phone_number=next_of_kin_number, nationality=nationality,
-                                   disability=disability,
                                    education_level=education_level, dob=dob, marital_status=marital_status,
                                    last_menstruation_date=last_menstruation_date, odk_instance_id=odk_instance_id)
                 edited_girl.save()
@@ -226,7 +224,7 @@ class ODKWebhook(APIView):
                                                next_of_kin_phone_number=next_of_kin_number,
                                                education_level=education_level, dob=dob,
                                                marital_status=marital_status,
-                                               last_menstruation_date=last_menstruation_date, disability=disability,
+                                               last_menstruation_date=last_menstruation_date,
                                                voucher_number=voucher_number, odk_instance_id=odk_instance_id)
                 girl = new_girl
 

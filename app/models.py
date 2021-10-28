@@ -282,7 +282,6 @@ class Girl(models.Model):
 
         self.set_trimester()
         self.set_age_field()
-        self.disabled = self.disabilities.count() > 0
 
         super(Girl, self).save(force_insert, force_update, using, update_fields)
 

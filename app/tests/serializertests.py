@@ -59,7 +59,6 @@ class TestSerializer(ParentTest):
             "nationality": "Ugandan",
             "disabled": False,
             "voucher_expiry_date": None,
-            "disability": "None",
             "created_at": str(girl.created_at.astimezone().isoformat())
         }
 
@@ -70,5 +69,4 @@ class TestSerializer(ParentTest):
         self.assertEqual(services.first().option, "ANC1")
 
         serializer = GirlSerializer(girl)
-        self.assertEqual(serializer.data['disability'], request_data['disability'])
         self.assertEqual(serializer.data['first_name'], request_data['first_name'])
