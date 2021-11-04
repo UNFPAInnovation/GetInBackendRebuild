@@ -130,7 +130,7 @@ class HealthFacilityView(ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
 
-        if user.role in [USER_TYPE_DHO]:
+        if user.role in [USER_TYPE_DHO, USER_TYPE_CHEW, USER_TYPE_MIDWIFE]:
             model = HealthFacility.objects.filter(sub_county__county__district=user.district)
         else:
             model = HealthFacility.objects.all()
