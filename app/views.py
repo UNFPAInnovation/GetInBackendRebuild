@@ -137,7 +137,7 @@ class HealthFacilityView(ListCreateAPIView):
         return model
 
     serializer_class = HealthFacilityGetSerializer
-    permission_classes = (IsAdminUser, IsAuthenticated)
+    permission_classes = (IsAuthenticated,)
 
 
 class FollowUpView(ListCreateAPIView):

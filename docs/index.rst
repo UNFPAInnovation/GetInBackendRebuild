@@ -406,3 +406,22 @@ Updating ODK forms
 #. Upload updated form
 
 .. _dashboard: https://odkcentral.getinmobile.org/#/projects/2
+
+
+GetIN django backend
+=======================
+
+Local dev environment setup
+-----------------------------
+
+remember to also create a virtualenv
+
+
+
+
+#. Clone the project ``git clone https://github.com/UNFPAInnovation/GetInBackendRebuild.git``
+#. Create .env file inside the project folder GetInBackendRebuild. Hint; Use the `.env.example` file as a reference
+using python3 -m venv venv
+then source venv/bin/activate
+then pip install -r requirements.txt
+then python3 ./manage.py runserver
