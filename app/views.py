@@ -55,12 +55,7 @@ class UserCreateView(ListCreateAPIView):
 class GirlView(ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
-        if user.role == USER_TYPE_MIDWIFE:
-            users = User.objects.filter(midwife=user)
-            return Girl.objects.filter(Q(user__in=users) | Q(user=user)).order_by('-created_at')
-        elif user.role in [USER_TYPE_CHEW]:
-            return Girl.objects.filter(user=user).order_by('-created_at')
-        elif user.role in [USER_TYPE_DHO]:
+        if user.role in [USER_TYPE_DHO, USER_TYPE_CHEW, USER_TYPE_MIDWIFE]:
             return Girl.objects.filter(user__district=user.district).order_by('-created_at')
         else:
             return Girl.objects.all()
