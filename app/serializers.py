@@ -82,6 +82,15 @@ class MSIServicesSerializer(serializers.Field):
         return ",".join([service.option for service in msi_services])
 
 
+class GirlHealthFacilitySerializer(serializers.Field):
+    def to_representation(self, girl):
+        try:
+            user = girl.user.midwife if girl.user.role == USER_TYPE_CHEW else girl.user
+            return HealthFacility.objects.filter(user__health_facility__id=user.health_facility.id).first().name
+        except Exception as e:
+            return ""
+
+
 class UserPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -205,13 +214,14 @@ class GirlSerializer(serializers.ModelSerializer):
     village = VillageGetSerializer(many=False, read_only=True)
     village_id = serializers.IntegerField(write_only=True)
     services_received = MSIServicesSerializer(source='*', read_only=True)
+    health_facility = GirlHealthFacilitySerializer(source='*', read_only=True)
     disabilities = DisabilitySerializer(many=True, read_only=True)
 
     class Meta:
         model = Girl
         # list all the fields since the age property is not picked up by __all__
         fields = (
-            'id', 'first_name', 'last_name', 'village', 'village_id', 'phone_number', 'trimester',
+            'id', 'first_name', 'last_name', 'village', 'village_id', 'phone_number', 'trimester', 'health_facility',
             'next_of_kin_phone_number', 'education_level', 'marital_status', 'voucher_expiry_date', 'disabilities',
             'last_menstruation_date', 'dob', 'user', 'odk_instance_id', 'age', 'completed_all_visits', 'voucher_number',
             'pending_visits', 'missed_visits', 'services_received', 'nationality', 'disabled', 'created_at')

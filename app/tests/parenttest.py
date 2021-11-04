@@ -19,6 +19,7 @@ class ParentTest(APITestCase):
         self.sub_county = SubCounty.objects.create(name="BUBANDI", county=self.county)
         self.parish = Parish.objects.create(name="NJUULE", sub_county=self.sub_county)
         self.village = Village.objects.create(name="BUNDISELYA", parish=self.parish)
+        self.healthfacility = HealthFacility.objects.create(name="Bundibugyo HF II", facility_level="2")
 
         self.region2 = Region.objects.create(name="Northern")
         self.district2 = District.objects.create(name="Arua", region=self.region2)
@@ -38,7 +39,7 @@ class ParentTest(APITestCase):
                                            last_name="wife40" + get_random_string(length=4),
                                            phone="075" + str(random.randint(1000000, 9999999)),
                                            password=self.midwife_phone_number, gender=GENDER_FEMALE,
-                                           village=self.village,
+                                           village=self.village, health_facility=self.healthfacility,
                                            district=self.district, role=USER_TYPE_MIDWIFE, email="midwifetest@test.com")
         self.midwife2 = User.objects.create(username="mw41", first_name="md",
                                             last_name="wife41" + get_random_string(length=4),
