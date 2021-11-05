@@ -39,6 +39,8 @@ USER_TYPE_CHOICES = (
     (USER_TYPE_DEVELOPER, 'developer'),
     (USER_TYPE_DHO, 'dho'),
     (USER_TYPE_CHEW, 'chew'),
+    (USER_TYPE_ADMIN, 'admin'),
+    (USER_TYPE_MANAGER, 'manager'),
     (USER_TYPE_MIDWIFE, 'midwife'),
     (USER_TYPE_AMBULANCE, 'ambulance'),
 )
@@ -176,9 +178,9 @@ class User(AbstractUser):
         ordering = ['-created_at']
 
     def save(self, *args, **kwargs):
-        if self.role in [USER_TYPE_DEVELOPER, USER_TYPE_DHO]:
+        if self.role in [USER_TYPE_DEVELOPER, USER_TYPE_DHO, USER_TYPE_ADMIN]:
             self.is_staff = True
-        if self.role in [USER_TYPE_DEVELOPER, USER_TYPE_MANAGER]:
+        if self.role in [USER_TYPE_DEVELOPER, USER_TYPE_MANAGER, USER_TYPE_ADMIN]:
             self.is_superuser = True
 
         try:

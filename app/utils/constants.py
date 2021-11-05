@@ -24,6 +24,7 @@ USER_TYPE_DEVELOPER = "developer"
 USER_TYPE_DHO = "dho"
 # Also known as VHT
 USER_TYPE_CHEW = "chew"
+USER_TYPE_ADMIN = "admin"
 USER_TYPE_MIDWIFE = "midwife"
 USER_TYPE_AMBULANCE = "ambulance"
 USER_TYPE_MANAGER = "manager"
