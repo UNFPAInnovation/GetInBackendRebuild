@@ -42,6 +42,11 @@ class UserCreateView(ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
+
+        if self.request.query_params.get('district', None):
+            district = District.objects.get(id=self.request.query_params['district'])
+            return User.objects.filter(district=district).order_by('-created_at')
+
         if user.role in [USER_TYPE_DHO]:
             return User.objects.filter(district=user.district).order_by('-created_at')
         else:
@@ -99,35 +104,44 @@ class DistrictView(ListCreateAPIView):
     serializer_class = DistrictGetSerializer
     permission_classes = (IsAdminUser, IsAuthenticated)
     filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ['id', 'name', 'region']
 
 
 class CountyView(ListCreateAPIView):
     queryset = County.objects.all()
     serializer_class = CountyGetSerializer
     permission_classes = (IsAdminUser, IsAuthenticated)
+    filterset_fields = ['id', 'name', 'district']
 
 
 class SubCountyView(ListCreateAPIView):
     queryset = SubCounty.objects.all()
     serializer_class = SubCountyGetSerializer
     permission_classes = (IsAdminUser, IsAuthenticated)
+    filterset_fields = ['id', 'name', 'county']
 
 
 class ParishView(ListCreateAPIView):
     queryset = Parish.objects.all()
     serializer_class = ParishGetSerializer
     permission_classes = (IsAdminUser, IsAuthenticated)
+    filterset_fields = ['id', 'name', 'sub_county']
 
 
 class VillageView(ListCreateAPIView):
     queryset = Village.objects.all()
     serializer_class = VillageGetSerializer
     permission_classes = (IsAdminUser, IsAuthenticated)
+    filterset_fields = ['id', 'name', 'parish']
 
 
 class HealthFacilityView(ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
+
+        if self.request.query_params.get('district', None):
+            district = District.objects.get(id=self.request.query_params['district'])
+            return HealthFacility.objects.filter(sub_county__county__district=district)
 
         if user.role in [USER_TYPE_DHO, USER_TYPE_CHEW, USER_TYPE_MIDWIFE]:
             model = HealthFacility.objects.filter(sub_county__county__district=user.district)
@@ -142,6 +156,10 @@ class HealthFacilityView(ListCreateAPIView):
 class FollowUpView(ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
+        if self.request.query_params.get('district', None):
+            district = District.objects.get(id=self.request.query_params['district'])
+            return FollowUp.objects.filter(user__district=district).order_by('-created_at')
+
         if user.role == USER_TYPE_MIDWIFE:
             users = User.objects.filter(midwife=user)
             model = FollowUp.objects.filter(Q(user__in=users) | Q(user=user)).order_by('-created_at')
@@ -166,6 +184,11 @@ class FollowUpView(ListCreateAPIView):
 class DeliveriesView(ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
+
+        if self.request.query_params.get('district', None):
+            district = District.objects.get(id=self.request.query_params['district'])
+            return Delivery.objects.filter(user__district=district).order_by('-created_at')
+
         if user.role == USER_TYPE_MIDWIFE:
             users = User.objects.filter(midwife=user)
             model = Delivery.objects.filter(Q(user_id__in=[user.id for user in users]) | Q(user__id=user.id)).order_by(
@@ -191,6 +214,11 @@ class DeliveriesView(ListCreateAPIView):
 class AppointmentView(ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
+
+        if self.request.query_params.get('district', None):
+            district = District.objects.get(id=self.request.query_params['district'])
+            return Appointment.objects.filter(user__district=district).order_by('-created_at')
+
         if user.role == USER_TYPE_MIDWIFE:
             # return all appointment from CHEWS attached to the midwife or
             # any appointment created by the midwife herself
@@ -319,6 +347,12 @@ class SmsView(ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
+
+        if self.request.query_params.get('district', None):
+            district = District.objects.get(id=self.request.query_params['district'])
+            dho_user = User.objects.filter(Q(district=district) & Q(role=USER_TYPE_DHO)).first()
+            return SmsModel.objects.filter(sender_id=dho_user.id).order_by('-created_at')
+
         if user.role == USER_TYPE_DHO:
             model = SmsModel.objects.filter(sender_id=user.id).order_by('-created_at')
         else:

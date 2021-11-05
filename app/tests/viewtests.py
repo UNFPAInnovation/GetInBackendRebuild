@@ -87,17 +87,17 @@ class TestViews(ParentTest):
         self.client.force_authenticate(user=self.chew)
         request = self.client.get(url)
         self.assertEqual(request.status_code, status.HTTP_200_OK)
-        self.assertEqual(request.json()['count'], 2)
+        self.assertEqual(request.json()['count'], 3)
 
         self.client.force_authenticate(user=self.midwife)
         request = self.client.get(url)
         self.assertEqual(request.status_code, status.HTTP_200_OK)
-        self.assertEqual(request.json()['count'], 2)
+        self.assertEqual(request.json()['count'], 3)
 
         self.client.force_authenticate(user=self.midwife2)
         request = self.client.get(url)
         self.assertEqual(request.status_code, status.HTTP_200_OK)
-        self.assertEqual(request.json()['count'], 1)
+        self.assertEqual(request.json()['count'], 3)
 
         self.client.force_authenticate(user=self.dho)
         request = self.client.get(url)
@@ -105,6 +105,11 @@ class TestViews(ParentTest):
         self.assertEqual(request.json()['count'], 3)
 
         self.client.force_authenticate(user=self.user)
+        request = self.client.get(url)
+        self.assertEqual(request.status_code, status.HTTP_200_OK)
+        self.assertEqual(request.json()['count'], 4)
+
+        self.client.force_authenticate(user=self.manager)
         request = self.client.get(url)
         self.assertEqual(request.status_code, status.HTTP_200_OK)
         self.assertEqual(request.json()['count'], 4)
@@ -120,19 +125,24 @@ class TestViews(ParentTest):
 
         request = self.client.post(url, request_data, format='json')
         self.assertEqual(request.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(HealthFacility.objects.count(), 1)
+        self.assertEqual(HealthFacility.objects.count(), 2)
 
         HealthFacility.objects.create(sub_county=self.sub_county, name="healthfacility2")
         HealthFacility.objects.create(sub_county=self.sub_county2, name="healthfacility3")
 
         request = self.client.get(url)
         self.assertEqual(request.status_code, status.HTTP_200_OK)
-        self.assertEqual(request.json()['count'], 2)
+        self.assertEqual(request.json()['count'], 3)
 
         self.client.force_authenticate(user=self.user)
         request = self.client.get(url)
         self.assertEqual(request.status_code, status.HTTP_200_OK)
-        self.assertEqual(request.json()['count'], 3)
+        self.assertEqual(request.json()['count'], 4)
+
+        self.client.force_authenticate(user=self.manager)
+        request = self.client.get(url)
+        self.assertEqual(request.status_code, status.HTTP_200_OK)
+        self.assertEqual(request.json()['count'], 4)
 
     def test_followup_view(self):
         """

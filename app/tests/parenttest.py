@@ -19,7 +19,8 @@ class ParentTest(APITestCase):
         self.sub_county = SubCounty.objects.create(name="BUBANDI", county=self.county)
         self.parish = Parish.objects.create(name="NJUULE", sub_county=self.sub_county)
         self.village = Village.objects.create(name="BUNDISELYA", parish=self.parish)
-        self.healthfacility = HealthFacility.objects.create(name="Bundibugyo HF II", facility_level="2")
+        self.healthfacility = HealthFacility.objects.create(name="Bundibugyo HF II", facility_level="2",
+                                                            sub_county=self.sub_county)
 
         self.region2 = Region.objects.create(name="Northern")
         self.district2 = District.objects.create(name="Arua", region=self.region2)
@@ -80,6 +81,12 @@ class ParentTest(APITestCase):
                                          gender=GENDER_FEMALE,
                                          village=self.village3, district=self.district3, role=USER_TYPE_CHEW,
                                          midwife=self.midwife5, email="chewtest20@test.com")
+        self.chew3 = User.objects.create(username="vtuservt30", first_name="vt993", last_name="uservt399",
+                                         phone="075" + str(random.randint(1000000, 9999999)),
+                                         password="0756677" + str(random.randint(100, 999)),
+                                         gender=GENDER_FEMALE,
+                                         village=self.village2, district=self.district2, role=USER_TYPE_CHEW,
+                                         midwife=self.midwife3, email="chewtest20@test.com")
         self.dho = User.objects.create(username="dhodho", first_name="dho", last_name="dho",
                                        phone="075" + str(random.randint(1000000, 9999999)), password="0756879444",
                                        gender=GENDER_FEMALE, is_staff=True,

@@ -94,6 +94,7 @@ class TestSMS(ParentTest):
         for text in range(200):
             HealthMessage.objects.create(text=get_random_string(length=20))
         self.notifier = NotifierView()
+        self.client.force_authenticate(user=self.manager)
 
     def test_random_message_query(self):
         first_message = NotifierView.get_random_health_messages()
@@ -154,7 +155,7 @@ class TestSMS(ParentTest):
         - Only health workers who are not test users must get sms
         """
         self.notifier.send_weekly_usage_reminder()
-        self.assertEqual(SentSmsLog.objects.count(), 7)
+        self.assertEqual(SentSmsLog.objects.count(), 8)
 
         # test users have mid or vht in user name. create test user then send weekly reminder again
         self.chew2 = User.objects.create(username="vhtuservt2", first_name="vht2", last_name="uservht2",
@@ -165,4 +166,4 @@ class TestSMS(ParentTest):
                                          midwife=self.midwife, email="chewtest2@test.com")
 
         self.notifier.send_weekly_usage_reminder()
-        self.assertEqual(SentSmsLog.objects.count(), 7)
+        self.assertEqual(SentSmsLog.objects.count(), 8)
