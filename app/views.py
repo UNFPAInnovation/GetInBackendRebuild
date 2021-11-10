@@ -77,6 +77,11 @@ class GirlView(ListCreateAPIView):
 class MappingEncounterView(ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
+
+        if self.request.query_params.get('district', None):
+            district = District.objects.get(id=self.request.query_params['district'])
+            return MappingEncounter.objects.filter(user__district=district).order_by('-created_at')
+
         if user.role == USER_TYPE_MIDWIFE:
             users = User.objects.filter(midwife=user)
             model = MappingEncounter.objects.filter(Q(user__in=users) | Q(user=user)).order_by('-created_at')
@@ -102,7 +107,7 @@ class GirlDetailsView(RetrieveUpdateDestroyAPIView):
 class DistrictView(ListCreateAPIView):
     queryset = District.objects.all()
     serializer_class = DistrictGetSerializer
-    permission_classes = (IsAdminUser, IsAuthenticated)
+    permission_classes = (DRYPermissions, IsAuthenticated)
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ['id', 'name', 'region']
 
@@ -110,28 +115,28 @@ class DistrictView(ListCreateAPIView):
 class CountyView(ListCreateAPIView):
     queryset = County.objects.all()
     serializer_class = CountyGetSerializer
-    permission_classes = (IsAdminUser, IsAuthenticated)
+    permission_classes = (DRYPermissions, IsAuthenticated)
     filterset_fields = ['id', 'name', 'district']
 
 
 class SubCountyView(ListCreateAPIView):
     queryset = SubCounty.objects.all()
     serializer_class = SubCountyGetSerializer
-    permission_classes = (IsAdminUser, IsAuthenticated)
+    permission_classes = (DRYPermissions, IsAuthenticated)
     filterset_fields = ['id', 'name', 'county']
 
 
 class ParishView(ListCreateAPIView):
     queryset = Parish.objects.all()
     serializer_class = ParishGetSerializer
-    permission_classes = (IsAdminUser, IsAuthenticated)
+    permission_classes = (DRYPermissions, IsAuthenticated)
     filterset_fields = ['id', 'name', 'sub_county']
 
 
 class VillageView(ListCreateAPIView):
     queryset = Village.objects.all()
     serializer_class = VillageGetSerializer
-    permission_classes = (IsAdminUser, IsAuthenticated)
+    permission_classes = (DRYPermissions, IsAuthenticated)
     filterset_fields = ['id', 'name', 'parish']
 
 
