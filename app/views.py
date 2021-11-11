@@ -25,7 +25,7 @@ from app.serializers import UserSerializer, User, GirlSerializer, DistrictGetSer
     MappingEncounterSerializer, AppointmentSerializer, SmsModelSerializer
 from app.sms_handler import send_sms_message
 
-from app.utils.constants import USER_TYPE_MIDWIFE, USER_TYPE_CHEW, USER_TYPE_DHO, GENERAL_MESSAGE
+from app.utils.constants import USER_TYPE_MIDWIFE, USER_TYPE_CHEW, USER_TYPE_DHO, GENERAL_MESSAGE, USER_TYPE_MANAGER
 from app.utils.utilities import add_months
 
 # disabled the markdown manually
@@ -257,9 +257,18 @@ class DashboardStatsView(APIView):
 
         all_months_range_data = []
         first_date_range = True
-        subcounty = request.user.village.parish.sub_county
-        district = subcounty.county.district
-        sub_counties = SubCounty.objects.filter(county__district=district)
+
+        if request.user.role == USER_TYPE_MANAGER:
+            try:
+                district = District.objects.get(id=get_params['district'])
+                sub_counties = SubCounty.objects.filter(county__district=district)
+            except Exception as e:
+                print(e)
+                sub_counties = SubCounty.objects.all()
+        else:
+            subcounty = request.user.village.parish.sub_county
+            district = subcounty.county.district
+            sub_counties = SubCounty.objects.filter(county__district=district)
 
         while created_at_from <= created_at_to_limit:
             '''We loop through all months for the data querried.
