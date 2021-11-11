@@ -107,7 +107,7 @@ class GirlDetailsView(RetrieveUpdateDestroyAPIView):
 class DistrictView(ListCreateAPIView):
     queryset = District.objects.all()
     serializer_class = DistrictGetSerializer
-    permission_classes = (DRYPermissions, IsAuthenticated)
+    permission_classes = (AllowAny,)
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ['id', 'name', 'region']
 
@@ -115,28 +115,28 @@ class DistrictView(ListCreateAPIView):
 class CountyView(ListCreateAPIView):
     queryset = County.objects.all()
     serializer_class = CountyGetSerializer
-    permission_classes = (DRYPermissions, IsAuthenticated)
+    permission_classes = (AllowAny,)
     filterset_fields = ['id', 'name', 'district']
 
 
 class SubCountyView(ListCreateAPIView):
     queryset = SubCounty.objects.all()
     serializer_class = SubCountyGetSerializer
-    permission_classes = (DRYPermissions, IsAuthenticated)
+    permission_classes = (AllowAny,)
     filterset_fields = ['id', 'name', 'county']
 
 
 class ParishView(ListCreateAPIView):
     queryset = Parish.objects.all()
     serializer_class = ParishGetSerializer
-    permission_classes = (DRYPermissions, IsAuthenticated)
+    permission_classes = (AllowAny,)
     filterset_fields = ['id', 'name', 'sub_county']
 
 
 class VillageView(ListCreateAPIView):
     queryset = Village.objects.all()
     serializer_class = VillageGetSerializer
-    permission_classes = (DRYPermissions, IsAuthenticated)
+    permission_classes = (AllowAny,)
     filterset_fields = ['id', 'name', 'parish']
 
 
