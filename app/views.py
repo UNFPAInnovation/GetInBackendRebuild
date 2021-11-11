@@ -1,5 +1,6 @@
 import datetime
 import calendar
+import traceback
 
 import pytz
 from django.db.models import Q, Sum, Case, When, IntegerField
@@ -258,17 +259,21 @@ class DashboardStatsView(APIView):
         all_months_range_data = []
         first_date_range = True
 
-        if request.user.role == USER_TYPE_MANAGER:
-            try:
-                district = District.objects.get(id=get_params['district'])
+        try:
+            if request.user.role == USER_TYPE_MANAGER:
+                try:
+                    district = District.objects.get(id=get_params['district'])
+                    sub_counties = SubCounty.objects.filter(county__district=district)
+                except Exception as e:
+                    print(traceback.print_exc())
+                    sub_counties = SubCounty.objects.all()
+            else:
+                subcounty = request.user.village.parish.sub_county
+                district = subcounty.county.district
                 sub_counties = SubCounty.objects.filter(county__district=district)
-            except Exception as e:
-                print(e)
-                sub_counties = SubCounty.objects.all()
-        else:
-            subcounty = request.user.village.parish.sub_county
-            district = subcounty.county.district
-            sub_counties = SubCounty.objects.filter(county__district=district)
+        except Exception as e:
+            print(traceback.print_exc())
+            sub_counties = SubCounty.objects.all()
 
         while created_at_from <= created_at_to_limit:
             '''We loop through all months for the data querried.
