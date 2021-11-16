@@ -343,11 +343,11 @@ class DashboardStatsView(APIView):
                                  output_field=IntegerField()))
                     )
 
-
-                response["mappedGirlsInAgeGroup12_15"] = girls['girls_count_12_15']
-                response["mappedGirlsInAgeGroup16_19"] = girls['girls_count_16_19']
-                response["mappedGirlsInAgeGroup20_50"] = girls['girls_count_20_50']
-                response["count"] = girls['girls_count_12_15'] + girls['girls_count_16_19'] + girls['girls_count_20_50']
+                response["mappedGirlsInAgeGroup12_15"] = (girls['girls_count_12_15'] or 0)
+                response["mappedGirlsInAgeGroup16_19"] = (girls['girls_count_16_19'] or 0)
+                response["mappedGirlsInAgeGroup20_24"] = (girls['girls_count_20_50'] or 0)
+                response["count"] = (girls['girls_count_12_15'] or 0) + (girls['girls_count_16_19'] or 0) + \
+                                    (girls['girls_count_20_50'] or 0)
                 response["subcounties"] = [subcounty.name for subcounty in sub_counties]
 
                 all_months_range_data.append(response)
