@@ -264,6 +264,9 @@ class DashboardStatsView(APIView):
 
         all_months_range_data = []
         first_date_range = True
+        sub_counties = SubCounty.objects.all()
+        district = None
+        district_name = "All"
 
         try:
             if request.user.role == USER_TYPE_MANAGER:
@@ -273,9 +276,6 @@ class DashboardStatsView(APIView):
                     district_name = district.name
                 except Exception as e:
                     print(traceback.print_exc())
-                    sub_counties = SubCounty.objects.all()
-                    district = None
-                    district_name = "All"
             else:
                 subcounty = request.user.village.parish.sub_county
                 district = subcounty.county.district
@@ -283,9 +283,6 @@ class DashboardStatsView(APIView):
                 district_name = district.name
         except Exception as e:
             print(traceback.print_exc())
-            sub_counties = SubCounty.objects.all()
-            district = None
-            district_name = "All"
 
         while created_at_from <= created_at_to_limit:
             '''We loop through all months for the data querried.
@@ -322,7 +319,7 @@ class DashboardStatsView(APIView):
                             Case(When(Q(age__gte=16) & Q(age__lte=19) & Q(user__district=district) &
                                       Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to), then=1),
                                  output_field=IntegerField())),
-                        girls_count_20_24=Sum(
+                        girls_count_20_50=Sum(
                             Case(When(Q(age__gte=20) & Q(age__lte=24) & Q(user__district=district) &
                                       Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to), then=1),
                                  output_field=IntegerField()))
@@ -345,7 +342,7 @@ class DashboardStatsView(APIView):
 
                 response["mappedGirlsInAgeGroup12_15"] = (girls['girls_count_12_15'] or 0)
                 response["mappedGirlsInAgeGroup16_19"] = (girls['girls_count_16_19'] or 0)
-                response["mappedGirlsInAgeGroup20_24"] = (girls['girls_count_20_50'] or 0)
+                response["mappedGirlsInAgeGroup20_50"] = (girls['girls_count_20_50'] or 0)
                 response["count"] = (girls['girls_count_12_15'] or 0) + (girls['girls_count_16_19'] or 0) + \
                                     (girls['girls_count_20_50'] or 0)
                 response["subcounties"] = [subcounty.name for subcounty in sub_counties]
