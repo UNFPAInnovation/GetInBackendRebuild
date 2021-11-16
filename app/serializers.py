@@ -179,7 +179,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'id', 'first_name', 'last_name', 'username', 'email', 'phone', 'password', 'gender', 'village',
-            'number_plate',
+            'number_plate', 'is_active',
             'role', 'midwife', 'user_permissions', 'created_at', 'health_facility')
         # extra_kwargs = {"password": {"write_only": True}}
 
@@ -203,8 +203,13 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 
-class DisabilitySerializer(serializers.ModelSerializer):
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
 
+
+class DisabilitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Disability
         fields = '__all__'

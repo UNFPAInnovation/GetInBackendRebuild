@@ -23,7 +23,7 @@ from app.permissions import IsPostOrIsAuthenticated
 from app.serializers import UserSerializer, User, GirlSerializer, DistrictGetSerializer, \
     CountyGetSerializer, SubCountyGetSerializer, ParishGetSerializer, VillageGetSerializer, HealthFacilityGetSerializer, \
     FollowUpGetSerializer, FollowUpPostSerializer, DeliveryPostSerializer, DeliveryGetSerializer, \
-    MappingEncounterSerializer, AppointmentSerializer, SmsModelSerializer
+    MappingEncounterSerializer, AppointmentSerializer, SmsModelSerializer, UserUpdateSerializer
 from app.sms_handler import send_sms_message
 
 from app.utils.constants import USER_TYPE_MIDWIFE, USER_TYPE_CHEW, USER_TYPE_DHO, GENERAL_MESSAGE, USER_TYPE_MANAGER
@@ -56,6 +56,12 @@ class UserCreateView(ListCreateAPIView):
     permission_classes = (IsPostOrIsAuthenticated,)
     serializer_class = UserSerializer
     filter_class = UserFilter
+
+
+class UserGetUpdateView(RetrieveUpdateDestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserUpdateSerializer
+    permission_classes = (IsAuthenticated,)
 
 
 class GirlView(ListCreateAPIView):
