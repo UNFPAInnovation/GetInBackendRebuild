@@ -36,7 +36,7 @@ urlpatterns = [
     path(r'auth/', include('djoser.urls.authtoken')),
     path(r'api/v1/girls', GirlView.as_view(), name='girls'),
     path(r'api/v1/mapping_encounters', MappingEncounterView.as_view(), name='mapping-encounters'),
-    path(r'api/v1/girls/<uuid:pk>', GirlDetailsView.as_view(),name='girls-details'),
+    path(r'api/v1/girls/<uuid:pk>', GirlDetailsView.as_view(), name='girls-details'),
     path(r'api/v1/users', UserCreateView.as_view(), name='users'),
     path(r'api/v1/users/<uuid:pk>', UserGetUpdateView.as_view(), name='user-details'),
     path(r'api/v1/districts', DistrictView.as_view(), name='districts'),

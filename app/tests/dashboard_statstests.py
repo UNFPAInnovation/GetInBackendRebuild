@@ -10,6 +10,8 @@ from app.extractor import generate_overall_stats
 from app.models import *
 from app.tests.parenttest import ParentTest
 from django.utils.crypto import get_random_string
+from app.tests.testconstants import email_response
+from app.tests.testutils import generate_girl_json
 
 
 class TestDashboardStats(ParentTest):
@@ -29,120 +31,7 @@ class TestDashboardStats(ParentTest):
         ]
         for year in years:
             last_name = "MukuluGirlTest" + get_random_string(length=3)
-            request_data = {
-                "GetInMapGirlBundibugyo17_chew": {
-                    "GirlDemographic": [
-                        {
-                            "FirstName": [
-                                "MukuluGirlTest"
-                            ],
-                            "LastName": [
-                                last_name
-                            ],
-                            "GirlsPhoneNumber": [
-                                "0779281444"
-                            ],
-                            "DOB": [
-                                "{year}-02-26".format(year=year)
-                            ]
-                        }
-                    ],
-                    "GirlDemographic2": [
-                        {
-                            "NextOfKinNumber": [
-                                "0779281822"
-                            ]
-                        }
-                    ],
-                    "GirlLocation": [
-                        {
-                            "county": [
-                                "BUGHENDERA_COUNTY"
-                            ],
-                            "subcounty": [
-                                "SINDILA"
-                            ],
-                            "parish": [
-                                "NYANKONDA"
-                            ],
-                            "village": [
-                                "BULYATA_II"
-                            ]
-                        }
-                    ],
-                    "Observations3": [
-                        {
-                            "marital_status": [
-                                "married"
-                            ],
-                            "education_level": [
-                                "primary_level"
-                            ],
-                            "MenstruationDate": [
-                                "2020-02-28"
-                            ]
-                        }
-                    ],
-                    "Observations1": [
-                        {
-                            "bleeding": [
-                                "no"
-                            ],
-                            "fever": [
-                                "yes"
-                            ]
-                        }
-                    ],
-                    "Observations2": [
-                        {
-                            "swollenfeet": [
-                                "no"
-                            ],
-                            "blurred_vision": [
-                                "no"
-                            ]
-                        }
-                    ],
-                    "EmergencyCall": [
-                        ""
-                    ],
-                    "ANCAppointmentPreviousGroup": [
-                        {
-                            "AttendedANCVisit": [
-                                "no"
-                            ]
-                        }
-                    ],
-                    "ContraceptiveGroup": [
-                        {
-                            "UsedContraceptives": [
-                                "no"
-                            ],
-                            "ReasonNoContraceptives": [
-                                "None"
-                            ]
-                        }
-                    ],
-                    "VouncherCardGroup": [
-                        {
-                            "VoucherCard": [
-                                "no"
-                            ]
-                        }
-                    ],
-                    "meta": [
-                        {
-                            "instanceID": [
-                                "uuid:21a505a9-2d17-4fed-a3ad-183343227eb3"
-                            ]
-                        }
-                    ]
-                },
-                "form_meta_data": {
-                    "GIRL_ID": "0",
-                    "USER_ID": self.chew.id
-                }
-            }
+            request_data = self.generateGirlJson(last_name, year)
 
             url = reverse("mapping_encounter_webhook")
             self.client.post(url, request_data, format='json')
@@ -160,6 +49,52 @@ class TestDashboardStats(ParentTest):
         url = reverse("mapping-encounters-stats")
         response = self.client.get(url, kwargs)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 1)
+
+    def test_mapping_encounter_all_districts_stats(self):
+        """
+        Test mapping encounter districts stats for the dashboard for a manager
+        """
+        self.client.force_authenticate(user=self.manager)
+        years = [
+            random.randint(self.current_date.year - 22, self.current_date.year - 20),
+            random.randint(self.current_date.year - 22, self.current_date.year - 20),
+            random.randint(self.current_date.year - 18, self.current_date.year - 16),
+            random.randint(self.current_date.year - 18, self.current_date.year - 16),
+            random.randint(self.current_date.year - 15, self.current_date.year - 12),
+            random.randint(self.current_date.year - 15, self.current_date.year - 12)
+        ]
+        for year in years:
+            url = reverse("mapping_encounter_webhook")
+            self.client.post(url,
+                             generate_girl_json("MukuluGirlTest" + get_random_string(length=3), year, self.chew.id),
+                             format='json')
+        girl = Girl.objects.last()
+        girl.created_at = self.current_date - timezone.timedelta(days=30)
+        girl.save(update_fields=['created_at'])
+        self.assertEqual(Girl.objects.count(), 6)
+
+        from_date = timezone.now() - timezone.timedelta(weeks=100)
+        to_date = timezone.now() + timezone.timedelta(weeks=4)
+        to_date = timezone.datetime(to_date.year, to_date.month, from_date.day)
+
+        kwargs = {"from": "{0}-{1}-{2}".format(from_date.year, from_date.month, from_date.day),
+                  "to": "{0}-{1}-{2}".format(to_date.year, to_date.month, to_date.day)}
+        url = reverse("mapping-encounters-stats")
+        response = self.client.get(url, kwargs)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 75)
+        self.assertEqual(response.json()[0]['district'], girl.user.district.name)
+
+        kwargs = {"from": "{0}-{1}-{2}".format(from_date.year, from_date.month, from_date.day),
+                  "to": "{0}-{1}-{2}".format(to_date.year, to_date.month, to_date.day),
+                  "district": self.district.id
+                  }
+        url = reverse("mapping-encounters-stats")
+        response = self.client.get(url, kwargs)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 25)
+        self.assertEqual(response.json()[0]['district'], girl.user.district.name)
 
     @ignore
     def test_delivery_stats(self):
@@ -237,40 +172,7 @@ class TestDashboardStats(ParentTest):
                                                           "Deliveries": 8})
 
     def test_generate_stats_email_message(self):
-        response = """Hello
-
-Monthly statistics
-
-<strong>BUNDIBUGYO</strong>
-Mapped girls: 0
-ANC visits: 0
-Follow ups: 0
-Deliveries: 0
-Voucher services redeemed: 0
-Voucher cards created: 0
-
-
-<strong>Arua</strong>
-Mapped girls: 0
-ANC visits: 0
-Follow ups: 0
-Deliveries: 0
-Voucher services redeemed: 0
-Voucher cards created: 0
-
-
-<strong>Yumbe</strong>
-Mapped girls: 0
-ANC visits: 0
-Follow ups: 0
-Deliveries: 0
-Voucher services redeemed: 0
-Voucher cards created: 0
-
-
-Regards.
-GetIn Team"""
-        self.assertEqual(generate_stats_email_message(), response)
+        self.assertEqual(generate_stats_email_message(), email_response)
 
     def test_send_monthly_stats_email(self):
         send_monthly_stats_email()

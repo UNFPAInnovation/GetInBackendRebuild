@@ -34,8 +34,10 @@ def send_sms_message(message, phone_numbers, message_type=APPOINTMENT_REMINDER_M
             valid_phone_numbers.append(phone_number)
             SentSmsLog.objects.create(phone_number=phone_number, message=message, message_type=message_type)
 
+    print(valid_phone_numbers)
     if valid_phone_numbers:
         response = sms.send(message, valid_phone_numbers)
+        print(str(response))
         sms_logger(str(response), message)
 
 
