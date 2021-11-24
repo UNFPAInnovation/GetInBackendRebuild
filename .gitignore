@@ -8,3 +8,4 @@ sms_sender_log.txt
 /sheets
 .envtest
 */__pycache__/*
+__pycache__
