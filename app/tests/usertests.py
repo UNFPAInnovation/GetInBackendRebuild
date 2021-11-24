@@ -48,7 +48,7 @@ class TestUser(APITestCase):
 
     def test_create_chew_user(self):
         """
-        Creates chew user
+        Creates chew user from different districts by using the village parameter to retrieve the district
         """
         self.midwife = User.objects.create(username="midwife40", first_name="mid", last_name="wife40",
                                            phone="0756878333", gender=GENDER_FEMALE, village=self.village,
@@ -63,7 +63,6 @@ class TestUser(APITestCase):
             "phone": "0756878441",
             "password": "0756878441",
             "village": self.village.id,
-            "district": self.district.id,
             "gender": "female",
             "number_plate": "",
             "midwife": self.midwife.id,
@@ -72,6 +71,24 @@ class TestUser(APITestCase):
         url = reverse("register")
         request = self.client.post(url, request_data, format='json')
         self.assertEqual(request.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(User.objects.get(username="mid91").district, self.district)
+
+        request_data = {
+            "first_name": "mid92",
+            "last_name": "mid92",
+            "username": "mid92",
+            "email": "testmid2@mail.com",
+            "phone": "0756878421",
+            "password": "0756878421",
+            "village": self.village2.id,
+            "gender": "female",
+            "number_plate": "",
+            "role": USER_TYPE_CHEW
+        }
+        url = reverse("register")
+        request = self.client.post(url, request_data, format='json')
+        self.assertEqual(request.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(User.objects.get(username="mid92").district, self.district2)
 
     def test_create_ambulance_user(self):
         """
