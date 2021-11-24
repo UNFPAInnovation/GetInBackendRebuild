@@ -290,22 +290,14 @@ class DashboardStatsView(APIView):
             we do some mutation on the dates so as to group the data in months '''
             created_at_to = self.generate_date_range(created_at_from, created_at_to_limit, first_date_range)
 
-            print('created_at_to################')
-            print(created_at_to)
-
             all_subcounties = []
 
             if request.path == '/api/v1/mapping_encounters_stats':
 
                 if districts:
-                    print('district count######################################')
-                    print(districts.count())
                     for district in districts:
-                        x = self.get_mapping_stats_by_district(created_at_from, created_at_to,
-                                                           district, sub_counties)
-                        print('found######')
-                        print(x)
-                        all_months_range_data.append(x)
+                        all_months_range_data.append(self.get_mapping_stats_by_district(created_at_from, created_at_to,
+                                                                                        district, sub_counties))
                 else:
                     all_months_range_data.append(self.get_mapping_stats_by_district(created_at_from, created_at_to,
                                                                                     district, sub_counties))
@@ -344,45 +336,32 @@ class DashboardStatsView(APIView):
         response["district"] = district.name
         response["year"] = created_at_from.year
         response["month"] = created_at_from.strftime("%B")
+
         subvalues = SubCounty.objects.annotate(girls_count=Sum(
             Case(
                 When(Q(parish__village__girl__created_at__gte=created_at_from) & Q(
                     parish__village__girl__created_at__lte=created_at_to), then=1),
                 output_field=IntegerField())), ).exclude(girls_count=None) \
             .values('name', 'girls_count').filter(county__district=district)
+
         for subcounty in subvalues:
             response["totalNumberOfGirlsMappedFrom" + subcounty['name']] = subcounty['girls_count']
             total_girls_in_all_subcounties += subcounty['girls_count']
-        if district:
-            girls = Girl.objects.aggregate(
-                girls_count_12_15=Sum(
-                    Case(When(Q(age__lte=15) & Q(age__lte=15) & Q(user__district=district) &
-                              Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to), then=1),
-                         output_field=IntegerField())),
-                girls_count_16_19=Sum(
-                    Case(When(Q(age__gte=16) & Q(age__lte=19) & Q(user__district=district) &
-                              Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to), then=1),
-                         output_field=IntegerField())),
-                girls_count_20_50=Sum(
-                    Case(When(Q(age__gte=20) & Q(age__lte=24) & Q(user__district=district) &
-                              Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to), then=1),
-                         output_field=IntegerField()))
-            )
-        else:
-            girls = Girl.objects.aggregate(
-                girls_count_12_15=Sum(
-                    Case(When(Q(age__lte=15) & Q(age__lte=15) &
-                              Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to), then=1),
-                         output_field=IntegerField())),
-                girls_count_16_19=Sum(
-                    Case(When(Q(age__gte=16) & Q(age__lte=19) &
-                              Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to), then=1),
-                         output_field=IntegerField())),
-                girls_count_20_50=Sum(
-                    Case(When(Q(age__gte=20) & Q(age__lte=50) &
-                              Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to), then=1),
-                         output_field=IntegerField()))
-            )
+
+        girls = Girl.objects.aggregate(
+            girls_count_12_15=Sum(
+                Case(When(Q(age__lte=15) & Q(age__lte=15) & Q(user__district=district) &
+                          Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to), then=1),
+                     output_field=IntegerField())),
+            girls_count_16_19=Sum(
+                Case(When(Q(age__gte=16) & Q(age__lte=19) & Q(user__district=district) &
+                          Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to), then=1),
+                     output_field=IntegerField())),
+            girls_count_20_50=Sum(
+                Case(When(Q(age__gte=20) & Q(age__lte=24) & Q(user__district=district) &
+                          Q(created_at__gte=created_at_from) & Q(created_at__lte=created_at_to), then=1),
+                     output_field=IntegerField()))
+        )
         response["mappedGirlsInAgeGroup12_15"] = (girls['girls_count_12_15'] or 0)
         response["mappedGirlsInAgeGroup16_19"] = (girls['girls_count_16_19'] or 0)
         response["mappedGirlsInAgeGroup20_50"] = (girls['girls_count_20_50'] or 0)

@@ -88,8 +88,7 @@ class TestDashboardStats(ParentTest):
 
         kwargs = {"from": "{0}-{1}-{2}".format(from_date.year, from_date.month, from_date.day),
                   "to": "{0}-{1}-{2}".format(to_date.year, to_date.month, to_date.day),
-                  "district": self.district.id
-                  }
+                  "district": self.district.id}
         url = reverse("mapping-encounters-stats")
         response = self.client.get(url, kwargs)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
