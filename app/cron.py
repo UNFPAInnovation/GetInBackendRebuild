@@ -2,9 +2,9 @@ import datetime
 
 from django.utils import timezone
 
-from GetInBackendRebuild.settings import EMAIL_RECIPIENTS, EMAIL_HOST
+from GetInBackendRebuild.settings import EMAIL_RECIPIENTS, EMAIL_HOST, SHEET_FILES_FOLDER
 from app.email_sender import send_email
-from app.extractor import generate_overall_stats
+from app.extractor import generate_overall_stats, extract_excel_org_unit_data
 from app.models import Appointment, Girl, District
 from app.notifier import NotifierView
 from app.utils.constants import EXPECTED, ATTENDED, MISSED
@@ -61,6 +61,10 @@ def transition_expected_appointments():
                     girl_previous_appointment.save(update_fields=['status'])
     except Exception as e:
         print(e)
+
+
+def extract_org_units():
+    extract_excel_org_unit_data(SHEET_FILES_FOLDER + 'orgunits.xlsx')
 
 
 def generate_stats_email_message():

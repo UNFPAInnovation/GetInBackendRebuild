@@ -198,7 +198,8 @@ CRONJOBS = [
     # run cron job at 10:05 every Tuesday
     ('5 10 * * 2', 'app.cron.notifier_weekly_usage_reminder_cron_job'),
     # run cron job at 01:00 every Month
-    ('0 1 1 * *', 'app.cron.send_monthly_stats_email')
+    # ('0 1 1 * *', 'app.cron.send_monthly_stats_email'),
+    ('25 23 28 * *', 'app.cron.extract_org_units'),
 ]
 
 # Internationalization
@@ -226,6 +227,7 @@ STATIC_URL = '/static/'
 #     os.path.join(PROJECT_ROOT, 'static'),
 # )
 SHEET_FILES_FOLDER = os.path.join(BASE_DIR, 'sheets/')
+SHEET_TEST_FILES_FOLDER = os.path.join(BASE_DIR, 'testsheets/')
 
 #  Add configuration for static files storage using whitenoise
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'

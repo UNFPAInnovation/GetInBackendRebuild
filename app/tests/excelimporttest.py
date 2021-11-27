@@ -4,8 +4,8 @@ from tempfile import TemporaryFile
 from rest_framework.test import APITestCase
 from xlwt import Workbook
 
-from GetInBackendRebuild.settings import SHEET_FILES_FOLDER
-from app.extractor import extract_excel_org_unit_data, extract_excel_user_data
+from GetInBackendRebuild.settings import SHEET_TEST_FILES_FOLDER
+from app.extractor import extract_excel_org_unit_data, extract_excel_user_data, get_region_name
 from app.models import District, County, SubCounty, Parish, Village, User, Region, HealthFacility
 from app.utils.constants import USER_TYPE_CHEW, USER_TYPE_MIDWIFE, GENDER_MALE
 
@@ -25,14 +25,15 @@ class TestImport(APITestCase):
         """
         book = Workbook()
         sheet1 = book.add_sheet('Sheet 1')
-        excel_sheet = SHEET_FILES_FOLDER + 'simple' + str(random.randint(1000, 9999)) + '.xls'
+        excel_sheet = SHEET_TEST_FILES_FOLDER + 'simple' + str(random.randint(1000, 9999)) + '.xls'
 
         data = [
-            ["Arua", "Arua", "Arua", "Arua", "Arua"],
-            ["Arua", "Arua", "Arua", "Arua", "Arua"],
-            ["Adumi", "Manibe", "Offaka", "Oli River", "Pajulu"],
-            ["Anyara", "Eleku", "Adroa", "Kenya", "Adalafu"],
-            ["Adroce", "Adravu", "Adroa", "Adriko", "Ajiriva"]
+            [3, 3, 3, 3, 2],
+            ["Arua", "Arua", "Arua", "Arua", "Foobar"],
+            ["Arua", "Arua", "Arua", "Arua", "Foobar"],
+            ["Adumi", "Manibe", "Offaka", "Oli River", "Foobar"],
+            ["Anyara", "Eleku", "Adroa", "Kenya", "Foobar"],
+            ["Adroce", "Adravu", "Adroa", "Adriko", "Foobar"]
         ]
 
         for c_index, columns in enumerate(data):
@@ -43,12 +44,14 @@ class TestImport(APITestCase):
         book.save(TemporaryFile())
 
         extract_excel_org_unit_data(excel_sheet)
-        self.assertEqual(District.objects.count(), 1)
-        self.assertEqual(County.objects.count(), 1)
+        self.assertEqual(Region.objects.count(), 2)
+        self.assertEqual(District.objects.count(), 2)
+        self.assertEqual(County.objects.count(), 2)
+        print(SubCounty.objects.all())
         self.assertEqual(SubCounty.objects.count(), 6)
         self.assertEqual(Parish.objects.count(), 6)
         self.assertEqual(Village.objects.count(), 6)
-        self.assertEqual(Village.objects.last().name, "Ajiriva")
+        self.assertEqual(Village.objects.last().name, "Foobar")
 
     def test_import_users(self):
         """
@@ -61,7 +64,7 @@ class TestImport(APITestCase):
         """
         book = Workbook()
         sheet1 = book.add_sheet('Sheet 1')
-        excel_sheet = SHEET_FILES_FOLDER + 'simple' + str(random.randint(1000, 9999)) + '.xls'
+        excel_sheet = SHEET_TEST_FILES_FOLDER + 'simple' + str(random.randint(1000, 9999)) + '.xls'
 
         data = [
             ["Rita", "Joshua", "Noah", "Peter", "Abraham"],
@@ -91,3 +94,10 @@ class TestImport(APITestCase):
         self.assertEqual(User.objects.first().health_facility.facility_level, '3')
         self.assertEqual(HealthFacility.objects.count(), 5)
         self.assertEqual(HealthFacility.objects.filter(facility_level='0').count(), 1)
+
+    def test_region_from_id_creator(self):
+        self.assertEqual(get_region_name(1), "Central")
+        self.assertEqual(get_region_name(2), "Eastern")
+        self.assertEqual(get_region_name(4), "Western")
+        self.assertEqual(get_region_name(2.0), "Eastern")
+        self.assertEqual(get_region_name('2.0'), "Eastern")

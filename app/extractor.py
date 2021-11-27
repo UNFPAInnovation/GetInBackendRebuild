@@ -9,7 +9,7 @@ from django.utils import timezone
 from GetInBackendRebuild.settings import SHEET_FILES_FOLDER
 from app.airtime_dispatcher import AirtimeModule
 from app.models import District, County, SubCounty, Parish, Village, User, Girl, Appointment, FollowUp, HealthFacility, \
-    Delivery, MSIService
+    Delivery, MSIService, Region
 from app.utils.utilities import add_months
 from openpyxl import Workbook, load_workbook
 from xlwt import Workbook as WorkbookCreation
@@ -22,7 +22,7 @@ def extract_excel_org_unit_data(location):
     """
     :param location: uri of the excel file to extract from. Usually excel files are placed in the sheets folder
     Creates org units from an excel sheet provided
-    Sheet Fields: District, County, SubCounty, Parish, Village
+    Sheet Fields: Region, District, County, SubCounty, Parish, Village
     Note: Some districts don't have county. In that case the district name is used as a county
     """
     wb = xlrd.open_workbook(location)
@@ -36,22 +36,45 @@ def extract_excel_org_unit_data(location):
             break
 
         print(row_data)
-        district_value = row_data[0]
-        county_value = row_data[1]
-        sub_county_value = row_data[2]
-        parish_value = row_data[3]
-        village_value = row_data[4]
+        region_value = row_data[0]
+        district_value = row_data[1]
+        county_value = row_data[2]
+        sub_county_value = row_data[3]
+        parish_value = row_data[4]
+        village_value = row_data[5]
 
+        # stop on reaching end of document
         if not district_value:
             break
 
+        # skip first row with headers
         if str(district_value).lower() == 'district':
             continue
-        district = District.objects.get_or_create(name=district_value)
+
+        # todo remove later. Temporarily skip districts
+        if str(district_value).lower() in ['kampala', 'bundibugyo', 'arua', 'yumbe', 'adjumani', 'moyo']:
+            continue
+
+        region = Region.objects.get_or_create(name=get_region_name(region_value))
+        district = District.objects.get_or_create(name=district_value, region=region[0])
         county = County.objects.get_or_create(name=county_value, district=district[0])
         sub_county = SubCounty.objects.get_or_create(name=sub_county_value, county=county[0])
         parish = Parish.objects.get_or_create(name=parish_value, sub_county=sub_county[0])
         village = Village.objects.get_or_create(name=village_value, parish=parish[0])
+
+
+def get_region_name(region_id):
+    region_id = int(float(region_id))
+    if region_id == 1:
+        return "Central"
+    elif region_id == 2:
+        return "Eastern"
+    elif region_id == 3:
+        return "Northern"
+    elif region_id == 4:
+        return "Western"
+    else:
+        return "West Nile"
 
 
 def extract_excel_user_data(location, district_name):
