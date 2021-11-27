@@ -28,7 +28,7 @@ def extract_excel_org_unit_data(location):
     wb = xlrd.open_workbook(location)
     sheet = wb.sheet_by_index(0)
 
-    for row_number in range(0, 1000):
+    for row_number in range(0, sheet.utter_max_rows):
         try:
             row_data = sheet.row_values(row_number)
         except Exception as e:
