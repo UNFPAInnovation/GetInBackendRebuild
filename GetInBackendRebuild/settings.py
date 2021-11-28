@@ -199,7 +199,7 @@ CRONJOBS = [
     ('5 10 * * 2', 'app.cron.notifier_weekly_usage_reminder_cron_job'),
     # run cron job at 01:00 every Month
     # ('0 1 1 * *', 'app.cron.send_monthly_stats_email'),
-    ('56 23 28 * *', 'app.cron.extract_org_units'),
+    # ('56 23 28 * *', 'app.cron.extract_org_units'),
 ]
 
 # Internationalization
