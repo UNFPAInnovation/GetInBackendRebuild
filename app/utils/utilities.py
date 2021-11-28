@@ -26,3 +26,6 @@ def internationalize(phone_number):
     if phone_number[:1] != '+':
         phone_number = '+256' + phone_number[1:]
     return phone_number
+
+
+unique = lambda data: [list(x) for x in set(tuple(x) for x in data)]

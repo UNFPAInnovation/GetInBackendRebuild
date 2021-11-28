@@ -9,3 +9,5 @@ sms_sender_log.txt
 .envtest
 */__pycache__/*
 __pycache__
+app/__pycache__/*
+app/utils/__pycache__/

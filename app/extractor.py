@@ -10,12 +10,84 @@ from GetInBackendRebuild.settings import SHEET_FILES_FOLDER
 from app.airtime_dispatcher import AirtimeModule
 from app.models import District, County, SubCounty, Parish, Village, User, Girl, Appointment, FollowUp, HealthFacility, \
     Delivery, MSIService, Region
-from app.utils.utilities import add_months
+from app.utils.utilities import add_months, unique
 from openpyxl import Workbook, load_workbook
 from xlwt import Workbook as WorkbookCreation
 from app.utils.constants import *
 from django.db.models.expressions import Q
 from django.db.models import Case, When, IntegerField, Count
+
+
+def create_odk_sheets(location):
+    """
+    :param location: uri of the excel file to extract from. Usually excel files are placed in the sheets folder
+    Creates odk sheets for each district on the second sheet of the odk sheet template
+    Sheet Fields: Region, District, County, SubCounty, Parish, Village
+    """
+    wb = xlrd.open_workbook(location)
+    sheet = wb.sheet_by_index(0)
+
+    odk_wb = load_workbook(SHEET_FILES_FOLDER + 'odksample.xlsx')
+    odk_sheet = odk_wb.get_sheet_by_name('choices')
+    settings_sheet = odk_wb.get_sheet_by_name('settings')
+    counties = []
+    subcounties = []
+    parishes = []
+    villages = []
+    district_name = ""
+
+    for row_number in range(0, 78999):
+        try:
+            row_data = sheet.row_values(row_number)
+        except Exception as e:
+            print(e)
+            break
+
+        print(row_data)
+        district_value = row_data[1]
+        county_value = row_data[2]
+        sub_county_value = row_data[3]
+        parish_value = row_data[4]
+        village_value = row_data[5]
+
+        # skip first row with headers
+        if str(district_value).lower() == 'district':
+            continue
+
+        if district_name != district_value and district_name:
+            for county in unique(counties):
+                odk_sheet.append(county)
+
+            for subcounty in unique(subcounties):
+                odk_sheet.append(subcounty)
+
+            for parish in unique(parishes):
+                odk_sheet.append(parish)
+
+            for village in unique(villages):
+                odk_sheet.append(village)
+
+            settings_sheet.append(
+                ['GetInMapGirl' + district_name + '1_chew', 'GetInMapGirl' + district_name + '1_chew', '', '', '','yes'])
+            odk_wb.save(SHEET_FILES_FOLDER + 'GetInMapGirl' + district_name + '1_chew.xls')
+            counties = []
+            subcounties = []
+            parishes = []
+            villages = []
+            odk_wb = load_workbook(SHEET_FILES_FOLDER + 'odksample.xlsx')
+            odk_sheet = odk_wb.get_sheet_by_name('choices')
+            settings_sheet = odk_wb.get_sheet_by_name('settings')
+            district_name = district_value
+
+            # stop on reaching end of document
+            if not district_value:
+                break
+        else:
+            counties.append(['countys', county_value, county_value])
+            subcounties.append(['subcountys', sub_county_value, sub_county_value, county_value])
+            parishes.append(['parishs', parish_value, parish_value, county_value, sub_county_value])
+            villages.append(['villages', village_value, village_value, county_value, sub_county_value, parish_value])
+            district_name = district_value
 
 
 def extract_excel_org_unit_data(location):
@@ -49,10 +121,6 @@ def extract_excel_org_unit_data(location):
 
         # skip first row with headers
         if str(district_value).lower() == 'district':
-            continue
-
-        # todo remove later. Temporarily skip districts
-        if str(district_value).lower() in ['kampala', 'bundibugyo', 'arua', 'yumbe', 'adjumani', 'moyo']:
             continue
 
         region = Region.objects.get_or_create(name=get_region_name(region_value))

@@ -8,6 +8,7 @@ from GetInBackendRebuild.settings import SHEET_TEST_FILES_FOLDER
 from app.extractor import extract_excel_org_unit_data, extract_excel_user_data, get_region_name
 from app.models import District, County, SubCounty, Parish, Village, User, Region, HealthFacility
 from app.utils.constants import USER_TYPE_CHEW, USER_TYPE_MIDWIFE, GENDER_MALE
+from app.utils.utilities import unique
 
 
 class TestImport(APITestCase):
@@ -47,7 +48,6 @@ class TestImport(APITestCase):
         self.assertEqual(Region.objects.count(), 2)
         self.assertEqual(District.objects.count(), 2)
         self.assertEqual(County.objects.count(), 2)
-        print(SubCounty.objects.all())
         self.assertEqual(SubCounty.objects.count(), 6)
         self.assertEqual(Parish.objects.count(), 6)
         self.assertEqual(Village.objects.count(), 6)
@@ -101,3 +101,7 @@ class TestImport(APITestCase):
         self.assertEqual(get_region_name(4), "Western")
         self.assertEqual(get_region_name(2.0), "Eastern")
         self.assertEqual(get_region_name('2.0'), "Eastern")
+
+    def test_unique_list(self):
+        self.assertEqual(len(unique([[1, 2, 3], [4, 5, 6], [1, 2, 3],
+                                     ['AJUKUNA', 'AJUKUNA'], ['AJUKUNA', 'AJUKUNA']])), 3)
