@@ -77,6 +77,7 @@ POSTNATAL_FORM_CHEW_NAME = "GetINPostnatalForm6_chew"
 POSTNATAL_FORM_MIDWIFE_NAME = "GetINPostnatalForm6_midwife"
 # NOTE: Some times the json object starts with data object param
 DEFAULT_TAG = "data"
+FORM_MAP_TEMPLATE = "forms.put(\"{0}\", \"GetInMapGirl{1}1_chew\");"
 
 MAPPING_FORMS = [MAP_GIRL_BUNDIBUGYO_CHEW_FORM_NAME, MAP_GIRL_BUNDIBUGYO_MIDWIFE_FORM_NAME,
                  MAP_GIRL_ARUA_CHEW_FORM_NAME, MAP_GIRL_ARUA_MIDWIFE_FORM_NAME, MAP_GIRL_KAMPALA_CHEW_FORM_NAME,

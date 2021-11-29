@@ -18,6 +18,33 @@ from django.db.models.expressions import Q
 from django.db.models import Case, When, IntegerField, Count
 
 
+def create_odk_collect_java_map_object(location):
+    wb = xlrd.open_workbook(location)
+    sheet = wb.sheet_by_index(5)
+    districts_map = []
+
+    for row_number in range(0, sheet.utter_max_rows):
+        try:
+            row_data = sheet.row_values(row_number)
+        except Exception as e:
+            print(e)
+            break
+
+        print(row_data)
+        district_value = row_data[0]
+
+        # skip first row with headers
+        if str(district_value).lower() == 'district':
+            continue
+
+        # stop on reaching end of document
+        if not district_value:
+            break
+
+        districts_map.append(FORM_MAP_TEMPLATE.format(str(district_value).upper(), str(district_value).upper()))
+    return districts_map
+
+
 def create_odk_sheets(location):
     """
     :param location: uri of the excel file to extract from. Usually excel files are placed in the sheets folder
@@ -68,7 +95,8 @@ def create_odk_sheets(location):
                 odk_sheet.append(village)
 
             settings_sheet.append(
-                ['GetInMapGirl' + district_name + '1_chew', 'GetInMapGirl' + district_name + '1_chew', '', '', '','yes'])
+                ['GetInMapGirl' + district_name + '1_chew', 'GetInMapGirl' + district_name + '1_chew',
+                 '', '', '', 'yes'])
             odk_wb.save(SHEET_FILES_FOLDER + 'GetInMapGirl' + district_name + '1_chew.xls')
             counties = []
             subcounties = []
