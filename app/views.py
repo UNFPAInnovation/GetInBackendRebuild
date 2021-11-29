@@ -367,7 +367,7 @@ class DashboardStatsView(APIView):
         response["mappedGirlsInAgeGroup20_50"] = (girls['girls_count_20_50'] or 0)
         response["count"] = (girls['girls_count_12_15'] or 0) + (girls['girls_count_16_19'] or 0) + \
                             (girls['girls_count_20_50'] or 0)
-        response["subcounties"] = [subcounty.name for subcounty in sub_counties]
+        response["subcounties"] = [subcounty.name for subcounty in sub_counties.filter(county__district=district)]
         return response
 
     def generate_date_range(self, created_at_from, created_at_to_limit, first_date_range):
