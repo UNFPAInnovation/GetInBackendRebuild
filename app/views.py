@@ -3,7 +3,7 @@ import calendar
 import traceback
 
 import pytz
-from django.db.models import Q, Sum, Case, When, IntegerField
+from django.db.models import Q, Sum, Case, When, IntegerField, Count
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend, OrderingFilter
 from dry_rest_permissions.generics import DRYPermissions
@@ -276,7 +276,7 @@ class DashboardStatsView(APIView):
                         sub_counties = SubCounty.objects.filter(county__district=district)
                 except Exception as e:
                     print(traceback.print_exc())
-                    districts = District.objects.all()
+                    districts = District.objects.annotate(users=Count('user')).filter(users__gt=0)
                     sub_counties = SubCounty.objects.all()
             else:
                 subcounty = request.user.village.parish.sub_county
