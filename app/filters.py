@@ -87,7 +87,7 @@ class UserFilter(SuperFilter):
     class Meta:
         model = User
         fields = {
-            'created_from', 'created_to', 'role', 'midwife_id'
+            'created_from', 'created_to', 'role', 'midwife_id', 'district'
         }
 
 

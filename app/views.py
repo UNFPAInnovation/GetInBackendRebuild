@@ -11,6 +11,7 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.permissions import *
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
 
 from GetInBackendRebuild.settings import SHEET_FILES_FOLDER
 from app.airtime_dispatcher import AirtimeModule
@@ -111,7 +112,7 @@ class GirlDetailsView(RetrieveUpdateDestroyAPIView):
     permission_classes = (DRYPermissions, IsAuthenticated)
 
 
-class DistrictView(ListCreateAPIView):
+class DistrictViewSet(ModelViewSet):
     queryset = District.objects.all()
     serializer_class = DistrictGetSerializer
     permission_classes = (AllowAny,)

@@ -15,11 +15,12 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
+from rest_framework.routers import DefaultRouter
 from rest_framework_swagger.views import get_swagger_view
 
 from app.notifier import NotifierView
-from app.views import GirlView, GirlDetailsView, UserCreateView, DistrictView, \
+from app.views import GirlView, GirlDetailsView, UserCreateView, DistrictViewSet, \
     CountyView, SubCountyView, ParishView, VillageView, HealthFacilityView, FollowUpView, \
     DeliveriesView, MappingEncounterView, AppointmentView, DashboardStatsView, SmsView, \
     ExtractView, AirtimeDispatchView, UserGetUpdateView
@@ -28,6 +29,16 @@ from django.views.decorators.csrf import csrf_exempt
 from app.webhook import ODKWebhook
 
 schema_view = get_swagger_view(title='GetIN Django API')
+
+
+class OptionalSlashRouter(DefaultRouter):
+    def __init__(self):
+        super(DefaultRouter, self).__init__()
+        self.trailing_slash = "/?"
+
+
+router = OptionalSlashRouter()
+router.register(r'districts', DistrictViewSet, basename='districts')
 
 urlpatterns = [
     url(r'^$', schema_view),
@@ -39,7 +50,7 @@ urlpatterns = [
     path(r'api/v1/girls/<uuid:pk>', GirlDetailsView.as_view(), name='girls-details'),
     path(r'api/v1/users', UserCreateView.as_view(), name='users'),
     path(r'api/v1/users/<uuid:pk>', UserGetUpdateView.as_view(), name='user-details'),
-    path(r'api/v1/districts', DistrictView.as_view(), name='districts'),
+    # path(r'api/v1/districts', DistrictViewSet.as_view(), name='districts'),
     path(r'api/v1/counties', CountyView.as_view(), name='counties'),
     path(r'api/v1/subcounties', SubCountyView.as_view(), name='subcounties'),
     path(r'api/v1/parishes', ParishView.as_view(), name='parishes'),
@@ -55,4 +66,5 @@ urlpatterns = [
     path(r'api/v1/extractor', ExtractView.as_view(), name='extractor'),
     path(r'api/v1/notifier', NotifierView.as_view(), name='notifier'),
     path(r'api/v1/airtime_dispatcher', AirtimeDispatchView.as_view(), name='airtime-dispatcher'),
+    re_path('^api/v1/', include(router.urls))
 ]
