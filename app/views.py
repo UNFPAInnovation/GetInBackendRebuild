@@ -277,7 +277,7 @@ class DashboardStatsView(APIView):
                         sub_counties = SubCounty.objects.filter(county__district=district)
                 except Exception as e:
                     print(traceback.print_exc())
-                    districts = District.objects.annotate(users=Count('user')).filter(users__gt=0)
+                    districts = District.objects.filter(active=True)
                     sub_counties = SubCounty.objects.all()
             else:
                 subcounty = request.user.village.parish.sub_county
