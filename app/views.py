@@ -116,7 +116,7 @@ class DistrictView(ListCreateAPIView):
     serializer_class = DistrictGetSerializer
     permission_classes = (AllowAny,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ['id', 'name', 'region']
+    filterset_fields = ['id', 'name', 'region', 'active']
 
 
 class CountyView(ListCreateAPIView):

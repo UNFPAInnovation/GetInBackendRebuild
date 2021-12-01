@@ -87,6 +87,7 @@ class Region(models.Model):
 
 class District(models.Model):
     name = models.CharField(max_length=250)
+    active = models.BooleanField(default=False, blank=True, null=True)
     region = models.ForeignKey(Region, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):

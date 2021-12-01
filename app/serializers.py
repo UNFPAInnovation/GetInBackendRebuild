@@ -172,8 +172,8 @@ class HealthFacilityGetSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     village = VillageGetSerializer(many=False, read_only=True)
-    midwife = UserGetSerializer(read_only=True)
-    health_facility = HealthFacilityGetSerializer(read_only=True)
+    # midwife = UserGetSerializer(read_only=True)
+    # health_facility = HealthFacilityGetSerializer(read_only=True)
 
     class Meta:
         model = User
