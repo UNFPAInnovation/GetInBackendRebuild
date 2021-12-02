@@ -96,7 +96,7 @@ class UserPostSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'first_name', 'last_name', 'username', 'email', 'phone', 'password', 'gender', 'village', 'number_plate',
-            'role', 'midwife')
+            'role', 'midwife', 'health_facility')
 
     def create(self, validated_data):
         """
