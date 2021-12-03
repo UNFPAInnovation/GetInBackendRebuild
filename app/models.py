@@ -169,7 +169,7 @@ class User(AbstractUser):
     village = models.ForeignKey(Village, on_delete=models.CASCADE, blank=True, null=True)
     district = models.ForeignKey(District, on_delete=models.CASCADE, blank=True, null=True)
     # midwife attached to vht. Midwife can have two VHTs at a time while VHT has one midwife
-    midwife = models.ForeignKey('User', on_delete=models.DO_NOTHING, blank=True, null=True)
+    midwife = models.ForeignKey('User', on_delete=models.CASCADE, blank=True, null=True)
     firebase_device_id = models.CharField(max_length=300, blank=True, null=True, default="")
     health_facility = models.ForeignKey(HealthFacility, on_delete=models.CASCADE, blank=True, null=True)
     # allows user to access these fields in /auth/me
