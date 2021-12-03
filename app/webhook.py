@@ -79,8 +79,7 @@ class ODKWebhook(APIView):
             print(traceback.print_exc())
         setup_disabilities()
 
-        is_mapping_form = any(form_id in self.json_result_string for form_id in MAPPING_FORMS)
-        if is_mapping_form:
+        if "GetInMapGirl" in self.json_result_string:
             return self.process_mapping_encounter(json_result, user_id)
         elif FOLLOW_UP_FORM_CHEW_NAME in self.json_result_string or FOLLOW_UP_FORM_MIDWIFE_NAME in self.json_result_string:
             return self.process_follow_up_and_delivery_encounter(girl_id, json_result, user_id)
